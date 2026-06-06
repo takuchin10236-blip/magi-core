@@ -1,0 +1,54 @@
+{
+  "name": "@magi/core",
+  "version": "0.1.0",
+  "description": "MAGI 2階老健システム群の共有コア。データ契約（Sheets/書込ゲート/D4署名検証アクセス制御）・CIガード原本・背骨UI最小を1パッケージに集約する v0.1。",
+  "type": "module",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "./dist/data/index.js",
+  "module": "./dist/data/index.js",
+  "types": "./dist/data/index.d.ts",
+  "exports": {
+    "./data": {
+      "types": "./dist/data/index.d.ts",
+      "import": "./dist/data/index.js"
+    },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "import": "./dist/ui/index.js"
+    },
+    "./ui/core.css": "./src/ui/core.css",
+    "./ci/check-ui-guardrails.mjs": "./ci/check-ui-guardrails.mjs"
+  },
+  "files": [
+    "dist",
+    "src/ui/core.css",
+    "ci/check-ui-guardrails.mjs",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "lucide-react": "^1.16.0",
+    "react-draggable": "^4.5.0"
+  },
+  "peerDependenciesMeta": {
+    "lucide-react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-draggable": "^4.5.0",
+    "@cloudflare/workers-types": "^4.20240605.0"
+  }
+}

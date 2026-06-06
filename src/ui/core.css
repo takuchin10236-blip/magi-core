@@ -1,0 +1,345 @@
+/**
+ * @magi/core — 背骨UIの最小CSS（状態色トークン + 背骨シェル + 部品クラス）
+ *
+ * 原本: magi-resident-spine/src/styles/index.css（standard-lumen プリセット部分・背骨シェル・
+ *       themed-* / toast-* / btn-spinner の核）から「テーマで変わらない最小の核」だけを抽出。
+ *
+ * 何を入れて、何を入れないか:
+ *   入れる … (1) standard-lumen の状態色トークン（CIガードが探す基準値 --primary:#6bbf95 等）
+ *            (2) 背骨シェルのクラス定義の核（topbar / app-body-grid / app-side-panel / side-peek-toggle）
+ *            (3) 部品3つ（ConfirmModal/DraggableModal/Toast）が参照する独自クラス・keyframes
+ *   入れない … 4プリセット全部（aura/carbon/ember）、@import フォント実体、tailwind 本体、
+ *              print CSS、業務固有クラス（side-kpi-grid 等の枝葉）。
+ *              → これらは採用側アプリの index.css 側で持つ（@magi/core は最小の背骨だけ供給）。
+ *
+ * Tailwind との関係:
+ *   部品3つの TSX は Tailwind ユーティリティ（px-4 等）を使う。@magi/core は Tailwind を
+ *   ビルドしない（peer に react のみ）。Tailwind ユーティリティの解決は採用側アプリの
+ *   ビルドに委ね、ここでは「Tailwind では表現できない独自クラス・CSS変数」だけを供給する。
+ */
+
+/* ───────────────────────────────────────────────────────────
+ * (1) 状態色トークン — standard-lumen プリセット（white / dark）
+ *     CIガード check-ui-guardrails.mjs が探す基準値:
+ *       [data-ui-preset="standard-lumen"][data-color-mode="white"] / --primary:#6bbf95 /
+ *       --accent:#6bbf95 / Plus Jakarta Sans Variable
+ * ─────────────────────────────────────────────────────────── */
+:root,
+:root[data-color-mode="white"],
+:root[data-ui-preset="standard-lumen"][data-color-mode="white"] {
+  --background: #f5f8f6;
+  --foreground: #1c1f1d;
+  --card: #ffffff;
+  --secondary: #eef3ef;
+  --primary: #6bbf95;
+  --primary-foreground: #0c3520;
+  --primary-light: #e0f0e6;
+  --accent: #6bbf95;
+  --destructive: #c62828;
+  --border: #d8e2db;
+  --text-2: #43504a;
+  --text-muted-source: #59665f;
+  --brand: #6bbf95;
+  --warn: #d84315;
+  --danger: #c62828;
+  --ok: #2e7d32;
+  --ui-font: "Plus Jakarta Sans Variable", "Noto Sans JP", system-ui, sans-serif;
+  --display-font: var(--ui-font);
+  --mono-font: "Inter Variable", "SFMono-Regular", "Roboto Mono", "Cascadia Code", monospace;
+  --button-radius: 9999px;
+  --input-radius: 8px;
+  --card-radius: 12px;
+  --dialog-radius: 16px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1400px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: 0 1px 2px rgba(28, 27, 31, 0.08), 0 1px 3px rgba(28, 27, 31, 0.06);
+  --floating-shadow: 0 8px 24px rgba(28, 27, 31, 0.12);
+
+  /* 状態色（部品が参照する --color-* 系。トークンから橋渡し） */
+  --color-primary: var(--primary);
+  --color-primary-hover: #4ea878;
+  --color-primary-light: var(--primary-light);
+  --color-accent: var(--accent);
+  --color-success: var(--ok);
+  --color-warning: var(--warn);
+  --color-info: var(--brand);
+  --color-danger: var(--danger);
+
+  /* 背景・テキスト・枠（背骨シェルと部品が参照） */
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: #0c3520;
+  --border-default: var(--border);
+  --border-strong: #bcc0c7;
+}
+
+:root[data-color-mode="dark"],
+:root[data-ui-preset="standard-lumen"][data-color-mode="dark"] {
+  --background: #121613;
+  --foreground: #e5ebe7;
+  --card: #1a1f1c;
+  --secondary: #232a26;
+  --primary: #87d4ad;
+  --primary-foreground: #0c3520;
+  --primary-light: #2a4738;
+  --accent: #87d4ad;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.10);
+  --text-2: #c5cdc8;
+  --text-muted-source: #919b95;
+  --brand: #87d4ad;
+  --warn: #f59e0b;
+  --danger: #f87171;
+  --ok: #4ade80;
+  --ui-font: "Plus Jakarta Sans Variable", "Noto Sans JP", system-ui, sans-serif;
+  --display-font: var(--ui-font);
+  --mono-font: "Inter Variable", "SFMono-Regular", "Roboto Mono", "Cascadia Code", monospace;
+  --button-radius: 9999px;
+  --input-radius: 8px;
+  --card-radius: 12px;
+  --dialog-radius: 16px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1400px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: none;
+  --floating-shadow: 0 18px 38px rgba(0, 0, 0, 0.32);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: #99dcb8;
+  --color-primary-light: var(--primary-light);
+  --color-accent: var(--accent);
+  --color-success: var(--ok);
+  --color-warning: var(--warn);
+  --color-info: var(--brand);
+  --color-danger: var(--danger);
+
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: rgba(255, 255, 255, 0.12);
+}
+
+/* ───────────────────────────────────────────────────────────
+ * (2) 背骨シェル — クラス定義の核
+ *     CIガードが探す: topbar(themed-card) / app-body-grid / app-side-panel / side-peek-toggle
+ * ─────────────────────────────────────────────────────────── */
+.app-shell {
+  max-width: var(--app-shell-max, 1320px);
+  margin: 0 auto;
+  padding: 24px;
+  color: var(--text-primary);
+}
+
+.app-body-grid {
+  display: grid;
+  grid-template-columns: minmax(var(--side-panel-min, 220px), var(--side-panel-max, 270px)) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.app-body-grid.side-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.content-stack {
+  min-width: 0;
+}
+
+.app-side-panel {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  padding: 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--mode-radius);
+  background: var(--bg-surface);
+  box-shadow: var(--surface-shadow);
+}
+
+.side-peek-toggle {
+  position: fixed;
+  top: 50%;
+  left: 10px;
+  z-index: 60;
+  display: inline-flex;
+  width: 34px;
+  min-height: 84px;
+  translate: 0 -50%;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 32%, var(--border-default));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  color: var(--color-primary);
+  box-shadow: var(--floating-shadow);
+  cursor: pointer;
+  writing-mode: vertical-rl;
+  backdrop-filter: blur(14px);
+}
+
+.side-peek-toggle span {
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.side-peek-toggle.closed {
+  animation: side-peek-breathe 2.8s ease-in-out infinite;
+}
+
+.side-peek-toggle:hover,
+.side-peek-toggle:focus-visible {
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+  outline: none;
+  transform: translateX(3px);
+}
+
+@keyframes side-peek-breathe {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  border-radius: var(--card-radius, var(--mode-radius));
+  position: relative;
+  z-index: 40;
+}
+
+/* ───────────────────────────────────────────────────────────
+ * (3) 部品が参照する独自クラス・keyframes
+ *     ConfirmModal / DraggableModal が themed-card / themed-btn-secondary / themed-text-* /
+ *     btn-spinner / draggable-modal を、Toast が toast-* を参照する。
+ * ─────────────────────────────────────────────────────────── */
+.themed-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, var(--mode-radius));
+  color: var(--text-primary);
+  box-shadow: var(--surface-shadow);
+}
+
+.themed-card-alt {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, var(--mode-radius));
+  color: var(--text-primary);
+}
+
+.themed-text-secondary { color: var(--text-secondary); }
+.themed-text-primary { color: var(--text-primary); }
+.themed-text-muted { color: var(--text-muted); }
+
+.themed-btn-secondary {
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+.themed-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-app);
+  border-color: var(--border-strong);
+}
+
+/* DraggableModal のダイアログ角丸（draggable-modal クラス） */
+.themed-card.rounded-2xl,
+.draggable-modal {
+  border-radius: var(--dialog-radius, var(--card-radius, var(--mode-radius)));
+}
+
+/* ボタン loading 状態のスピナー（ConfirmModal が btn-spinner を使う） */
+.btn-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spinner-rotate 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+@keyframes btn-spinner-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast（Toast.tsx が toast-bubble / toast-success 等を使う） */
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toast-bubble {
+  border: 1px solid color-mix(in srgb, currentColor 26%, transparent);
+  color: var(--toast-text, #ffffff);
+  background: var(--toast-bg, var(--color-info));
+}
+
+.toast-success {
+  --toast-bg: var(--color-success);
+  --toast-text: #ffffff;
+}
+
+.toast-error {
+  --toast-bg: var(--color-danger);
+  --toast-text: #ffffff;
+}
+
+.toast-info {
+  --toast-bg: var(--color-info);
+  --toast-text: #ffffff;
+}
+
+.toast-warning {
+  --toast-bg: var(--color-warning);
+  --toast-text: #2f1d06;
+}
+
+:root[data-color-mode="dark"] .toast-warning {
+  --toast-text: #1c1206;
+}
+
+.toast-close {
+  color: inherit;
+}
+
+/* 印刷時に隠す（部品が no-print を使う） */
+@media print {
+  .no-print { display: none !important; }
+}
