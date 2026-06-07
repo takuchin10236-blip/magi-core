@@ -10,6 +10,10 @@
  *     - DisplaySwitch（Standard/Nova・Lumen/Aura/Carbon/Ember・White/Dark を選ぶUI）
  *     - useThemeState（uiPreset/themeMode の状態・localStorage永続化・root data属性付与）
  *     - uiPresets の型・定義（UiMode/ThemeMode/UiPreset, UI_MODES/UI_PRESETS 等）
+ *   統一マニュアルビューア（v0.3 追加）:
+ *     - ManualViewer（右スライドのドロワー型ビューア本体・検索/目次/ハイライト）
+ *     - ManualEntry（サイドパネル用ボタン＋開閉。DisplaySwitch の直前に固定配置する規約）
+ *     - 型: ManualContent / ManualSection / ManualBlock（器と中身の契約）
  *
  * CSS は採用側アプリが直接 import する:
  *     import '@magi/core/ui/design-system.css';  // v0.2: 完全な8テーマ（推奨）
@@ -49,3 +53,9 @@ export type {
   UiModeDefinition,
   UiPresetDefinition,
 } from './uiPresets';
+
+// 統一マニュアルビューア（v0.3）
+export { ManualViewer } from './ManualViewer';
+export { ManualEntry } from './ManualEntry';
+export type { ManualEntryProps } from './ManualEntry';
+export type { ManualBlock, ManualSection, ManualContent } from './manual-types';
