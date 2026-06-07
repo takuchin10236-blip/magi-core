@@ -1,7 +1,7 @@
 {
   "name": "@magi/core",
-  "version": "0.1.0",
-  "description": "MAGI 2階老健システム群の共有コア。データ契約（Sheets/書込ゲート/D4署名検証アクセス制御）・CIガード原本・背骨UI最小を1パッケージに集約する v0.1。",
+  "version": "0.2.0",
+  "description": "MAGI 2階老健システム群の共有コア。データ契約（Sheets/書込ゲート/D4署名検証アクセス制御）・CIガード原本・完全なデザインシステム（8テーマ＋テーマ切替UI）を1パッケージに集約する v0.2。",
   "type": "module",
   "license": "UNLICENSED",
   "private": true,
@@ -17,11 +17,13 @@
       "types": "./dist/ui/index.d.ts",
       "import": "./dist/ui/index.js"
     },
+    "./ui/design-system.css": "./src/ui/design-system.css",
     "./ui/core.css": "./src/ui/core.css",
     "./ci/check-ui-guardrails.mjs": "./ci/check-ui-guardrails.mjs"
   },
   "files": [
     "dist",
+    "src/ui/design-system.css",
     "src/ui/core.css",
     "ci/check-ui-guardrails.mjs",
     "README.md",
@@ -49,6 +51,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-draggable": "^4.5.0",
+    "lucide-react": "^1.16.0",
     "@cloudflare/workers-types": "^4.20240605.0"
   }
 }

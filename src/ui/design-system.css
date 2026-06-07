@@ -1,0 +1,2477 @@
+/**
+ * @magi/core — 完全なデザインシステム（v0.2）
+ *
+ * これ1枚 import すれば、利用者マスタ（magi-resident-spine）と同じ
+ * 「4プリセット × White/Dark = 8テーマ」・同じシェル・同じ手触りになる。
+ *
+ * 原本: magi-resident-spine/src/styles/index.css（約3235行）の
+ *       「テーマで変わらないデザインシステム部分」を移植したもの。
+ *       CSS変数・セレクタ・値は原本から1文字も変えていない（完コピの土台維持）。
+ *
+ * ── 何を入れたか（デザインシステム） ──
+ *   (1) 8テーマ全プリセットの design tokens
+ *       旧token（連絡ノート由来 white/dark）＋ standard-lumen / standard-aura /
+ *       nova-carbon / nova-ember の各 :root[data-ui-preset][data-color-mode] ＋
+ *       共通 bridge（:root[data-ui-preset] の color-mix フォールバック）
+ *   (2) ベース（html/body, button reset, .msr ＝ standard-lumen のアイコン演出）
+ *   (3) 背骨シェル: app-shell / side-peek-toggle / app-body-grid / content-stack /
+ *       app-side-panel（side-brand/section/kpi/nav）/ main-surface / topbar 系
+ *   (4) 状態色UI: magi-status-badge / magi-status-panel / magi-status-details /
+ *       state-chip / version-chip / app-alert / state-*
+ *   (5) 操作系: control-panel / section-tabs / command-button / icon-* /
+ *       search-input-shell / filter-panel
+ *   (6) テーマ切替UI（DisplaySwitch が参照）: ui-switch-panel / ui-switch-head /
+ *       ui-mode-tabs / preset-tabs / theme-mode-tabs
+ *   (7) themed-* ユーティリティ: themed-card(-alt) / themed-input /
+ *       themed-btn-primary(-secondary) / themed-text-*
+ *   (8) preset別の質感上書き（nova / standard-lumen / standard-aura /
+ *       nova-carbon / nova-ember）＋ サイドパネルの「閉じてる→hover/focusで展開」挙動
+ *   (9) 共通コンポーネント tokens: notice-card / link-btn / help-icon / field-help /
+ *       draggable-modal / toast-* / btn-spinner / badge / search-hit
+ *   (10) レスポンシブ（max-width:900px のシェル折りたたみ）＋ print 共通
+ *
+ * ── 何を入れなかったか（利用者マスタ固有の業務スタイル） ──
+ *   resident-tabs / readmit-confirm-panel / renraku-action-panel / audience-picker /
+ *   deadline-field / manual-* ドロワー / summary-grid / metric-* / data-table /
+ *   bed-board-table / resident-form-* / wareki-* / preview-diff-* /
+ *   conflict-recovery-* / section-heading-row / status-pill / vacancy-pill /
+ *   readonly-badge / write-banner / table-sort-button 等。
+ *   → これらは各アプリの index.css 側で持つ（@magi/core は背骨と共通部品だけ供給）。
+ *
+ * ── フォント・Tailwind の扱い ──
+ *   原本冒頭の @import（Google Fonts / tailwindcss / @fontsource-*）は持ち込まない。
+ *   フォント実体と Tailwind ユーティリティの解決は採用側アプリのビルドに委ねる
+ *   （@magi/core は「Tailwind では表現できない独自クラス・CSS変数」だけを供給する）。
+ *   各テーマの --ui-font が参照するフォント（Plus Jakarta Sans / SF Pro / Outfit /
+ *   IBM Plex 等）は、採用側アプリが @fontsource 等で別途読み込むこと。未読込でも
+ *   system-ui へフォールバックして動作はする（見た目だけ簡素になる）。
+ *
+ * ── CIガード（check-ui-guardrails.mjs）との関係 ──
+ *   (a) 標準値検査が探す standard-lumen white の基準トークン
+ *       （[data-ui-preset="standard-lumen"][data-color-mode="white"] /
+ *         --primary: #6bbf95 / --accent: #6bbf95 / Plus Jakarta Sans Variable）を
+ *   このファイルが含むので、採用側アプリは design-system.css を import するだけで
+ *   (a) を満たせる。
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (1) 8テーマ全プリセットの design tokens
+ * ─────────────────────────────────────────────────────────────────────
+ *   旧token（連絡ノート由来 white/dark）→ 4プリセット×White/Dark の上書き →
+ *   共通 bridge の順。後勝ち詳細度で data-ui-preset 付きが旧tokenを上書きする。
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/**
+ * MAGI標準カラー（全システム統一）+ 連絡ノート v3 テーマ対応
+ *
+ * クッション管理ウェブアプリで実証済みの基本カラーセット。
+ * Phase 2 (2026-05-04 タチコマ): ホワイト/ダーク2テーマ切替対応
+ *   - data-color-mode="white"（デフォルト）/ data-color-mode="dark" で切替
+ *   - CSS変数で全要素対応 → 切替後の画面消失バグ防止（v2.2.0 で根本修正済み）
+ *   - 業務ポータル準拠の色設計
+ */
+:root,
+:root[data-color-mode="white"] {
+  /* Step 13 (2026-05-04 タチコマ): 湘南グリーンテーマ
+   * 「第二湘南グリーン」施設名に由来。介護施設らしい落ち着いた濃緑系を主色に採用。
+   * 補助色: MAGIネイビー (#1B3A5C) はテキスト・ボーダーで活用、緑との寒色補色関係で視認性確保。
+   * 暖色（緊急=赤、重要=琥珀）はそのまま、緑は「成功」と被るので濃淡で差別化。
+   */
+  --color-primary: #2f6f5f;       /* Standard: 第二湘南グリーンの淡い緑基調 */
+  --color-primary-light: #e8f5ef; /* 薄緑背景 */
+  --color-primary-hover: #24584b; /* ホバー時 */
+  --color-accent: #1f4c7a;        /* 補助色: 落ち着いたブルー */
+  --color-success: #2e7d32;       /* 成功色（プライマリと同系統だが用途違い） */
+  --color-warning: #d84315;
+  --color-info: #1565c0;
+  --color-danger: #c62828;
+  --color-muted: #9e9e9e;
+
+  /* 連絡ノート v3 用テーマ変数 (Phase 2 + Step 13 湘南グリーン) */
+  --bg-app: #f3faf6;              /* Standard: 淡い湘南グリーン背景 */
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #f7fbf8;
+  --bg-header: #2f6f5f;
+  --text-primary: #172033;
+  --text-secondary: #344054;
+  --text-muted: #667085;
+  --text-on-header: #ffffff;
+  --primary-button-text: #ffffff;
+  --border-default: #d8e8df;
+  --border-strong: #b7d3c4;
+  --surface-shadow: 0 8px 24px rgba(16, 24, 40, 0.07);
+  --floating-shadow: 0 14px 32px rgba(16, 24, 40, 0.11);
+
+  /* 重要度別 */
+  --bg-importance-urgent: #fef2f2;
+  --border-importance-urgent: #fca5a5;
+  --bg-importance-important: #fffbeb;
+  --border-importance-important: #fcd34d;
+  --bg-pinned: #fffdf7;
+  --border-pinned: #e0b25c;
+  --bg-canceled: #f3f4f6;
+  --text-canceled: #9ca3af;
+
+  /* バッジ系 */
+  --badge-bg-blue: #dbeafe;
+  --badge-text-blue: #1e3a8a;
+  --badge-bg-green: #dcfce7;
+  --badge-text-green: #166534;
+  --badge-bg-amber: #fef3c7;
+  --badge-text-amber: #92400e;
+  --badge-bg-red: #fee2e2;
+  --badge-text-red: #991b1b;
+  --badge-bg-gray: #e5e7eb;
+  --badge-text-gray: #374151;
+
+  /* Step 13 (2026-05-04 タチコマ): リンクボタン用カラー（緑系強調デザイン） */
+  --link-btn-bg: #2f6f5f;
+  --link-btn-bg-hover: #24584b;
+  --link-btn-text: #ffffff;
+  --link-btn-shadow: 0 2px 7px rgba(47, 111, 95, 0.18);
+}
+
+:root[data-color-mode="dark"] {
+  --color-primary: #8ecaff;
+  --color-primary-light: #233449;
+  --color-primary-hover: #acd8ff;
+  --color-accent: #8de5d1;
+  --color-success: #4ade80;
+  --color-warning: #fb923c;
+  --color-info: #60a5fa;
+  --color-danger: #f87171;
+  --color-muted: #6b7280;
+
+  --bg-app: #1d2431;
+  --bg-surface: #252d3a;
+  --bg-surface-alt: #303948;
+  --bg-header: #172033;
+  --text-primary: #f4f7fb;
+  --text-secondary: #d7dee8;
+  --text-muted: #aeb8c8;
+  --text-on-header: #f1f5f9;
+  --primary-button-text: #172033;
+  --border-default: #334155;
+  --border-strong: #475569;
+  --surface-shadow: none;
+  --floating-shadow: 0 18px 38px rgba(0, 0, 0, 0.32);
+
+  --bg-importance-urgent: #3f1d1d;
+  --border-importance-urgent: #b91c1c;
+  --bg-importance-important: #3f2a0c;
+  --border-importance-important: #b45309;
+  --bg-pinned: #08323a;
+  --border-pinned: #0e7490;
+  --bg-canceled: #1f2937;
+  --text-canceled: #6b7280;
+
+  --badge-bg-blue: #1e3a8a;
+  --badge-text-blue: #bfdbfe;
+  --badge-bg-green: #14532d;
+  --badge-text-green: #bbf7d0;
+  --badge-bg-amber: #78350f;
+  --badge-text-amber: #fde68a;
+  --badge-bg-red: #7f1d1d;
+  --badge-text-red: #fecaca;
+  --badge-bg-gray: #374151;
+  --badge-text-gray: #d1d5db;
+
+  /* ダークテーマ用リンクボタン（コントラスト確保のためトーン調整） */
+  --link-btn-bg: #8de5d1;
+  --link-btn-bg-hover: #a7f3e3;
+  --link-btn-text: #0d2f2a;
+  --link-btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* MAGI UI金型 v1.1 token bridge: 4プリセットを既存連絡ノート変数へ接続する。 */
+:root,
+:root[data-color-mode="white"],
+:root[data-ui-preset="standard-lumen"][data-color-mode="white"] {
+  --background: #f5f8f6;
+  --foreground: #1c1f1d;
+  --card: #ffffff;
+  --secondary: #eef3ef;
+  --surface-3: #e3ece6;
+  --primary: #6bbf95;
+  --primary-foreground: #0c3520;
+  --primary-light: #e0f0e6;
+  --accent: #6bbf95;
+  --destructive: #c62828;
+  --border: #d8e2db;
+  --input: #ffffff;
+  --text-2: #43504a;
+  --text-muted-source: #59665f;
+  --brand: #6bbf95;
+  --brand-2: #6bbf95;
+  --warn: #d84315;
+  --danger: #c62828;
+  --ok: #2e7d32;
+  --active-surface: #ffffff;
+  --control: #ffffff;
+  --surface-tint: #6bbf95;
+  --ui-font: "Plus Jakarta Sans Variable", "Noto Sans JP", system-ui, sans-serif;
+  --display-font: var(--ui-font);
+  --mono-font: "Inter Variable", "SFMono-Regular", "Roboto Mono", "Cascadia Code", monospace;
+  --button-radius: 9999px;
+  --input-radius: 8px;
+  --card-radius: 12px;
+  --dialog-radius: 16px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1400px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: 0 1px 2px rgba(28, 27, 31, 0.08), 0 1px 3px rgba(28, 27, 31, 0.06);
+  --floating-shadow: 0 8px 24px rgba(28, 27, 31, 0.12);
+  --color-primary: var(--primary);
+  --color-primary-hover: #4ea878;
+  --color-primary-light: var(--primary-light);
+  --color-primary-light-foreground: #0c3520;
+  --color-accent: var(--accent);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: #0c3520;
+  --border-default: var(--border);
+  --border-strong: #bcc0c7;
+}
+
+:root[data-color-mode="dark"],
+:root[data-ui-preset="standard-lumen"][data-color-mode="dark"] {
+  --background: #121613;
+  --foreground: #e5ebe7;
+  --card: #1a1f1c;
+  --secondary: #232a26;
+  --surface-3: #2b332f;
+  --primary: #87d4ad;
+  --primary-foreground: #0c3520;
+  --primary-light: #2a4738;
+  --accent: #87d4ad;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.10);
+  --input: #232a26;
+  --text-2: #c5cdc8;
+  --text-muted-source: #919b95;
+  --brand: #87d4ad;
+  --brand-2: #87d4ad;
+  --warn: #f59e0b;
+  --danger: #f87171;
+  --ok: #4ade80;
+  --active-surface: #2b332f;
+  --control: #232a26;
+  --surface-tint: #87d4ad;
+  --ui-font: "Plus Jakarta Sans Variable", "Noto Sans JP", system-ui, sans-serif;
+  --display-font: var(--ui-font);
+  --mono-font: "Inter Variable", "SFMono-Regular", "Roboto Mono", "Cascadia Code", monospace;
+  --button-radius: 9999px;
+  --input-radius: 8px;
+  --card-radius: 12px;
+  --dialog-radius: 16px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1400px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: none;
+  --floating-shadow: 0 18px 38px rgba(0, 0, 0, 0.32);
+  --color-primary: var(--primary);
+  --color-primary-hover: #99dcb8;
+  --color-primary-light: var(--primary-light);
+  --color-primary-light-foreground: #99dcb8;
+  --color-accent: var(--accent);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: rgba(255, 255, 255, 0.12);
+}
+
+:root[data-ui-preset="standard-aura"][data-color-mode="white"] {
+  --background: #ffffff;
+  --foreground: #1d1d1f;
+  --card: rgba(255, 255, 255, 0.86);
+  --secondary: #f5f5f7;
+  --surface-3: #e8e8ed;
+  --primary: #0071e3;
+  --primary-foreground: #ffffff;
+  --primary-light: #e1efff;
+  --accent: #0066cc;
+  --destructive: #c62828;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: rgba(255, 255, 255, 0.88);
+  --text-2: #424245;
+  --text-muted-source: #6e6e73;
+  --brand: #0071e3;
+  --brand-2: #0066cc;
+  --warn: #d84315;
+  --danger: #c62828;
+  --ok: #2e7d32;
+  --active-surface: rgba(255, 255, 255, 0.92);
+  --control: rgba(255, 255, 255, 0.88);
+  --bar-material: rgba(255, 255, 255, 0.85);
+  --ui-font: "SF Pro JP", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", "Inter Variable", "Yu Gothic UI", "Meiryo", sans-serif;
+  --display-font: var(--ui-font);
+  --mono-font: "SFMono-Regular", "Roboto Mono", "Cascadia Code", monospace;
+  --button-radius: 980px;
+  --input-radius: 12px;
+  --card-radius: 18px;
+  --dialog-radius: 18px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1320px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04);
+  --floating-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+  --color-primary: var(--primary);
+  --color-primary-hover: #0076df;
+  --color-primary-light: var(--primary-light);
+  --color-primary-light-foreground: #0066cc;
+  --color-accent: var(--accent);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--bar-material);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: rgba(60, 60, 67, 0.36);
+}
+
+:root[data-ui-preset="standard-aura"][data-color-mode="dark"] {
+  --background: #000000;
+  --foreground: #f5f5f7;
+  --card: rgba(29, 29, 31, 0.90);
+  --secondary: #2c2c2e;
+  --surface-3: #3a3a3c;
+  --primary: #0071e3;
+  --primary-foreground: #ffffff;
+  --primary-light: #1f3050;
+  --accent: #2997ff;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.10);
+  --input: #2c2c2e;
+  --text-2: rgba(235, 235, 245, 0.60);
+  --text-muted-source: rgba(235, 235, 245, 0.50);
+  --brand: #0071e3;
+  --brand-2: #2997ff;
+  --warn: #f59e0b;
+  --danger: #f87171;
+  --ok: #4ade80;
+  --active-surface: #3a3a3c;
+  --control: #1c1c1e;
+  --bar-material: rgba(28, 28, 30, 0.85);
+  --ui-font: "SF Pro JP", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", "Inter Variable", "Yu Gothic UI", "Meiryo", sans-serif;
+  --display-font: var(--ui-font);
+  --mono-font: "SFMono-Regular", "Roboto Mono", "Cascadia Code", monospace;
+  --button-radius: 980px;
+  --input-radius: 12px;
+  --card-radius: 18px;
+  --dialog-radius: 18px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1320px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: 0 2px 12px rgba(0, 0, 0, 0.28), 0 0 1px rgba(255, 255, 255, 0.08);
+  --floating-shadow: 0 24px 52px rgba(0, 0, 0, 0.38);
+  --color-primary: var(--primary);
+  --color-primary-hover: #0076df;
+  --color-primary-light: var(--primary-light);
+  --color-primary-light-foreground: #2997ff;
+  --color-accent: var(--accent);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--bar-material);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: rgba(255, 255, 255, 0.20);
+}
+
+:root[data-ui-preset="nova-carbon"][data-color-mode="white"] {
+  /* Cursor公式 light 忠実 (2026-05-26 preview v8): 中性灰白 + 墨 + 赤はテキスト一部のみ。
+     primary-light は薄墨tintで赤tint廃止、border-strong も墨基調。 */
+  --background: #f5f5f5;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --secondary: #ebebeb;
+  --surface-3: #e2e2e2;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --primary-light: rgba(0, 0, 0, 0.04);
+  --accent: #ef4444;
+  --accent-fg: #ef4444;
+  --destructive: #c62828;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: #ffffff;
+  --text-2: #6e6e6e;
+  --text-muted-source: #8a8a8a;
+  --text-strong: #000000;
+  --brand: #000000;
+  --brand-2: #000000;
+  --warn: #d84315;
+  --danger: #c62828;
+  --ok: #2e7d32;
+  --active-surface: #ffffff;
+  --control: #ffffff;
+  --ui-font: "Outfit", "Noto Sans JP", system-ui, sans-serif;
+  /* 社長指摘 2026-05-26: 「連絡ノート」がセリフ描画されていた問題の根本修正。
+     Cursor 公式は本文・見出しともジオメトリックサンセリフ (CursorGothic)。
+     display-font も ui-font と同じ Outfit 系に統一。EB Garamond は補助セリフ用に別変数で保持。 */
+  --display-font: "Outfit", "Noto Sans JP", system-ui, sans-serif;
+  --accent-serif-font: "EB Garamond", Georgia, serif;
+  --mono-font: "JetBrains Mono", "Outfit", monospace;
+  --button-radius: 9999px;
+  --input-radius: 6px;
+  --card-radius: 8px;
+  --dialog-radius: 12px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1360px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: none;
+  --floating-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  --color-primary: var(--primary);
+  --color-primary-hover: #333333;
+  --color-primary-light: var(--primary-light);
+  --color-primary-light-foreground: var(--text-strong);
+  --color-accent: var(--accent);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: rgba(0, 0, 0, 0.18);
+  /* === Carbon 重要度色 Cursor忠実 上書き (社長指摘 2026-05-26 v3) ===
+     Cursor 公式 (cursor.com) はカード枠を黒/白/銀の濃淡だけで表現し、赤/黄/橙の縁取りは使わない。
+     Carbon では緊急/重要/ピン留め/取消の見分けは、border-left の太さ＋text濃淡で行う。
+     赤(accent #ef4444)はピン留めだけに控えめに残す。背景は全て card surface (白) で統一。 */
+  --bg-importance-urgent: var(--card);
+  --border-importance-urgent: var(--text-strong);
+  --bg-importance-important: var(--card);
+  --border-importance-important: var(--text-2);
+  --bg-pinned: var(--card);
+  --border-pinned: var(--accent);
+  --bg-canceled: var(--card);
+  /* === Carbon は緑も使わない (社長指摘 v5・「あと少し、緑」) ===
+     「自動更新中」(.text-[var(--color-success)]) ・「タスク化」アイコン ・
+     「資料」link-btn pill の緑系を全て灰色化。Carbon は黒/白/灰/銀のみ。 */
+  --ok: var(--text-2);
+  --warn: var(--text-2);
+  --link-btn-bg: var(--surface-3);
+  --link-btn-bg-hover: var(--secondary);
+  --link-btn-text: var(--text-strong);
+  --link-btn-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  /* === Carbon card-actions ボタン色統一 (社長指摘 v6・「これで最後」) ===
+     返信/タスク化/既読/編集 = 黒 (text-strong)
+     取消/ピン留め/アンドゥ = 赤 (accent) */
+  --color-info: var(--text-strong);
+  --color-success: var(--text-strong);
+  --color-warning: var(--accent);
+  --color-danger: var(--accent);
+}
+
+:root[data-ui-preset="nova-carbon"][data-color-mode="dark"] {
+  /* Cursor公式 dark 忠実 (2026-05-26 preview v8): 真黒 + 白 + グレー段差。
+     赤は枠/タブ下線/active バーには使わず、テキスト一部のみ。primary は白塗pill。 */
+  --background: #000000;
+  --foreground: #d4d4d4;
+  --card: #0a0a0a;
+  --secondary: #141414;
+  --surface-3: #1a1a1a;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --primary-light: rgba(255, 255, 255, 0.04);
+  --accent: #ef4444;
+  --accent-fg: #ef4444;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.06);
+  --input: #141414;
+  --text-2: #8a8a8a;
+  --text-muted-source: #6d6d6d;
+  --text-strong: #ffffff;
+  --brand: #ffffff;
+  --brand-2: #ffffff;
+  --warn: #f59e0b;
+  --danger: #f87171;
+  --ok: #4ade80;
+  --active-surface: #1a1a1a;
+  --control: #141414;
+  --ui-font: "Outfit", "Noto Sans JP", system-ui, sans-serif;
+  /* 社長指摘 2026-05-26 (dark側も同じ・連絡ノートのセリフ描画問題の根本修正) */
+  --display-font: "Outfit", "Noto Sans JP", system-ui, sans-serif;
+  --accent-serif-font: "EB Garamond", Georgia, serif;
+  --mono-font: "JetBrains Mono", "Outfit", monospace;
+  --button-radius: 9999px;
+  --input-radius: 6px;
+  --card-radius: 8px;
+  --dialog-radius: 12px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1360px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: none;
+  --floating-shadow: 0 8px 32px rgba(0, 0, 0, 0.40);
+  --color-primary: var(--primary);
+  --color-primary-hover: #e5e5e5;
+  --color-primary-light: var(--primary-light);
+  --color-primary-light-foreground: var(--text-strong);
+  --color-accent: var(--accent);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  /* === Carbon 重要度色 Cursor忠実 上書き (dark側・社長指摘 2026-05-26 v3) ===
+     dark: 背景は真黒 card surface のまま、border-left を白(緊急)/銀(重要)/赤(ピン留め)で
+     微差を出す。赤(accent)はピン留めにだけ残す。緊急/重要は黒+白/銀濃淡。 */
+  --bg-importance-urgent: var(--card);
+  --border-importance-urgent: var(--text-strong);
+  --bg-importance-important: var(--card);
+  --border-importance-important: var(--text-2);
+  --bg-pinned: var(--card);
+  --border-pinned: var(--accent);
+  --bg-canceled: var(--card);
+  /* === Carbon dark も緑禁止 (社長指摘 v5) === */
+  --ok: var(--text-2);
+  --warn: var(--text-2);
+  --link-btn-bg: var(--surface-3);
+  --link-btn-bg-hover: var(--secondary);
+  --link-btn-text: var(--text-strong);
+  --link-btn-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  /* === Carbon dark card-actions ボタン色統一 (社長指摘 v6) ===
+     返信/タスク化/既読/編集 = 白 (text-strong) ・取消/ピン留め/アンドゥ = 赤 (accent) */
+  --color-info: var(--text-strong);
+  --color-success: var(--text-strong);
+  --color-warning: var(--accent);
+  --color-danger: var(--accent);
+}
+
+:root[data-ui-preset="nova-ember"][data-color-mode="white"] {
+  --background: #faf9f5;
+  --foreground: #141413;
+  --card: #f0eee6;
+  --secondary: #e8e6dc;
+  --surface-3: #e3dacc;
+  --primary: #d97757;
+  --primary-foreground: #1f1e1b;
+  --accent: #d97757;
+  --destructive: #c62828;
+  --border: #d1cfc5;
+  --input: #faf9f5;
+  --text-2: #5e5d59;
+  --text-muted-source: #706d65;
+  --border-mid: #b0aea5;
+  --brand: #d97757;
+  --brand-2: #d97757;
+  --warn: #d84315;
+  --danger: #c62828;
+  --ok: #2e7d32;
+  --active-surface: #f0eee6;
+  --control: #faf9f5;
+  --ui-font: "IBM Plex Sans", "Noto Sans JP", system-ui, sans-serif;
+  --display-font: "Newsreader", "IBM Plex Sans", "Noto Sans JP", serif;
+  --mono-font: "IBM Plex Mono", "SFMono-Regular", monospace;
+  --button-radius: 8px;
+  --input-radius: 10px;
+  --card-radius: 12px;
+  --dialog-radius: 16px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1360px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: 0 1px 4px rgba(20, 20, 19, 0.06), 0 1px 2px rgba(20, 20, 19, 0.04);
+  --floating-shadow: 0 18px 42px rgba(80, 70, 55, 0.14);
+  --color-primary: var(--primary);
+  --color-primary-hover: #c6613f;
+  --color-primary-light: #f5d9c8;
+  --color-primary-light-foreground: #7c2d1b;
+  --color-accent: var(--accent);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: var(--border-mid);
+}
+
+:root[data-ui-preset="nova-ember"][data-color-mode="dark"] {
+  --background: #2b2a27;
+  --foreground: #eeece2;
+  --card: #1f1e1b;
+  --secondary: #393937;
+  --surface-3: #3d3a35;
+  --primary: #d97757;
+  --primary-foreground: #1f1e1b;
+  --accent: #d97757;
+  --destructive: #f87171;
+  --border: #3d3a35;
+  --input: #393937;
+  --text-2: #a3a098;
+  --text-muted-source: #a3a098;
+  --border-mid: #52504a;
+  --brand: #d97757;
+  --brand-2: #d97757;
+  --warn: #f59e0b;
+  --danger: #f87171;
+  --ok: #4ade80;
+  --active-surface: #393937;
+  --control: #1f1e1b;
+  --ui-font: "IBM Plex Sans", "Noto Sans JP", system-ui, sans-serif;
+  --display-font: "Newsreader", "IBM Plex Sans", "Noto Sans JP", serif;
+  --mono-font: "IBM Plex Mono", "SFMono-Regular", monospace;
+  --button-radius: 8px;
+  --input-radius: 10px;
+  --card-radius: 12px;
+  --dialog-radius: 16px;
+  --mode-radius: var(--card-radius);
+  --app-shell-max: 1360px;
+  --side-panel-min: 80px;
+  --side-panel-max: 80px;
+  --surface-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+  --floating-shadow: 0 28px 60px rgba(0, 0, 0, 0.34);
+  --color-primary: var(--primary);
+  --color-primary-hover: #c96442;
+  --color-primary-light: #4a3525;
+  --color-primary-light-foreground: #f6c8b4;
+  --color-accent: var(--accent);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2);
+  --text-muted: var(--text-muted-source);
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: var(--border-mid);
+}
+
+/* 共通 bridge: data-ui-preset が付く全プリセットで、--color-* / --bg-* / --text-* を
+   各プリセットのベーストークン（--primary / --background 等）から color-mix で導出する
+   フォールバック。各プリセットブロックが明示した値を上書きしない順序で置く。 */
+:root,
+:root[data-color-mode],
+:root[data-ui-preset] {
+  --color-primary: var(--primary);
+  --color-primary-hover: color-mix(in srgb, var(--primary) 84%, var(--foreground));
+  --color-primary-light: color-mix(in srgb, var(--primary) 14%, var(--card));
+  --color-primary-light-foreground: var(--color-primary);
+  --color-accent: var(--accent);
+  --color-success: var(--ok);
+  --color-warning: var(--warn);
+  --color-info: var(--brand);
+  --color-danger: var(--danger);
+  --bg-app: var(--background);
+  --bg-surface: var(--card);
+  --bg-surface-alt: var(--secondary);
+  --bg-header: var(--card);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--text-2, color-mix(in srgb, var(--foreground) 84%, var(--text-muted-source, var(--foreground))));
+  --text-muted: var(--text-muted-source, var(--text-2, var(--foreground)));
+  --text-on-header: var(--foreground);
+  --primary-button-text: var(--primary-foreground);
+  --border-default: var(--border);
+  --border-strong: color-mix(in srgb, var(--border) 70%, var(--foreground));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (2) ベース（html/body・button reset・.msr アイコン演出）
+ * ═══════════════════════════════════════════════════════════════════════ */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--ui-font);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* テーマ切替トランジション（過剰アニメ防止のため最小限） */
+body {
+  transition: background-color 0.2s ease;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* Material Symbols Rounded（standard-lumen のアイコン演出。フォント実体は採用側で
+   @import するか、未読込なら DisplaySwitch 等は lucide にフォールバックする想定）。 */
+.msr {
+  display: inline-block;
+  font-family: "Material Symbols Rounded";
+  font-size: 22px;
+  font-style: normal;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  font-weight: normal;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.msr.active {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (3) 背骨シェル
+ * ═══════════════════════════════════════════════════════════════════════ */
+.app-shell {
+  max-width: var(--app-shell-max, 1320px);
+  margin: 0 auto;
+  padding: 24px;
+  color: var(--text-primary);
+}
+
+.app-shell.ds-nova {
+  max-width: var(--app-shell-max, 1260px);
+}
+
+.app-shell.preset-nova {
+  max-width: var(--app-shell-max, 1340px);
+}
+
+.side-peek-toggle {
+  position: fixed;
+  top: 50%;
+  left: 10px;
+  z-index: 60;
+  display: inline-flex;
+  width: 34px;
+  min-height: 84px;
+  translate: 0 -50%;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 32%, var(--border-default));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  color: var(--color-primary);
+  box-shadow: var(--floating-shadow);
+  cursor: pointer;
+  writing-mode: vertical-rl;
+  backdrop-filter: blur(14px);
+}
+
+.side-peek-toggle span {
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.side-peek-toggle.closed {
+  animation: side-peek-breathe 2.8s ease-in-out infinite;
+}
+
+.side-peek-toggle:hover,
+.side-peek-toggle:focus-visible {
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+  outline: none;
+  transform: translateX(3px);
+}
+
+@keyframes side-peek-breathe {
+  0%, 100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.app-body-grid {
+  display: grid;
+  grid-template-columns: minmax(var(--side-panel-min, 220px), var(--side-panel-max, 270px)) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.app-body-grid.side-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.content-stack {
+  min-width: 0;
+}
+
+.app-side-panel {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  padding: 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--mode-radius);
+  background: var(--bg-surface);
+  box-shadow: var(--surface-shadow);
+}
+
+.side-brand {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.side-brand-mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: var(--mode-radius);
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.side-brand > div > span,
+.side-section-label,
+.side-note,
+.side-empty,
+.side-kpi-grid span,
+.side-kpi-grid small {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.side-brand strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 950;
+  line-height: 1.32;
+}
+
+.side-section {
+  display: grid;
+  gap: 7px;
+}
+
+.side-section [data-staff-selector] {
+  width: 100%;
+}
+
+.side-section [data-staff-selector] > button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.side-section [data-staff-selector] > div {
+  left: 0;
+  right: auto;
+  width: 100%;
+}
+
+.side-kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.side-kpi-grid div {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--mode-radius);
+  background: var(--bg-surface-alt);
+}
+
+.side-kpi-grid strong {
+  display: block;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-family: var(--mono-font);
+  font-size: 16px;
+  font-weight: 950;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.side-kpi-grid small {
+  display: block;
+  margin-top: 2px;
+}
+
+.side-nav {
+  display: grid;
+  gap: 6px;
+}
+
+.side-nav button {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--mode-radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 850;
+  text-align: left;
+}
+
+.side-nav button:hover,
+.side-nav button:focus-visible,
+.side-nav button.active {
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--border-default));
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-surface));
+  color: var(--text-primary);
+  outline: none;
+}
+
+.side-nav button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.side-admin-section {
+  padding-top: 10px;
+  border-top: 1px solid var(--border-default);
+}
+
+.main-surface {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  border-radius: var(--card-radius, var(--mode-radius));
+  /* nova/aura では topbar に backdrop-filter が付きスタッキングコンテキスト化する。
+     その内側の「状態の説明」ドロップダウン(.magi-status-detail-body z-index:100)が、
+     DOM後方の control-panel/filter-panel(同じく backdrop-filter でコンテキスト化)に
+     隠れるのを防ぐため、topbar 自体を前面へ上げる。
+     z-index:40 = content(auto)より上・manual overlay(backdrop:50)より下。 */
+  position: relative;
+  z-index: 40;
+}
+
+.topbar-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-actions,
+.status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.topbar-actions {
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.app-kicker {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.app-title {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--display-font);
+  font-size: 32px;
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.state-chip,
+.version-chip {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  min-height: 24px;
+  border: 1px solid var(--border-default);
+  border-radius: calc(var(--mode-radius) * 0.75);
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.version-chip {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+  padding-inline: 2px;
+}
+
+.version-button {
+  cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (4) 状態色UI（magi-status-badge / panel / details / state-* / app-alert）
+ * ═══════════════════════════════════════════════════════════════════════ */
+.magi-status-panel {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: min(100%, 650px);
+  overflow: visible;
+}
+
+.magi-status-badge {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 30px;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
+  outline: none;
+}
+
+button.magi-status-badge {
+  cursor: pointer;
+}
+
+.magi-status-badge > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.magi-status-badge::after {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 80;
+  width: max-content;
+  max-width: 240px;
+  padding: 7px 9px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--text-primary);
+  color: var(--bg-surface);
+  box-shadow: var(--floating-shadow);
+  content: attr(data-tooltip);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(3px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.magi-status-badge:hover::after,
+.magi-status-badge:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.magi-status-badge:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 24%, transparent);
+}
+
+.magi-status-badge.status-ok {
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 32%, var(--border-default));
+  background: #ecfdf3;
+}
+
+.magi-status-badge.status-neutral {
+  color: var(--text-muted);
+}
+
+.magi-status-badge.status-warn {
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 32%, var(--border-default));
+  background: #fff8e5;
+}
+
+.magi-status-badge.status-danger {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 32%, var(--border-default));
+  background: #fff1f0;
+}
+
+.magi-status-badge.status-info {
+  color: var(--color-info);
+  border-color: color-mix(in srgb, var(--color-info) 30%, var(--border-default));
+  background: color-mix(in srgb, var(--color-info) 10%, var(--bg-surface));
+}
+
+.magi-status-details {
+  position: relative;
+  z-index: 75;
+}
+
+.magi-status-details summary {
+  display: inline-flex;
+  min-height: 28px;
+  cursor: pointer;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 850;
+  list-style: none;
+}
+
+.magi-status-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.magi-status-details[open] summary {
+  color: var(--color-primary);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--border-default));
+}
+
+.magi-status-details[open] summary svg:last-child {
+  transform: rotate(180deg);
+}
+
+.magi-status-detail-body {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  width: min(620px, calc(100vw - 32px));
+  padding: 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--mode-radius);
+  /* floating パネルなので背景は必ず不透明である必要がある。
+     aura プリセットでは --bg-surface(=--card) が rgba 半透明のため下のフィルタバーが透けて重なる。
+     --bg-surface-alt(=--secondary) は全4プリセット×white/dark で solid な HEX なので透けない。 */
+  background: var(--bg-surface-alt);
+  box-shadow: var(--floating-shadow);
+  overflow-wrap: anywhere;
+}
+
+.magi-status-detail-body dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.magi-status-detail-body dl > div {
+  display: grid;
+  grid-template-columns: 142px minmax(0, 1fr);
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.magi-status-detail-body dl > div:last-child {
+  border-bottom: 0;
+}
+
+.magi-status-detail-body dt {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.magi-status-detail-body dd {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.state-local {
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 32%, var(--border-default));
+  background: #ecfdf3;
+}
+
+.state-dev,
+.state-draft {
+  color: var(--color-warning);
+  border-color: color-mix(in srgb, var(--color-warning) 32%, var(--border-default));
+  background: #fff8e5;
+}
+
+.state-prod {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 32%, var(--border-default));
+  background: #fff1f0;
+}
+
+.app-alert {
+  border: 1px solid color-mix(in srgb, var(--alert-color) 34%, var(--border-default));
+  background: color-mix(in srgb, var(--alert-color) 12%, var(--bg-surface));
+  color: var(--alert-color);
+}
+
+.app-alert-error {
+  --alert-color: var(--color-danger);
+}
+
+:root[data-color-mode="dark"] .state-local {
+  background: rgba(125, 224, 169, 0.13);
+}
+
+:root[data-color-mode="dark"] .state-dev,
+:root[data-color-mode="dark"] .state-draft {
+  background: rgba(248, 195, 108, 0.15);
+}
+
+:root[data-color-mode="dark"] .state-prod {
+  background: rgba(255, 142, 130, 0.14);
+}
+
+:root[data-color-mode="dark"] .magi-status-badge.status-ok {
+  background: rgba(125, 224, 169, 0.13);
+}
+
+:root[data-color-mode="dark"] .magi-status-badge.status-warn {
+  background: rgba(248, 195, 108, 0.15);
+}
+
+:root[data-color-mode="dark"] .magi-status-badge.status-danger {
+  background: rgba(255, 142, 130, 0.14);
+}
+
+:root[data-color-mode="dark"] .magi-status-badge.status-info {
+  background: rgba(96, 165, 250, 0.13);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (5) 操作系（control-panel / section-tabs / command-button / icon-* /
+ *     filter-panel / search-input-shell）
+ * ═══════════════════════════════════════════════════════════════════════ */
+.control-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--mode-radius);
+  background: var(--bg-surface);
+  box-shadow: var(--surface-shadow);
+}
+
+.section-tabs {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  min-height: 40px;
+  padding: 4px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--button-radius, 10px);
+  background: var(--bg-surface-alt);
+}
+
+.section-tabs button {
+  min-height: 32px;
+  padding: 6px 11px;
+  border-radius: calc(var(--button-radius, 10px) - 3px);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.section-tabs button.active,
+.section-tabs button:hover,
+.section-tabs button:focus-visible {
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+  outline: none;
+}
+
+.command-button,
+.icon-btn-sm,
+.icon-action {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.command-button {
+  min-height: 34px;
+  border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.icon-btn-sm {
+  min-height: 30px;
+  border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.icon-action {
+  border-radius: 5px;
+  padding: 2px 4px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-height: 34px;
+  border-radius: 6px;
+}
+
+.filter-panel {
+  display: grid;
+  gap: 10px;
+  border-radius: var(--mode-radius);
+  padding: 12px 14px;
+}
+
+.filter-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-input-shell {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 240px;
+  align-items: center;
+}
+
+.search-input-shell svg {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input-shell .themed-input {
+  width: 100%;
+  border-radius: calc(var(--mode-radius) * 0.75);
+  padding: 7px 10px 7px 38px;
+  font-size: 14px;
+}
+
+.search-box {
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--input-radius);
+  color: var(--text-secondary);
+  display: inline-flex;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  width: min(100%, 420px);
+}
+
+.search-box input {
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  font: inherit;
+  min-width: 0;
+  outline: none;
+  width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (6) テーマ切替UI（DisplaySwitch が参照する ui-switch 系）
+ * ═══════════════════════════════════════════════════════════════════════ */
+.ui-switch-panel {
+  display: grid;
+  gap: 6px;
+  align-self: stretch;
+  min-width: 220px;
+  padding: 9px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--mode-radius);
+  background: var(--bg-surface);
+  box-shadow: var(--surface-shadow);
+}
+
+.ui-switch-head,
+.ui-switch-status,
+.theme-mode-tabs button,
+.ui-mode-tabs button {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ui-switch-head {
+  justify-content: space-between;
+}
+
+.ui-switch-head span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.ui-switch-head strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.ui-mode-tabs,
+.preset-tabs,
+.theme-mode-tabs {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ui-mode-tabs,
+.preset-tabs {
+  padding: 4px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--mode-radius);
+  background: var(--bg-surface-alt);
+}
+
+.ui-mode-tabs button,
+.preset-tabs button,
+.theme-mode-tabs button {
+  justify-content: center;
+  min-height: 31px;
+  border: 0;
+  border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.ui-mode-tabs button.active,
+.preset-tabs button.active,
+.theme-mode-tabs button.active {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--surface-shadow);
+}
+
+.theme-mode-tabs button {
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (7) themed-* ユーティリティ（card / input / btn / text）
+ * ═══════════════════════════════════════════════════════════════════════ */
+/* Phase 2 (2026-05-04 タチコマ): テーマ対応の汎用ユーティリティクラス */
+.themed-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, var(--mode-radius));
+  color: var(--text-primary);
+  box-shadow: var(--surface-shadow);
+}
+.themed-card-alt {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, var(--mode-radius));
+  color: var(--text-primary);
+}
+.themed-text-secondary {
+  color: var(--text-secondary);
+}
+.themed-text-primary {
+  color: var(--text-primary);
+}
+.themed-text-muted {
+  color: var(--text-muted);
+}
+.themed-input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--input-radius, calc(var(--mode-radius) * 0.75));
+  color: var(--text-primary);
+  min-height: 34px;
+  box-shadow: inset 0 1px 0 rgba(16, 24, 40, 0.03);
+}
+.themed-input::placeholder {
+  color: var(--text-muted);
+}
+.themed-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.themed-btn-primary {
+  background: var(--color-primary);
+  color: var(--primary-button-text, var(--text-on-header));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 86%, #000 14%);
+  border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+}
+.themed-btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+.themed-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.themed-btn-secondary {
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+.themed-btn-secondary:hover:not(:disabled) {
+  background: var(--bg-app);
+  border-color: var(--border-strong);
+}
+
+.inline-warning {
+  background: color-mix(in srgb, var(--color-warning) 14%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--color-warning) 38%, var(--border-default));
+  color: var(--text-primary);
+}
+
+.app-shell .themed-card.rounded-xl {
+  border-radius: var(--card-radius, var(--mode-radius));
+}
+
+.themed-card.rounded-2xl,
+.draggable-modal {
+  border-radius: var(--dialog-radius, var(--card-radius, var(--mode-radius)));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (8) preset別の質感上書き ＋ サイドパネルの「閉じてる→hover/focusで展開」挙動
+ * ═══════════════════════════════════════════════════════════════════════ */
+:root[data-ui-preset^="nova-"] .themed-card,
+:root[data-ui-preset^="nova-"] .themed-card-alt,
+:root[data-ui-preset^="nova-"] .themed-btn-primary,
+:root[data-ui-preset^="nova-"] .themed-btn-secondary,
+:root[data-ui-preset^="nova-"] .themed-input {
+  box-shadow: var(--surface-shadow);
+}
+
+:root[data-ui-preset^="nova-"] .themed-card,
+:root[data-ui-preset^="nova-"] .notice-card {
+  box-shadow: var(--surface-shadow);
+  backdrop-filter: blur(14px);
+}
+
+:root[data-ui-preset^="nova-"] .notice-card {
+  border-left: 3px solid var(--color-accent);
+}
+
+:root[data-ui-preset^="nova-"] .themed-btn-primary,
+:root[data-ui-preset^="nova-"] .themed-btn-secondary {
+  font-weight: 650;
+}
+
+.preset-nova .topbar,
+.preset-nova .app-side-panel,
+.preset-nova .control-panel,
+.preset-nova .filter-panel,
+.preset-nova .themed-card,
+.preset-nova .notice-card,
+.preset-nova .ui-switch-panel {
+  border-radius: var(--card-radius, 8px);
+  background: color-mix(in srgb, var(--bg-surface) 86%, transparent);
+  border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.preset-nova .app-side-panel,
+.preset-nova .themed-card {
+  box-shadow: var(--floating-shadow);
+}
+
+.preset-nova .side-nav button {
+  min-height: 40px;
+}
+
+:root[data-color-mode="dark"] .preset-nova .side-kpi-grid div,
+:root[data-color-mode="dark"] .preset-nova .ui-mode-tabs,
+:root[data-color-mode="dark"] .preset-nova .preset-tabs,
+:root[data-color-mode="dark"] .preset-nova .theme-mode-tabs button {
+  background: color-mix(in srgb, var(--bg-surface-alt) 86%, black);
+  color: var(--text-secondary);
+}
+
+:root[data-color-mode="dark"] .preset-nova .ui-mode-tabs button.active,
+:root[data-color-mode="dark"] .preset-nova .preset-tabs button.active,
+:root[data-color-mode="dark"] .preset-nova .theme-mode-tabs button.active {
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+}
+
+.preset-nova .topbar,
+.preset-nova .app-side-panel,
+.preset-nova .control-panel,
+.preset-nova .filter-panel,
+.preset-nova .themed-card,
+.preset-nova .notice-card,
+.preset-nova .ui-switch-panel {
+  border-radius: var(--card-radius, 8px);
+  background: var(--bg-surface);
+  border-color: color-mix(in srgb, var(--border-default) 82%, var(--color-accent));
+}
+
+.preset-nova .topbar {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 54%),
+    var(--bg-surface);
+}
+
+.preset-standard-lumen .topbar {
+  background: var(--bg-header);
+  border-color: color-mix(in srgb, var(--bg-header) 78%, var(--border-default));
+  box-shadow: var(--floating-shadow);
+}
+
+/* ── サイドパネルの展開挙動（閉=80pxレール / hover・focusで282px展開） ── */
+.app-body-grid.side-open {
+  gap: 18px;
+}
+
+.app-side-panel {
+  width: var(--side-panel-min, 80px);
+  min-width: var(--side-panel-min, 80px);
+  align-items: center;
+  overflow-x: hidden;
+  padding: 12px 8px;
+  transition: width 0.18s ease, min-width 0.18s ease, box-shadow 0.18s ease;
+}
+
+.app-side-panel:hover,
+.app-side-panel:focus-within {
+  z-index: 30;
+  width: 282px;
+  min-width: 282px;
+  align-items: stretch;
+  box-shadow: var(--floating-shadow);
+}
+
+.app-side-panel .side-brand {
+  display: flex;
+  width: 64px;
+  justify-content: center;
+  gap: 0;
+  padding: 6px 0 14px;
+  border-bottom: 0;
+}
+
+.app-side-panel:hover .side-brand,
+.app-side-panel:focus-within .side-brand {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 40px minmax(0, 1fr);
+  justify-content: initial;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.app-side-panel .side-brand > div,
+.app-side-panel .side-section,
+.app-side-panel .side-kpi-grid,
+.app-side-panel .ui-switch-panel {
+  display: none;
+}
+
+.app-side-panel:hover .side-brand > div,
+.app-side-panel:focus-within .side-brand > div,
+.app-side-panel:hover .side-section,
+.app-side-panel:focus-within .side-section,
+.app-side-panel:hover .side-kpi-grid,
+.app-side-panel:focus-within .side-kpi-grid,
+.app-side-panel:hover .ui-switch-panel,
+.app-side-panel:focus-within .ui-switch-panel {
+  display: grid;
+}
+
+.app-side-panel .side-nav {
+  width: 64px;
+  justify-items: center;
+}
+
+.app-side-panel:hover .side-nav,
+.app-side-panel:focus-within .side-nav {
+  width: 100%;
+  justify-items: stretch;
+}
+
+.app-side-panel .side-nav button {
+  min-height: 58px;
+  width: 64px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 16px;
+  padding: 7px 4px;
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.app-side-panel:hover .side-nav button,
+.app-side-panel:focus-within .side-nav button {
+  min-height: 38px;
+  width: 100%;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 8px;
+  border-radius: 9999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  text-align: left;
+}
+
+.app-side-panel .side-nav button.active,
+.app-side-panel .side-nav button:hover,
+.app-side-panel .side-nav button:focus-visible {
+  background: var(--primary-light);
+  color: var(--color-primary-light-foreground, var(--primary));
+  border-color: transparent;
+}
+
+/* ── standard-lumen 固有の質感 ── */
+.preset-standard-lumen .notice-card,
+.preset-standard-lumen .control-panel,
+.preset-standard-lumen .filter-panel,
+.preset-standard-lumen .notice-list-shell {
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--surface-tint) 5%, var(--bg-surface)),
+    color-mix(in srgb, var(--surface-tint) 5%, var(--bg-surface))
+  );
+  border-color: color-mix(in srgb, var(--surface-tint) 12%, var(--border-default));
+}
+
+.preset-standard-lumen .topbar .app-kicker,
+.preset-standard-lumen .topbar .app-title,
+.preset-standard-lumen .topbar .version-chip {
+  color: var(--text-on-header);
+}
+
+.preset-standard-lumen .topbar .state-chip {
+  border-color: color-mix(in srgb, var(--text-on-header) 30%, transparent);
+  background: color-mix(in srgb, var(--text-on-header) 14%, transparent);
+  color: var(--text-on-header);
+}
+
+.preset-standard-lumen .search-input-shell .themed-input {
+  border-color: var(--border-default);
+  border-radius: 9999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+}
+
+/* ── standard-aura 固有の質感（HIG系・余白と透明感） ── */
+.preset-standard-aura .topbar,
+.preset-standard-aura .app-side-panel,
+.preset-standard-aura .control-panel,
+.preset-standard-aura .filter-panel,
+.preset-standard-aura .ui-switch-panel {
+  background: color-mix(in srgb, var(--bg-header) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .preset-standard-aura .topbar,
+  .preset-standard-aura .app-side-panel,
+  .preset-standard-aura .control-panel,
+  .preset-standard-aura .filter-panel,
+  .preset-standard-aura .ui-switch-panel {
+    background: var(--bg-surface);
+  }
+}
+
+.preset-standard-aura .app-shell,
+.preset-standard-aura {
+  letter-spacing: 0;
+}
+
+.preset-standard-aura .topbar {
+  align-items: flex-end;
+  padding: 30px 32px 18px;
+  border-color: transparent;
+}
+
+.preset-standard-aura .app-title {
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.preset-standard-aura .app-kicker {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.preset-standard-aura .themed-btn-primary.command-button {
+  padding: 11px 22px;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.preset-standard-aura .search-input-shell .themed-input {
+  border-radius: 980px;
+  padding-block: 10px;
+}
+
+.preset-standard-aura .preset-tabs,
+.preset-standard-aura .ui-mode-tabs {
+  border-radius: 980px;
+  gap: 0;
+  padding: 4px;
+}
+
+.preset-standard-aura .side-brand-mark {
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 88%, white), color-mix(in srgb, var(--color-accent) 72%, white));
+}
+
+/* ── nova-carbon 固有の質感（Cursor系・黒/白/灰/銀のみ） ── */
+.preset-nova-carbon {
+  font-size: 13px;
+}
+
+.preset-nova-carbon .topbar {
+  /* Cursor忠実 (2026-05-26 preview v8): 赤グラデ tint 廃止・素の surface 基調 */
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.preset-nova-carbon .side-brand-mark {
+  border-radius: 6px;
+}
+
+.preset-nova-carbon .side-brand strong,
+.preset-nova-carbon .app-title {
+  text-transform: uppercase;
+}
+
+.preset-nova-carbon .side-brand strong {
+  /* Cursor忠実 v2 (2026-05-26 社長指摘): artifacts で「RENRAKU NOTE」が赤くなっていた問題を
+     !important で物理ガード。base .side-brand strong の color: var(--text-primary) が
+     何らかの経路で赤系に上書きされていたケースを物理的に殺す。 */
+  color: var(--text-strong) !important;
+  font-family: var(--ui-font);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.preset-nova-carbon .side-brand > div > span {
+  /* 第二湘南グリーン (店舗名・brand strong の上に出る小さい補助テキスト) も Carbon で銀色に統一 */
+  color: var(--text-muted);
+}
+
+.preset-nova-carbon .side-nav button.active,
+.preset-nova-carbon .preset-tabs button.active,
+.preset-nova-carbon .ui-mode-tabs button.active,
+.preset-nova-carbon .theme-mode-tabs button.active {
+  /* Cursor忠実 (2026-05-26 preview v8): 赤枠廃止・surface-3 + text-strong */
+  border: 1px solid var(--border-strong);
+  border-radius: var(--button-radius);
+  background: var(--surface-3);
+  color: var(--text-strong);
+}
+
+.preset-nova-carbon .themed-btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+/* Cursor忠実 v2: topbar 右の magi-status-badge 群 (local検証/本番未反映/業務本番前/v未確認)
+   は preset 非依存で赤/橙/緑を残していた → Carbon では全て gray 化して
+   「赤の枠・赤の塗り」を画面から完全に消す。
+   status-* の意味伝達は色を抑えつつテキストで十分。 */
+.preset-nova-carbon .magi-status-badge,
+.preset-nova-carbon .magi-status-badge.status-ok,
+.preset-nova-carbon .magi-status-badge.status-warn,
+.preset-nova-carbon .magi-status-badge.status-danger,
+.preset-nova-carbon .magi-status-badge.status-info,
+.preset-nova-carbon .magi-status-badge.status-neutral {
+  background: var(--surface-3);
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+/* Cursor忠実 v4 (2026-05-26 社長指摘・「もうこれで最後」):
+   黒・白・灰・銀のみ。filter-panel / control-panel / themed-card /
+   ui-switch-panel / app-side-panel 全部 灰色実線で強制統一。 */
+.preset-nova-carbon .filter-panel,
+.preset-nova-carbon .control-panel,
+.preset-nova-carbon .themed-card,
+.preset-nova-carbon .themed-card-alt,
+.preset-nova-carbon .ui-switch-panel,
+.preset-nova-carbon .app-side-panel {
+  background: var(--card) !important;
+  border: 1px solid var(--border-strong) !important;
+}
+
+.preset-nova-carbon .side-nav button.active,
+.preset-nova-carbon .ui-mode-tabs button.active,
+.preset-nova-carbon .preset-tabs button.active,
+.preset-nova-carbon .theme-mode-tabs button.active {
+  /* Cursor忠実 (2026-05-26 preview v8): 赤枠廃止・surface-3 + text-strong */
+  border: 1px solid var(--border-strong);
+  border-radius: var(--button-radius);
+  background: var(--surface-3);
+  color: var(--text-strong);
+}
+
+/* ── nova-ember 固有の質感（Anthropic系・暖色クラフト） ── */
+.preset-nova-ember .topbar {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 58%),
+    var(--bg-surface);
+}
+
+.preset-nova-ember .side-brand-mark {
+  background:
+    linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-accent) 78%, var(--color-primary)));
+}
+
+.preset-nova-ember .main-surface {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.preset-nova-ember .themed-card,
+.preset-nova-ember .control-panel,
+.preset-nova-ember .filter-panel,
+.preset-nova-ember .ui-switch-panel {
+  box-shadow: none;
+}
+
+.preset-nova-ember .app-title {
+  font-family: var(--display-font);
+  font-weight: 600;
+}
+
+.preset-nova-ember .side-brand strong {
+  font-family: var(--display-font);
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.preset-nova .side-brand-mark {
+  background: var(--color-accent);
+}
+
+.preset-nova-ember .side-brand-mark {
+  background:
+    linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-accent) 78%, var(--color-primary)));
+}
+
+.preset-nova .side-nav button.active,
+.preset-nova .ui-mode-tabs button.active,
+.preset-nova .preset-tabs button.active,
+.preset-nova .theme-mode-tabs button.active {
+  background: color-mix(in srgb, var(--color-accent) 14%, var(--bg-surface));
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (9) 共通コンポーネント tokens
+ *     notice-card / link-btn / help-icon / field-help / draggable-modal /
+ *     toast-* / btn-spinner / badge / search-hit
+ * ═══════════════════════════════════════════════════════════════════════ */
+.notice-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--mode-radius);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+.notice-card.is-urgent {
+  background: var(--bg-importance-urgent);
+  border-color: var(--border-importance-urgent);
+}
+.notice-card.is-important {
+  background: var(--bg-importance-important);
+  border-color: var(--border-importance-important);
+}
+.notice-card.is-pinned {
+  background: var(--bg-pinned);
+  border-color: var(--border-pinned);
+  border-left-width: 4px;
+}
+.notice-card.is-canceled {
+  background: var(--bg-canceled);
+  color: var(--text-canceled);
+}
+
+/* Step 13 (2026-05-04 タチコマ): リンクボタン（テーマ追従の pill ボタン） */
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--link-btn-bg);
+  color: var(--link-btn-text);
+  box-shadow: var(--link-btn-shadow);
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.link-btn:hover {
+  background: var(--link-btn-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(46, 125, 50, 0.3);
+  text-decoration: none;
+}
+.link-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--link-btn-shadow);
+}
+
+/* Step 13 (2026-05-04 タチコマ): ヘルプアイコン（説明tooltip用） */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 12px;
+  margin-left: 4px;
+  cursor: help;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  border: 1px solid var(--border-default);
+  transition: background 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+.help-icon:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary-light-foreground, var(--color-primary));
+}
+
+/* Step 13 (2026-05-04 タチコマ): プルダウン下の説明文ブロック */
+.field-help {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: var(--bg-surface-alt);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 4px 4px 0;
+  line-height: 1.5;
+}
+.field-help summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-primary);
+  user-select: none;
+  list-style: none;
+}
+.field-help summary::-webkit-details-marker { display: none; }
+.field-help summary::before {
+  content: "▶ ";
+  display: inline-block;
+  transition: transform 0.15s ease;
+  margin-right: 2px;
+}
+.field-help[open] summary::before {
+  content: "▼ ";
+}
+.field-help dl {
+  margin: 6px 0 0 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 8px;
+}
+.field-help dt {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.field-help dd {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* Step 13 (2026-05-04 タチコマ): ドラッグ可能モーダル（DraggableModal が参照） */
+.draggable-modal {
+  position: fixed;
+  /* React-Draggable が transform を効かせるので top/left は初期配置のみ */
+  /* 各モーダルが個別に top/left を計算する */
+}
+.draggable-handle {
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  /* ヘッダ全体を掴めるように、テキスト選択は無効化 */
+}
+.draggable-handle:active {
+  cursor: grabbing;
+}
+
+/* Step 15 (2026-05-04 タチコマ): Toast 通知（Toast.tsx が参照） */
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toast-bubble {
+  border: 1px solid color-mix(in srgb, currentColor 26%, transparent);
+  color: var(--toast-text, #ffffff);
+  background: var(--toast-bg, var(--color-info));
+}
+
+.toast-success {
+  --toast-bg: var(--color-success);
+  --toast-text: #ffffff;
+}
+
+.toast-error {
+  --toast-bg: var(--color-danger);
+  --toast-text: #ffffff;
+}
+
+.toast-info {
+  --toast-bg: var(--color-info);
+  --toast-text: #ffffff;
+}
+
+.toast-warning {
+  --toast-bg: var(--color-warning);
+  --toast-text: #2f1d06;
+}
+
+:root[data-color-mode="dark"] .toast-warning {
+  --toast-text: #1c1206;
+}
+
+.toast-close {
+  color: inherit;
+}
+
+/* Step 15 (2026-05-04 タチコマ): 検索ハイライト（<mark>） */
+mark.search-hit {
+  background: #fef08a;
+  color: #713f12;
+  padding: 0 2px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+:root[data-color-mode="dark"] mark.search-hit {
+  background: #facc15;
+  color: #111827;
+}
+
+/* Step 15 (2026-05-04 タチコマ): ボタン loading 状態のスピナー（ConfirmModal が参照） */
+.btn-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spinner-rotate 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+@keyframes btn-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* バッジ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  min-height: 20px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+.badge-blue { background: var(--badge-bg-blue); color: var(--badge-text-blue); }
+.badge-green { background: var(--badge-bg-green); color: var(--badge-text-green); }
+.badge-amber { background: var(--badge-bg-amber); color: var(--badge-text-amber); }
+.badge-red { background: var(--badge-bg-red); color: var(--badge-text-red); }
+.badge-gray { background: var(--badge-bg-gray); color: var(--badge-text-gray); }
+
+/* Carbon は全 badge を gray背景・銀/黒文字・枠なしに統一（Cursor忠実 v3）。 */
+.preset-nova-carbon .badge {
+  border: none;
+  border-radius: 3px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--surface-3);
+  color: var(--text);
+  font-family: var(--mono-font);
+}
+
+.preset-nova-carbon .badge,
+.preset-nova-carbon .badge.badge-red,
+.preset-nova-carbon .badge.badge-blue,
+.preset-nova-carbon .badge.badge-amber,
+.preset-nova-carbon .badge.badge-green,
+.preset-nova-carbon .badge.badge-gray {
+  background: var(--surface-3) !important;
+  color: var(--text) !important;
+  border: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * (10) レスポンシブ ＋ print 共通
+ * ═══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .app-shell {
+    padding: 14px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .topbar-actions,
+  .magi-status-panel {
+    width: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .app-body-grid,
+  .app-body-grid.side-open,
+  .app-body-grid.side-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-side-panel {
+    position: relative;
+    top: 0;
+    max-height: none;
+  }
+
+  .side-peek-toggle {
+    top: auto;
+    bottom: 14px;
+    left: 14px;
+    min-height: 34px;
+    width: auto;
+    padding: 0 10px;
+    translate: 0;
+    writing-mode: horizontal-tb;
+  }
+
+  .side-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-side-panel,
+  .app-side-panel:hover,
+  .app-side-panel:focus-within {
+    width: 100%;
+    min-width: 0;
+    align-items: stretch;
+    overflow-x: visible;
+  }
+
+  .app-side-panel .side-brand,
+  .app-side-panel:hover .side-brand,
+  .app-side-panel:focus-within .side-brand {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 10px;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .app-side-panel .side-brand > div,
+  .app-side-panel .side-section,
+  .app-side-panel .side-kpi-grid,
+  .app-side-panel .ui-switch-panel {
+    display: grid;
+  }
+
+  .app-side-panel .side-nav {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-side-panel .side-nav button,
+  .app-side-panel:hover .side-nav button,
+  .app-side-panel:focus-within .side-nav button {
+    min-height: 42px;
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .preset-standard-aura .app-title {
+    font-size: 32px;
+  }
+
+  .preset-nova-ember .main-surface {
+    max-width: none;
+  }
+
+  .magi-status-detail-body {
+    left: 0;
+    right: auto;
+    width: min(620px, calc(100vw - 28px));
+  }
+
+  .magi-status-detail-body dl > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media print {
+  html, body {
+    background: white !important;
+    color: #111 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* セクション単位で改ページ */
+  .print-section-break {
+    break-before: page;
+  }
+
+  /* 表ヘッダを各ページに繰り返す */
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
+  }
+
+  table, tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+.print-only {
+  display: none;
+}

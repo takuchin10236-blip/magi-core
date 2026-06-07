@@ -4,7 +4,7 @@ MAGI 2階老健システム群の共有コア。3アプリ（omutsu-inventory / 
 散らばっていた「データ契約・CIガード・背骨UI」の原本を1箇所に集約する。
 
 - 最終更新: 2026-06-07
-- バージョン: v0.1.0
+- バージョン: v0.2.0
 - 担当: 開発部（実装=タチコマ / レビュー=バトー）
 
 ---
@@ -45,6 +45,55 @@ import '@magi/core/ui/core.css';
 
 `react` / `react-dom` / `lucide-react` / `react-draggable` は **peerDependencies**
 （採用側アプリのものを使う。@magi/core はこれらを bundle しない）。
+
+---
+
+## v0.2 で追加：完全なデザインシステム（8テーマ＋テーマ切替UI）
+
+原本 = resident-spine（利用者マスタ）。v0.1 の `core.css` は standard-lumen 1テーマの
+最小核しか持たなかった。v0.2 は **4プリセット × White/Dark = 8テーマ** と切替UIをコアに集約する。
+
+| プリセット | mode | 由来 |
+|---|---|---|
+| `standard-lumen` (Lumen) | Standard | Google Material 3系 |
+| `standard-aura` (Aura) | Standard | Apple HIG系 |
+| `nova-carbon` (Carbon) | Nova | Cursor系（黒/白/灰/銀） |
+| `nova-ember` (Ember) | Nova | Anthropic系（暖色クラフト） |
+
+### 追加物
+- **`@magi/core/ui/design-system.css`**: 8テーマ全プリセット＋背骨シェル＋状態色＋
+  サイドパネル展開挙動＋共通コンポーネント tokens。`core.css` の核を包含するので、
+  新規アプリは design-system.css **1本**で良い（core.css は後方互換のため残置）。
+  利用者マスタ固有の業務スタイル（一覧テーブル等）は持ち込んでいない。
+- **`DisplaySwitch`**: Standard/Nova → Lumen/Aura・Carbon/Ember → White/Dark の3段タブUI。
+- **`useThemeState`**: `uiPreset` / `themeMode` の状態・localStorage 永続化・
+  `document.documentElement` への `data-ui-preset` / `data-color-mode` 付与を集約するフック。
+- `uiPresets` の型・定義（`UiMode` / `ThemeMode` / `UiPreset`・`UI_MODES` / `UI_PRESETS` 等）。
+
+### 採用（おむつ在庫など消費アプリでの配線）
+
+```tsx
+// 1) CSS を 8テーマ版に差し替える（core.css → design-system.css）
+import '@magi/core/ui/design-system.css';
+
+// 2) フックで状態を持ち、DisplaySwitch にそのまま渡す
+import { DisplaySwitch, useThemeState } from '@magi/core/ui';
+
+function App() {
+  const theme = useThemeState();           // { uiPreset, themeMode, uiMode, onUiPreset, onThemeMode }
+  // theme.uiPreset / theme.themeMode の変化で <html> に data-ui-preset / data-color-mode が付き、
+  // design-system.css の :root[data-ui-preset][data-color-mode] が 8テーマを切り替える。
+  return (
+    <div className="app-shell">
+      {/* サイドパネル等の背骨に <DisplaySwitch {...theme} /> を1つ置く */}
+      <DisplaySwitch {...theme} />
+    </div>
+  );
+}
+```
+
+- `useThemeState({ storagePrefix: 'magi-omutsu' })` で localStorage キーをアプリごとに分離できる。
+- `lucide-react` は DisplaySwitch が使う（peer。採用側アプリが導入する）。
 
 ---
 
