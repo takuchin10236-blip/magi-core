@@ -2339,34 +2339,73 @@ mark.search-hit {
  *   - 既存 mark.search-hit（上方）でハイライト＝新CSS不要。CSS変数経由で8テーマ追従。
  * ─────────────────────────────────────────────────────────────────────── */
 
-/* サイドパネル起動ボタン（ManualEntry）。help-icon ではなく独立ボタン＝見やすく。 */
-.manual-entry-btn {
+/* ManualEntry 既定トリガー（2026-06-09 v0.3.2・アイコン型の小ボタン）。
+ * 旧 .manual-entry-btn は「全幅 text ボタン」で、80px の細いサイドパネル(rail)では
+ * 「マニュアル」の縦積みが大箱に化けて崩れた。オムツ在庫の .nav-item と同じ思想で、
+ * rest=アイコン上＋小ラベル下の 64px タイル／hover・focus 展開時=横並び＋ラベルへ。
+ * ＝各アプリが固有CSSを持たなくても、サイドパネルに溶け込むのが肝。
+ * 8テーマ＋White/Dark 追従は --color-* / --bg-* / --border-default / --text-primary
+ * （全テーマで定義済みの族）経由で担保する。lucide 非依存（JSXはインラインSVG）。
+ *
+ * 既定は「サイドパネル(.app-side-panel)の直下・DisplaySwitch 直前に置く」前提で
+ * rail 連動の rest/expand を与える。サイドパネル外（topbar 等）に単独で置いた場合は
+ * 下のスタンドアロン規則でコンパクトな横並びボタンとして成立する。 */
+.magi-manual-entry {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
   min-height: 38px;
+  width: auto;
   border: 1px solid var(--border-default);
-  border-radius: 8px;
+  border-radius: 9999px;
   background: var(--bg-surface-alt);
   color: var(--text-primary);
-  padding: 8px 12px;
+  padding: 8px 14px;
   font: inherit;
-  font-size: 14px;
-  font-weight: 850;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.manual-entry-btn:hover {
+.magi-manual-entry:hover,
+.magi-manual-entry:focus-visible {
   background: var(--color-primary-light);
   border-color: var(--color-primary);
+  color: var(--color-primary);
 }
-.manual-entry-icon {
-  font-size: 16px;
-  line-height: 1;
+.magi-manual-entry__icon {
+  flex: 0 0 auto;
 }
-.manual-entry-label {
-  flex: 1;
+.magi-manual-entry__label {
+  white-space: nowrap;
+}
+
+/* ── サイドパネル(rail)連動 ──
+ * rest（80px）: アイコンを上・小ラベルを下に縦積みした 64px タイル。
+ * hover/focus 展開時: 横並び＋ラベル（pill）に戻る。
+ * .side-nav button / .nav-item と同じ rest/expand コントラクト。 */
+.app-side-panel .magi-manual-entry {
+  width: 64px;
+  min-height: 58px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 16px;
+  padding: 7px 4px;
+  font-size: 10px;
+  text-align: center;
+}
+.app-side-panel:hover .magi-manual-entry,
+.app-side-panel:focus-within .magi-manual-entry {
+  width: 100%;
+  min-height: 38px;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 8px;
+  border-radius: 9999px;
+  padding: 8px 12px;
+  font-size: 13px;
   text-align: left;
 }
 

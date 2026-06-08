@@ -1,7 +1,7 @@
 /**
- * @magi/core/ui — サイドパネル用マニュアル起動ボタン（v0.3）
+ * @magi/core/ui — サイドパネル用マニュアル起動ボタン（v0.3.2）
  *
- * 設計意図（2026-06-07 設計1枚 §2）:
+ * 設計意図（2026-06-07 設計1枚 §2 / 2026-06-09 既定アイコン型化）:
  *   「サイドパネルの必須項目・テーマ切替UI(DisplaySwitch)の直前・固定配置」を
  *   共通コア側で規約化するための入口コンポーネント。
  *   各アプリは <ManualEntry content={APP_MANUAL} /> をサイドパネルの
@@ -9,18 +9,23 @@
  *
  *   - 内部に open state を持ち、ボタンクリックで ManualViewer を開閉する
  *   - 既定 label='マニュアル'（'見ながら学べる マニュアル' は冗長なので短縮）
- *   - lucide-react は peer optional のため使わず、アイコンはユニコード記号のフォールバック
- *   - 印刷時はドロワー側CSS（@media print）で非表示になる
+ *   - lucide-react は peer optional のため使わず、アイコンはインラインSVG（本）。
+ *     ＝@magi/core は lucide に依存しない方針なので自前 SVG で描く。
+ *   - 既定トリガーは「アイコン型の小ボタン」（class=magi-manual-entry）。
+ *     細いサイドパネル（rest=80pxレール）では📖アイコンを上・小ラベルを下に
+ *     縦積みした 64px タイル、hover/focus 展開時は横並び＋ラベルになる。
+ *     旧 v0.3.1 までは全幅 text ボタン(manual-entry-btn)で、細い rail で
+ *     大箱に化けて崩れた。それを設計の既定として解消した（narrowサイドバー対応）。
+ *   - 印刷時はビューア側CSS（@media print）で非表示になる
  *   - renderTrigger を渡すと、各アプリのサイドナビ項目（例: .nav-item）に
- *     溶け込ませた独自トリガーを描画できる。未指定時は従来の manual-entry-btn
- *     フォールバック（後方互換）。
+ *     溶け込ませた独自トリガーを描画できる（後方互換・オムツ在庫が利用）。
  *
  * 使い方:
  *   import { ManualEntry } from '@magi/core/ui';
  *   import '@magi/core/ui/design-system.css';
- *   // 既定（フォールバックの専用ボタン）:
+ *   // 既定（アイコン型の小ボタン・サイドパネルに溶け込む）:
  *   <ManualEntry content={OMUTSU_MANUAL} />
- *   // サイドナビ項目に溶け込ませる（折りたたみ時アイコンのみ・1クリック開く）:
+ *   // 独自トリガーへ差し替え（後方互換）:
  *   <ManualEntry
  *     content={OMUTSU_MANUAL}
  *     renderTrigger={(open) => (
@@ -35,12 +40,12 @@ import { type ReactNode } from 'react';
 import type { ManualContent } from './manual-types';
 export interface ManualEntryProps {
     content: ManualContent;
-    /** サイドパネルのボタン文言（既定 'マニュアル'）。フォールバック時のみ使用。 */
+    /** サイドパネルのボタン文言（既定 'マニュアル'）。既定トリガー時のみ使用。 */
     label?: string;
     /**
      * トリガー要素を差し替える。引数 open() を呼ぶとビューアが開く。
      * 各アプリのサイドナビ項目（.nav-item 等）に溶け込ませたい場合に使う。
-     * 未指定なら従来の manual-entry-btn を描画（後方互換）。
+     * 未指定なら既定のアイコン型トリガー magi-manual-entry を描画（後方互換）。
      */
     renderTrigger?: (open: () => void) => ReactNode;
 }

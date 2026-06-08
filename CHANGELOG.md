@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.3.2 (2026-06-09)
+
+`ManualEntry` の既定トリガー（renderTrigger 未指定時）を**アイコン型の小ボタンへ**変更し、
+narrowサイドバー（80px rail）対応・型統一とした。
+
+### `@magi/core/ui/ManualEntry.tsx`
+- 既定トリガーの class を `manual-entry-btn`（全幅 text ボタン）→ `magi-manual-entry`
+  （アイコン型の小ボタン）へ変更。アイコンはユニコード📖をやめ、**インラインSVGの本アイコン**に
+  （@magi/core は lucide 非依存方針＝自前 SVG で描画）。
+- 背景: 旧既定の全幅 text ボタンは、細いサイドパネル(rest=80px rail)で「マニュアル」が
+  縦積みの大箱に化けて崩れた。オムツ在庫の `.nav-item` と同じ思想で既定を解消した。
+- `renderTrigger` を渡した場合は従来どおり差し替え可（**後方互換維持**＝オムツ在庫に影響なし）。
+
+### `@magi/core/ui/design-system.css`
+- 旧 `.manual-entry-btn` 系スタイルを撤去し、既定トリガー `.magi-manual-entry` の共通スタイルを追加。
+  rest=アイコン上＋小ラベル下の 64px タイル／hover・focus 展開時=横並び＋ラベル（pill）。
+  `.app-side-panel` の rail 連動（`.side-nav button` / `.nav-item` と同じ rest/expand コントラクト）。
+- 8テーマ＋White/Dark 追従は `--color-*` / `--bg-*` / `--border-default` / `--text-primary`
+  （全テーマで定義済みの族）経由。各アプリが固有CSSを持たなくても綺麗に出るのが肝。
+
+### dist
+- dist を再ビルドして同梱（git依存配布のため）。
+
 ## v0.2.0 (2026-06-07)
 
 完全なデザインシステム（8テーマ＋テーマ切替UI）を集約した。原本=resident-spine（利用者マスタ）。
