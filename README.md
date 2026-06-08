@@ -72,6 +72,14 @@ import '@magi/core/ui/core.css';
 
 ### 採用（おむつ在庫など消費アプリでの配線）
 
+> 🔴 **【Tailwind v4 必須設定・最初にやる】** 採用アプリの entry CSS（`@import "tailwindcss";` のあるファイル）に
+> **`@source "../../node_modules/@magi/core/dist";`** を必ず追加する（パスは entry CSS から node_modules への相対）。
+> これが無いと、@magi/core の共有モーダル（DraggableModal/ConfirmModal 等）が使うレイアウト系 Tailwind クラス
+> （`fixed inset-0` / `items-center` / `max-w-xl` / `max-h-[90vh]` / `overflow-y-auto` 等）が purge され、
+> **編集モーダルが中央寄せ・サイズ制限を失って巨大化＆画面外化＝入力不能**になる（2026-06-09 利用者/職員マスタで実害・修正済）。
+> 金型 `magi-webapp-template` には先回りで焼き込み済み。
+> ※ core側 design-system.css への @source 集約は、Tailwind v4 が **import 経由の node_modules 内 CSS の @source を無視**するため効かない（検証済）。**アプリ側 entry CSS の @source が唯一効く正攻法**。
+
 ```tsx
 // 1) CSS を 8テーマ版に差し替える（core.css → design-system.css）
 import '@magi/core/ui/design-system.css';
