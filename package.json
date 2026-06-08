@@ -1,6 +1,6 @@
 {
   "name": "@magi/core",
-  "version": "0.3.3",
+  "version": "0.3.2",
   "description": "MAGI 2階老健システム群の共有コア。データ契約（Sheets/書込ゲート/D4署名検証アクセス制御）・CIガード原本・完全なデザインシステム（8テーマ＋テーマ切替UI）・統一マニュアルビューア（v0.3）を1パッケージに集約する。",
   "type": "module",
   "license": "UNLICENSED",

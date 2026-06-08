@@ -1,11 +1,3 @@
-/* ── Tailwind v4 自動走査の集約（2026-06-09 v0.3.3）──
- * このCSSを @import する消費アプリに対し、@magi/core 自身（dist）を Tailwind の
- * ユーティリティ走査対象へ自動登録する。これが無いと DraggableModal 等のレイアウト系
- * Tailwindクラス（fixed inset-0 / items-center / max-w-xl / max-h-[90vh] 等）が purge され、
- * 編集モーダルが中央寄せ・サイズ制限を失って巨大化＆画面外化する。
- * ＝この1行で、消費側アプリは個別の @source を書かなくても崩れない（再発を core で根絶）。 */
-@source "../../dist";
-
 /**
  * @magi/core — 完全なデザインシステム（v0.2）
  *

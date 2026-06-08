@@ -1,20 +1,5 @@
 # Changelog
 
-## v0.3.3 (2026-06-09)
-
-消費アプリ（Tailwind v4）で **`@magi/core` の共有モーダル（DraggableModal/ConfirmModal 等）が崩れる**
-問題を core 側で根絶した。Tailwind v4 は既定で `node_modules` を走査しないため、@magi/core の
-コンポーネントが使うレイアウト系ユーティリティ（`fixed inset-0` / `items-center` / `max-w-xl` /
-`max-h-[90vh]` / `overflow-y-auto` 等）が purge され、編集モーダルが中央寄せ・サイズ制限を失って
-巨大化＆画面外化していた。
-
-### `@magi/core/ui/design-system.css`
-- 先頭に **`@source "../../dist";`** を追加。これを `@import` する消費アプリは、追加設定なしで
-  @magi/core 自身（dist）が Tailwind の走査対象に入る＝**個別アプリの `@source` が不要**になる。
-- 効果: 利用者/職員マスタに暫定で入れていた app 側 `@source` を撤去できる。今後の新規アプリも
-  `design-system.css` を import するだけでモーダルが崩れない（再発を core で根絶）。
-- コンポーネント・JSは無変更（CSS 1行の集約のみ・視覚は完全維持）。
-
 ## v0.3.2 (2026-06-09)
 
 `ManualEntry` の既定トリガー（renderTrigger 未指定時）を**アイコン型の小ボタンへ**変更し、
