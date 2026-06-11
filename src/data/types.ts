@@ -118,6 +118,8 @@ export interface MagiDataSource {
    * 戻りは引数 ranges と同じ順序・同じ長さの SheetValues[]（該当 range が空なら []）。
    * 読取専用（書込ゼロ）。読取APIのリクエスト数削減（SA単位の読取クォータ節約）が目的。
    * v0.3.3 追加・optional（既存実装の後方互換のため。未実装ソースは read の逐次呼びで代替可）。
+   * v0.3.4: 内部実装が valueRanges[i].range をシート名で突合して並べ替える（index 依存を排除）＋
+   *   valueRanges 長さ assert を追加。戻り値の契約（ranges と同順・同長の SheetValues[]）は不変。
    */
   batchRead?(ranges: string[]): Promise<SheetValues[]>;
   /** range を上書き（PUT・RAW固定） */

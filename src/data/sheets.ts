@@ -81,16 +81,22 @@ export function createSheetsSource(cfg: SheetsSourceConfig): MagiDataSource {
   // 複数 range を 1リクエスト（values:batchGet・GETのみ）でまとめ読みする（v0.3.3 追加）。
   // 戻りは引数 ranges と同じ順序・同じ長さ（該当 range が空なら []）。
   // 目的: 読取APIのリクエスト数削減（SA単位の読取クォータ節約）。書込ゼロ。
+  //
+  // 【v0.3.4 index依存の排除＋長さassert】
+  //   旧実装は valueRanges[i] を「リクエスト ranges 順と同じ」と信じて index 取り出ししていた。
+  //   API の順序保証に依存すると、万一の順序ズレで席と利用者を取り違える（落ちないので危険）。
+  //   そこでレスポンス各要素が持つ実A1表記 valueRanges[i].range を「シート名」で
+  //   リクエスト range と突き合わせて並べ直す（index に依存しない）。
+  //   併せて valueRanges.length !== ranges.length なら throw（沈黙ズレの最終ガード）。
+  //   戻り値の形（SheetValues[]・ranges と同順・同長）は不変＝呼び出し側は後方互換。
   async function batchRead(ranges: string[]): Promise<SheetValues[]> {
     if (ranges.length === 0) return [];
     const query = ranges.map((range) => `ranges=${encodeURIComponent(range)}`).join('&');
     const url = sheetsUrl(`/values:batchGet?${query}`);
     const data = await withRetry(() =>
-      googleJson<{ valueRanges?: Array<{ values?: SheetValues }> }>(env, url),
+      googleJson<{ valueRanges?: Array<{ range?: string; values?: SheetValues }> }>(env, url),
     );
-    const valueRanges = data.valueRanges ?? [];
-    // valueRanges は Sheets API がリクエスト ranges 順を保証する。長さを ranges に揃えて返す。
-    return ranges.map((_, index) => valueRanges[index]?.values ?? []);
+    return alignBatchGet(ranges, data.valueRanges ?? []);
   }
 
   async function update(range: string, values: SheetValues): Promise<void> {
@@ -141,6 +147,64 @@ export function createSheetsSource(cfg: SheetsSourceConfig): MagiDataSource {
   }
 
   return { read, batchRead, update, append, batchUpdate, clear, ensureSheet };
+}
+
+/**
+ * values:batchGet のレスポンス（valueRanges）を、リクエスト ranges と同じ順序・同じ長さに
+ * 並べ替えて返す（index 依存を排除）。
+ *
+ * Sheets API は各 valueRanges[i].range に実A1表記（例 "席配置!A1:H30"）を返す。
+ * これを「シート名」で取り出しキーにし、リクエスト range のシート名と突合する。
+ *   - シート名で対応付けるのは、リクエスト "席配置!A:H" と レスポンス "席配置!A1:H30" のように
+ *     列・行表記が変わる（API が実データ範囲に丸める）ため。シート名は不変なので安定キーになる。
+ *   - 同一シートに複数 range を要求するケースは現状の呼び出しに無いが、その場合に備えて
+ *     「同名シートは登場順で順送り」するフォールバックを持つ（キー衝突で取り違えない）。
+ * 長さ不一致（valueRanges.length !== ranges.length）は沈黙ズレの兆候として throw する。
+ */
+export function alignBatchGet(
+  ranges: string[],
+  valueRanges: Array<{ range?: string; values?: SheetValues }>,
+): SheetValues[] {
+  if (valueRanges.length !== ranges.length) {
+    throw apiError(
+      'SHEETS_API_ERROR',
+      `batchGet length mismatch: requested ${ranges.length} ranges but got ${valueRanges.length}.`,
+      502,
+    );
+  }
+  // レスポンスをシート名ごとのキューに積む（同名シートは登場順で取り出す）。
+  const bySheet = new Map<string, SheetValues[]>();
+  let anyRangeMissing = false;
+  for (const vr of valueRanges) {
+    if (!vr.range) {
+      anyRangeMissing = true;
+      break;
+    }
+    const sheet = sheetNameOf(vr.range);
+    const queue = bySheet.get(sheet);
+    if (queue) queue.push(vr.values ?? []);
+    else bySheet.set(sheet, [vr.values ?? []]);
+  }
+  // 想定外（range 欠落の API）には index フォールバック（旧挙動）で安全側に倒す。
+  if (anyRangeMissing) {
+    return ranges.map((_, index) => valueRanges[index]?.values ?? []);
+  }
+  return ranges.map((range) => {
+    const queue = bySheet.get(sheetNameOf(range));
+    // 突合不能（シート名がレスポンスに無い）も index フォールバックはせず空で返す（取り違えより安全）。
+    return queue && queue.length > 0 ? queue.shift()! : [];
+  });
+}
+
+// A1表記（"席配置!A:H" / "'食事 一覧'!A1:H30" / 引用符付きシート名）からシート名だけを取り出す。
+function sheetNameOf(a1: string): string {
+  const bang = a1.lastIndexOf('!');
+  const name = bang >= 0 ? a1.slice(0, bang) : a1;
+  // シート名に ! や記号を含む場合 Sheets は 'シート名' のように単一引用符で囲む（内部の ' は '' エスケープ）。
+  if (name.startsWith("'") && name.endsWith("'") && name.length >= 2) {
+    return name.slice(1, -1).replace(/''/g, "'");
+  }
+  return name;
 }
 
 async function spreadsheetMeta(env: Env, id: string): Promise<SpreadsheetMeta> {

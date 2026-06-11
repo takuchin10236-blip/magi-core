@@ -28,7 +28,7 @@ export type {
   SheetsSourceConfig,
 } from './types';
 
-export { createSheetsSource } from './sheets';
+export { createSheetsSource, alignBatchGet } from './sheets';
 
 export { writeState, assertAllowedUser, assertWriteAllowed } from './writeGuard';
 export type { WriteState } from './writeGuard';

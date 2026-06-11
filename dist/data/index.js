@@ -13,7 +13,7 @@
  *   - env/http ヘルパ: appEnv / isTrue / spreadsheetId / googleConfigPresent /
  *         ApiError / apiError / json / errorJson / apiResponse / readJsonBody
  */
-export { createSheetsSource } from './sheets';
+export { createSheetsSource, alignBatchGet } from './sheets';
 export { writeState, assertAllowedUser, assertWriteAllowed } from './writeGuard';
 export { resolveVerifiedAccessContext, resolveAccessContext, requireAllowed, requireAdmin, requireSuperAdmin, isLocalDevRequest, publicDenyReason, AccessDeniedError, } from './access';
 export { withRetry } from './withRetry';

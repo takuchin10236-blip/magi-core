@@ -14,7 +14,7 @@
  *         ApiError / apiError / json / errorJson / apiResponse / readJsonBody
  */
 export type { AppEnv, Env, AccessSource, AccessUser, SheetValues, LoadResult, WriteReason, WriteResult, BatchUpdateEntry, MagiDataSource, SheetsSourceConfig, } from './types';
-export { createSheetsSource } from './sheets';
+export { createSheetsSource, alignBatchGet } from './sheets';
 export { writeState, assertAllowedUser, assertWriteAllowed } from './writeGuard';
 export type { WriteState } from './writeGuard';
 export { resolveVerifiedAccessContext, resolveAccessContext, requireAllowed, requireAdmin, requireSuperAdmin, isLocalDevRequest, publicDenyReason, AccessDeniedError, } from './access';
