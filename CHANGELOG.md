@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.3.3 (2026-06-11)
+
+`createSheetsSource` に **`batchRead(ranges)`** を追加。複数 range を Sheets `values:batchGet`
+（GETのみ・**書込ゼロ**）で **1リクエスト**にまとめ読みする。戻りは引数 `ranges` と同じ順序・
+同じ長さの `SheetValues[]`（該当 range が空なら `[]`）。
+
+### 目的
+- 読取APIのリクエスト数を削減し、サービスアカウント単位の読取クォータ（60読取/分など）を節約する。
+- 各種表（座席表）の live 読取が 9リクエスト/更新 → 3リクエスト/更新（新DB1＋利用者マスタ1＋食事一覧1）になる。
+
+### `@magi/core/data`（types.ts / sheets.ts。index は不変）
+- `MagiDataSource` に **optional メソッド** `batchRead?(ranges: string[]): Promise<SheetValues[]>` を追加。
+  **optional ＝ 既存実装（read/update/append/batchUpdate/clear/ensureSheet）と既存の型・呼び出しは一切不変**
+  （**後方互換維持**＝オムツ在庫・他消費アプリに影響なし）。
+- `createSheetsSource` の戻りオブジェクトに `batchRead` を追加。token 取得・withRetry・エラー処理は
+  既存 `read` と同じ `googleJson` 経路を共有（署名ロジックの重複ゼロ）。書込系トークン（PUT/append/batchUpdate/clear）は不使用。
+
 ## v0.3.2 (2026-06-09)
 
 `ManualEntry` の既定トリガー（renderTrigger 未指定時）を**アイコン型の小ボタンへ**変更し、

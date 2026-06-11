@@ -90,6 +90,13 @@ export type BatchUpdateEntry = {
 export interface MagiDataSource {
     /** range を読み、生 values を薄いラッパーで返す */
     read(range: string): Promise<LoadResult<SheetValues>>;
+    /**
+     * 複数 range を **1リクエスト**（Sheets `values:batchGet`・GETのみ）で読む。
+     * 戻りは引数 ranges と同じ順序・同じ長さの SheetValues[]（該当 range が空なら []）。
+     * 読取専用（書込ゼロ）。読取APIのリクエスト数削減（SA単位の読取クォータ節約）が目的。
+     * v0.3.3 追加・optional（既存実装の後方互換のため。未実装ソースは read の逐次呼びで代替可）。
+     */
+    batchRead?(ranges: string[]): Promise<SheetValues[]>;
     /** range を上書き（PUT・RAW固定） */
     update(range: string, values: SheetValues): Promise<void>;
     /** range の末尾に追記（appendは冪等でないので withRetry 対象外） */

@@ -1,5 +1,5 @@
 /**
- * @magi/core/ui — 背骨UIエントリ（v0.2）
+ * @magi/core/ui — 背骨UIエントリ（v0.3）
  *
  * 公開API:
  *   部品3つ（v0.1〜）:
@@ -11,7 +11,7 @@
  *     - useThemeState（uiPreset/themeMode の状態・localStorage永続化・root data属性付与）
  *     - uiPresets の型・定義（UiMode/ThemeMode/UiPreset, UI_MODES/UI_PRESETS 等）
  *   統一マニュアルビューア（v0.3 追加）:
- *     - ManualViewer（右スライドのドロワー型ビューア本体・検索/目次/ハイライト）
+ *     - ManualViewer（全画面ページ型ビューア本体・左目次/右本文2カラム・検索/目次/ハイライト）
  *     - ManualEntry（サイドパネル用ボタン＋開閉。DisplaySwitch の直前に固定配置する規約）
  *     - 型: ManualContent / ManualSection / ManualBlock（器と中身の契約）
  *

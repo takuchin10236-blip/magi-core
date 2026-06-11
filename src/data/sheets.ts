@@ -78,6 +78,21 @@ export function createSheetsSource(cfg: SheetsSourceConfig): MagiDataSource {
     };
   }
 
+  // 複数 range を 1リクエスト（values:batchGet・GETのみ）でまとめ読みする（v0.3.3 追加）。
+  // 戻りは引数 ranges と同じ順序・同じ長さ（該当 range が空なら []）。
+  // 目的: 読取APIのリクエスト数削減（SA単位の読取クォータ節約）。書込ゼロ。
+  async function batchRead(ranges: string[]): Promise<SheetValues[]> {
+    if (ranges.length === 0) return [];
+    const query = ranges.map((range) => `ranges=${encodeURIComponent(range)}`).join('&');
+    const url = sheetsUrl(`/values:batchGet?${query}`);
+    const data = await withRetry(() =>
+      googleJson<{ valueRanges?: Array<{ values?: SheetValues }> }>(env, url),
+    );
+    const valueRanges = data.valueRanges ?? [];
+    // valueRanges は Sheets API がリクエスト ranges 順を保証する。長さを ranges に揃えて返す。
+    return ranges.map((_, index) => valueRanges[index]?.values ?? []);
+  }
+
   async function update(range: string, values: SheetValues): Promise<void> {
     // D1修正: RAW固定（旧 USER_ENTERED）。
     const url = sheetsUrl(`/values/${encodeURIComponent(range)}?valueInputOption=RAW`);
@@ -125,7 +140,7 @@ export function createSheetsSource(cfg: SheetsSourceConfig): MagiDataSource {
     );
   }
 
-  return { read, update, append, batchUpdate, clear, ensureSheet };
+  return { read, batchRead, update, append, batchUpdate, clear, ensureSheet };
 }
 
 async function spreadsheetMeta(env: Env, id: string): Promise<SpreadsheetMeta> {
