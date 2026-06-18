@@ -1,5 +1,38 @@
 # Changelog
 
+## v0.4.0 (2026-06-19)
+
+状態バッジを `@magi/core/ui` の実体部品として追加し、旧リッチtooltip方式を型として廃止した。
+
+### BREAKING: リッチtooltip(::after)廃止
+- `.magi-status-badge::after { content: attr(data-tooltip) }` によるリッチtooltipは廃止。
+- 状態バッジの補助説明は `StatusBadge` の `tooltip` prop から OS標準 `title` 属性へ渡す。
+- `data-tooltip` 属性は出力しない。必須情報はバッジ文字列・表・「状態の説明」本文に表示する。
+
+### `@magi/core/ui`
+- `StatusBadge` を追加。
+- 型 `StatusTone = 'ok' | 'neutral' | 'warn' | 'danger' | 'info'` と `StatusBadgeProps` を export。
+- `src/ui/index.ts` から `StatusBadge` と型を再export。
+
+### `@magi/core/ui/design-system.css`
+- 旧 `data-tooltip + ::after` の表示を無効化。
+- `.magi-status-badge` 本体、tone色、dark上書きは引き続きコアの単一正本として維持。
+
+### `@magi/core/ci`
+- StatusBadgeコア化ガード SB-1〜4 を追加。
+  - SB-1: `.magi-status-badge::after` のリッチtooltip残存を検出。
+  - SB-2: アプリ側 `.magi-status-badge` / tone CSS 再定義を検出。
+  - SB-3: `data-tooltip` 属性残存を検出。
+  - SB-4: `StatusBadge` importなしの手実装を警告。
+
+### 移行手順
+1. 採用アプリの `@magi/core` 参照タグを `#v0.4.0` へ上げる。
+2. `import { StatusBadge } from '@magi/core/ui'` へ置換する。
+3. アプリ側の `.magi-status-badge` 本体/tone色/`::after` 重複CSSを削除する。
+4. `data-tooltip` を削除し、説明は `tooltip` prop / `title` 属性へ移す。
+5. `grep -rn '\.magi-status-badge::after' src/` と `grep -rn 'data-tooltip' src/` が0件であることを確認する。
+6. `npm run check` を通す。
+
 ## v0.3.3 (2026-06-11)
 
 `createSheetsSource` に **`batchRead(ranges)`** を追加。複数 range を Sheets `values:batchGet`

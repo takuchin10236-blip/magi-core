@@ -1,5 +1,5 @@
 /**
- * @magi/core/ui — 背骨UIエントリ（v0.3）
+ * @magi/core/ui — 背骨UIエントリ（v0.4）
  *
  * 公開API:
  *   部品3つ（v0.1〜）:
@@ -14,6 +14,8 @@
  *     - ManualViewer（全画面ページ型ビューア本体・左目次/右本文2カラム・検索/目次/ハイライト）
  *     - ManualEntry（サイドパネル用ボタン＋開閉。DisplaySwitch の直前に固定配置する規約）
  *     - 型: ManualContent / ManualSection / ManualBlock（器と中身の契約）
+ *   状態表示（v0.4 追加）:
+ *     - StatusBadge（状態バッジ原子部品。title属性一本化・data-tooltip非使用）
  *
  * CSS は採用側アプリが直接 import する:
  *     import '@magi/core/ui/design-system.css';  // v0.2: 完全な8テーマ（推奨）
@@ -34,4 +36,6 @@ export { UI_MODES, UI_PRESETS, DEFAULT_UI_PRESET, DEFAULT_THEME_MODE, getUiPrese
 // 統一マニュアルビューア（v0.3）
 export { ManualViewer } from './ManualViewer';
 export { ManualEntry } from './ManualEntry';
+// 状態表示（v0.4）
+export { StatusBadge } from './StatusBadge';
 //# sourceMappingURL=index.js.map
