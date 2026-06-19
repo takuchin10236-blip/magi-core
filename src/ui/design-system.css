@@ -1113,38 +1113,12 @@ button.magi-status-badge {
   text-overflow: ellipsis;
 }
 
-/* tooltip はバッジの「下」に出す。バッジは topbar 最上部にあり、上方向(bottom:100%)だと
-   画面上端で見切れるため（2026-06-08 タチコマ・全システム共通の見切れ修正）。
-   right:0 起点で左へ伸ばし、max-width を画面幅クランプして右端バッジでも画面外に出さない。 */
+/* v0.4.0: 状態バッジのリッチtooltip（data-tooltip + ::after）は型として廃止。
+   ホバー説明は OS 標準の title 属性に一本化する。必須情報はバッジ文字列や
+   「状態の説明」本文へ出す。旧data-tooltipが残っても見切れtooltipを出さない安全網。 */
 .magi-status-badge::after {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  z-index: 80;
-  width: max-content;
-  max-width: min(240px, calc(100vw - 24px));
-  padding: 7px 9px;
-  border: 1px solid var(--border-default);
-  border-radius: 8px;
-  background: var(--text-primary);
-  color: var(--bg-surface);
-  box-shadow: var(--floating-shadow);
-  content: attr(data-tooltip);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.45;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-3px);
-  transition: opacity 0.16s ease, transform 0.16s ease;
-}
-
-.magi-status-badge:hover::after,
-.magi-status-badge:focus-visible::after {
-  opacity: 1;
-  transform: translateY(0);
+  display: none !important;
+  content: none !important;
 }
 
 .magi-status-badge:focus-visible {

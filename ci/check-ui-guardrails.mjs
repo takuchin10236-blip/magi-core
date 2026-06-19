@@ -24,6 +24,7 @@
  *   (a) 標準値一致     … standard-lumen の基準トークン（--primary:#6bbf95 等）が index.css にある
  *   (b) 必須シェル構造 … topbar(themed-card) / app-body-grid / app-side-panel / side-peek-toggle が src/ にある
  *   (c) 禁止パターン   … ネイティブ confirm/alert/prompt を src/ で呼んでいない
+ *   (d) StatusBadge    … 状態バッジは @magi/core/ui の StatusBadge を使い、旧 tooltip/CSS コピーを残さない
  *   (d) 逸脱の承認     … 上記が欠けるなら TYPE_DEVIATIONS.md に status=承認済 で記載されているか
  *   (e) 承認ゲート     … 【派生のみ】TYPE_DEVIATIONS.md に status=要承認 の逸脱が残っていないか
  *   (f) プレースホルダ … 【派生のみ】__SYSTEM_*__ の置換漏れが残っていないか
@@ -220,6 +221,8 @@ if (failures.filter((f) => f.startsWith('(c)')).length === 0) {
   passes.push('(c) 禁止パターン: ネイティブ confirm/alert/prompt なし');
 }
 
+checkStatusBadgeGuardrails();
+
 // ── (e) 承認ゲート（派生のみ）: status=要承認 の逸脱が残っていたら失格 ──
 // seed モードでは SEED-*（seed-baseline）を CI 対象外として skip する。
 checkApprovalGate();
@@ -242,6 +245,79 @@ function stripStringsAndComments(text) {
   s = s.replace(/"(?:\\.|[^"\\\n])*"/g, '""');
   s = s.replace(/`(?:\\.|[^`\\])*`/g, (m) => m.replace(/[^\n]/g, ' '));
   return s;
+}
+
+// ── (d) StatusBadge / tooltip コア化ガード（SB-1〜4） ──
+function checkStatusBadgeGuardrails() {
+  const cssBlocks = collectCssBlocks();
+
+  const richTooltipBlocks = cssBlocks.filter(
+    (block) =>
+      /\.magi-status-badge(?::[^{,]*)?::after\b/.test(block.selector)
+      && /\bcontent\s*:\s*(?:attr\s*\(|["'])/.test(block.body)
+      && !/\bcontent\s*:\s*none\b/.test(block.body),
+  );
+  if (richTooltipBlocks.length > 0) {
+    failures.push(`(d) SB-1: .magi-status-badge::after のリッチtooltipが ${richTooltipBlocks.length} 件残存 → ${richTooltipBlocks.map(formatCssHit).join(' / ')}`);
+  } else {
+    passes.push('(d) SB-1: 状態バッジのリッチtooltip(::after content)なし');
+  }
+
+  const localBadgeCss = cssBlocks.filter(
+    (block) =>
+      /\.magi-status-badge\b/.test(block.selector)
+      && !/::after\b/.test(block.selector),
+  );
+  if (localBadgeCss.length > 0) {
+    const message = `(d) SB-2: アプリ側 .magi-status-badge / tone CSS の再定義が ${localBadgeCss.length} 件 → ${localBadgeCss.map(formatCssHit).join(' / ')}`;
+    if (isSeed) warnings.push(`${message}（seed本体は移行猶予。派生では削除対象）`);
+    else failures.push(message);
+  } else {
+    passes.push('(d) SB-2: 状態バッジCSSのアプリ側再定義なし');
+  }
+
+  const dataTooltipHits = [];
+  for (const file of srcFiles) {
+    const stripped = stripStringsAndComments(readFileSync(file, 'utf8'));
+    stripped.split('\n').forEach((line, i) => {
+      if (/\bdata-tooltip\s*=/.test(line)) dataTooltipHits.push(`${rel(file)}:${i + 1}`);
+    });
+  }
+  if (dataTooltipHits.length > 0) {
+    failures.push(`(d) SB-3: data-tooltip 属性が ${dataTooltipHits.length} 件残存（title属性へ移行）→ ${dataTooltipHits.join(' / ')}`);
+  } else {
+    passes.push('(d) SB-3: data-tooltip 属性なし');
+  }
+
+  const usesBadgeClass = /\bmagi-status-badge\b/.test(srcText);
+  const importsCoreStatusBadge = /import\s*\{[^}]*\bStatusBadge\b[^}]*\}\s*from\s*['"]@magi\/core\/ui['"]/.test(srcText);
+  if (usesBadgeClass && !importsCoreStatusBadge) {
+    const message = '(d) SB-4: magi-status-badge を手実装で使用（@magi/core/ui の StatusBadge importへ移行）';
+    if (isSeed) warnings.push(`${message}（seed本体は移行猶予。派生では移行対象）`);
+    else warnings.push(message);
+  } else {
+    passes.push('(d) SB-4: StatusBadge import / 手実装なし');
+  }
+}
+
+function collectCssBlocks() {
+  const blocks = [];
+  for (const file of cssFiles) {
+    const text = readFileSync(file, 'utf8');
+    const re = /([^{}]+)\{([^{}]*)\}/g;
+    let match;
+    while ((match = re.exec(text)) !== null) {
+      const selector = match[1].trim();
+      const body = match[2];
+      const line = text.slice(0, match.index).split('\n').length;
+      blocks.push({ file, selector, body, line });
+    }
+  }
+  return blocks;
+}
+
+function formatCssHit(block) {
+  return `${rel(block.file)}:${block.line} (${block.selector.replace(/\s+/g, ' ')})`;
 }
 
 // ── 結果出力 ──
