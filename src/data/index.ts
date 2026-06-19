@@ -26,12 +26,12 @@ export type {
   BatchUpdateEntry,
   MagiDataSource,
   SheetsSourceConfig,
-} from './types';
+} from './types.js';
 
-export { createSheetsSource, alignBatchGet } from './sheets';
+export { createSheetsSource, alignBatchGet } from './sheets.js';
 
-export { writeState, assertAllowedUser, assertWriteAllowed } from './writeGuard';
-export type { WriteState } from './writeGuard';
+export { writeState, assertAllowedUser, assertWriteAllowed } from './writeGuard.js';
+export type { WriteState } from './writeGuard.js';
 
 export {
   resolveVerifiedAccessContext,
@@ -42,12 +42,12 @@ export {
   isLocalDevRequest,
   publicDenyReason,
   AccessDeniedError,
-} from './access';
+} from './access.js';
 
-export { withRetry } from './withRetry';
-export type { WithRetryOptions } from './withRetry';
+export { withRetry } from './withRetry.js';
+export type { WithRetryOptions } from './withRetry.js';
 
-export { appEnv, isTrue, spreadsheetId, googleConfigPresent } from './env';
+export { appEnv, isTrue, spreadsheetId, googleConfigPresent } from './env.js';
 export {
   ApiError,
   apiError,
@@ -55,4 +55,4 @@ export {
   errorJson,
   apiResponse,
   readJsonBody,
-} from './http';
+} from './http.js';

@@ -17,7 +17,7 @@
  *   resident 原本の同期版（resolveAccessContext ベース）を踏襲する。署名検証つきで強制したい
  *   場合は resolveVerifiedAccessContext を await してから手で判定する（resident と同じ運用）。
  */
-import type { AccessUser, Env } from './types';
+import type { AccessUser, Env } from './types.js';
 /**
  * JWT 署名検証つきのアクセス文脈解決（本筋・async）。
  * Cf-Access-Jwt-Assertion を RS256 で検証し aud/iss/exp/nbf まで確認する。

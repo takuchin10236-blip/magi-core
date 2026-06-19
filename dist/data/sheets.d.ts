@@ -1,4 +1,4 @@
-import type { MagiDataSource, SheetsSourceConfig, SheetValues } from './types';
+import type { MagiDataSource, SheetsSourceConfig, SheetValues } from './types.js';
 /**
  * Sheets を読み書きする MagiDataSource を生成する。
  * spreadsheetId は cfg.spreadsheetId（明示）→ env からの解決の順。

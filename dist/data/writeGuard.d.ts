@@ -1,4 +1,4 @@
-import type { AccessUser, Env, WriteReason } from './types';
+import type { AccessUser, Env, WriteReason } from './types.js';
 export type WriteState = {
     allowed: boolean;
     blocks: WriteReason[];

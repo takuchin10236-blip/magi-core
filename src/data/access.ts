@@ -17,7 +17,7 @@
  *   resident 原本の同期版（resolveAccessContext ベース）を踏襲する。署名検証つきで強制したい
  *   場合は resolveVerifiedAccessContext を await してから手で判定する（resident と同じ運用）。
  */
-import type { AccessUser, Env } from './types';
+import type { AccessUser, Env } from './types.js';
 
 const LOCAL_DEV_EMAIL = 'local-dev';
 const JWKS_CACHE_TTL_MS = 30 * 60 * 1000;

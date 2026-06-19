@@ -9,8 +9,8 @@
  *   書込は「許可される理由が1つも欠けていない」ときだけ通す。
  *   どれか1つでも欠ければ blocks に積み、空でない限り書込を止める（fail-closed）。
  */
-import { appEnv, googleConfigPresent, isTrue, spreadsheetId } from './env';
-import { apiError } from './http';
+import { appEnv, googleConfigPresent, isTrue, spreadsheetId } from './env.js';
+import { apiError } from './http.js';
 export function writeState(env, user, requireAdmin = false) {
     const blocks = [];
     const currentEnv = appEnv(env);
