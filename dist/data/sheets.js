@@ -17,9 +17,9 @@
  *   read / update / batchUpdate / clear / ensureSheet … 429/5xx を最大2回リトライ。
  *   append … 冪等でない（再試行で行が重複しうる）ため withRetry を掛けない。
  */
-import { spreadsheetId as resolveSpreadsheetIdFromEnv } from './env';
-import { apiError } from './http';
-import { withRetry } from './withRetry';
+import { spreadsheetId as resolveSpreadsheetIdFromEnv } from './env.js';
+import { apiError } from './http.js';
+import { withRetry } from './withRetry.js';
 const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
 // token はモジュールスコープでメモリキャッシュ（omutsu 原本と同じ。Worker isolate 内で共有）。
 let cachedToken = null;

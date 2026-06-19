@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.1 (2026-06-19)
+
+### Fixed
+- `src/data/*.ts` の拡張子省略 import を `.js` 付きに修正。Node ESM strict 解決で `@magi/core/data` 公開入口が落ちる問題を解消（resident-spine Step 2 で発見）。
+
 ## v0.4.0 (2026-06-19)
 
 状態バッジを `@magi/core/ui` の実体部品として追加し、旧リッチtooltip方式を型として廃止した。

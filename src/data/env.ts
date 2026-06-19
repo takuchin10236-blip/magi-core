@@ -10,7 +10,7 @@
  *   ハードコードしていたが、@magi/core は汎用ライブラリなので施設固有メールは持たない
  *   （採用側アプリが env で注入する）。これは仕様の範囲内の汎用化。
  */
-import type { AppEnv, Env } from './types';
+import type { AppEnv, Env } from './types.js';
 
 export function appEnv(env: Env): AppEnv {
   const raw = String(env.APP_ENV || '').trim().toLowerCase();

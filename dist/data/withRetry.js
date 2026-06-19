@@ -13,7 +13,7 @@
  *   - 429（レート制限）/ 500..599（サーバ側一時障害）→ retry
  *   - それ以外 → 即 throw
  */
-import { ApiError } from './http';
+import { ApiError } from './http.js';
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_BASE_DELAY_MS = 300;
 function defaultSleep(ms) {

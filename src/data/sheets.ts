@@ -17,8 +17,8 @@
  *   read / update / batchUpdate / clear / ensureSheet … 429/5xx を最大2回リトライ。
  *   append … 冪等でない（再試行で行が重複しうる）ため withRetry を掛けない。
  */
-import { spreadsheetId as resolveSpreadsheetIdFromEnv } from './env';
-import { apiError } from './http';
+import { spreadsheetId as resolveSpreadsheetIdFromEnv } from './env.js';
+import { apiError } from './http.js';
 import type {
   BatchUpdateEntry,
   Env,
@@ -26,8 +26,8 @@ import type {
   MagiDataSource,
   SheetsSourceConfig,
   SheetValues,
-} from './types';
-import { withRetry } from './withRetry';
+} from './types.js';
+import { withRetry } from './withRetry.js';
 
 const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets';
 

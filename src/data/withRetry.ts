@@ -13,7 +13,7 @@
  *   - 429（レート制限）/ 500..599（サーバ側一時障害）→ retry
  *   - それ以外 → 即 throw
  */
-import { ApiError } from './http';
+import { ApiError } from './http.js';
 
 export type WithRetryOptions = {
   /** 最大リトライ回数（初回を除く再試行数）。既定2回。 */
