@@ -18,11 +18,11 @@ export type ResidentSelectorMode = 'create' | 'search';
 export interface ResidentSelectorResident {
   /** Five-digit resident ID. Keep this as a string so leading zeroes are preserved. */
   residentId: string;
-  displayName: string;
+  name: string;
   kana?: string;
   room?: string;
-  episode?: string;
-  status?: string;
+  episodeId?: string;
+  spineStatus?: string;
   locationUnknown?: boolean;
   /** Server decision. Required to be true for a create-mode candidate to be shown. */
   createAllowed?: boolean;
@@ -86,18 +86,26 @@ export type ResidentSelectorProps =
     });
 
 function searchableText(resident: ResidentSelectorResident): string {
-  return [resident.residentId, resident.displayName, resident.kana, resident.room]
+  return [resident.residentId, resident.name, resident.kana, resident.room]
     .filter(Boolean)
     .join(' ')
     .toLocaleLowerCase('ja-JP');
 }
 
 function isCreateCandidate(resident: ResidentSelectorResident): boolean {
-  return resident.createAllowed === true && resident.episodeOpen === true;
+  return (
+    isFiveDigitResidentId(resident) &&
+    resident.createAllowed === true &&
+    resident.episodeOpen === true
+  );
+}
+
+function isFiveDigitResidentId(resident: ResidentSelectorResident): boolean {
+  return /^\d{5}$/.test(resident.residentId);
 }
 
 function residentKey(resident: ResidentSelectorResident, index: number): string {
-  return `${resident.residentId}:${resident.episode ?? ''}:${index}`;
+  return `${resident.residentId}:${resident.episodeId ?? ''}:${index}`;
 }
 
 export function ResidentSelector(props: ResidentSelectorProps) {
@@ -125,7 +133,12 @@ export function ResidentSelector(props: ResidentSelectorProps) {
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
-    if (props.data !== undefined || props.loadData === undefined) return;
+    if (props.data !== undefined) {
+      setInternalLoading(false);
+      setInternalError(null);
+      return;
+    }
+    if (props.loadData === undefined) return;
 
     let active = true;
     setInternalLoading(true);
@@ -192,7 +205,9 @@ export function ResidentSelector(props: ResidentSelectorProps) {
     const source =
       props.mode === 'create'
         ? (createData?.residents ?? []).filter(isCreateCandidate)
-        : (tabs.find((tab) => tab.id === selectedTabId)?.residents ?? []);
+        : (tabs.find((tab) => tab.id === selectedTabId)?.residents ?? []).filter(
+            isFiveDigitResidentId,
+          );
     const normalizedQuery = query.trim().toLocaleLowerCase('ja-JP');
     if (!normalizedQuery) return source;
     return source.filter((resident) => searchableText(resident).includes(normalizedQuery));
@@ -267,7 +282,7 @@ export function ResidentSelector(props: ResidentSelectorProps) {
         <div className="magi-resident-selector__selected" aria-label="選択中の利用者">
           <div>
             <span className="magi-resident-selector__selected-label">選択中</span>
-            <strong>{value.displayName}</strong>
+            <strong>{value.name}</strong>
             <span className="magi-resident-selector__id">ID {value.residentId}</span>
           </div>
           {onClear ? (
@@ -276,7 +291,7 @@ export function ResidentSelector(props: ResidentSelectorProps) {
               className="themed-btn-secondary magi-resident-selector__clear"
               onClick={onClear}
               disabled={disabled}
-              aria-label={`${value.displayName}の選択を解除`}
+              aria-label={`${value.name}の選択を解除`}
             >
               選択を解除
             </button>
@@ -365,14 +380,16 @@ export function ResidentSelector(props: ResidentSelectorProps) {
                   disabled={disabled}
                 >
                   <span className="magi-resident-selector__identity">
-                    <strong>{resident.displayName}</strong>
+                    <strong>{resident.name}</strong>
                     {resident.kana ? <span>{resident.kana}</span> : null}
                   </span>
                   <span className="magi-resident-selector__details">
                     <span className="magi-resident-selector__id">ID {resident.residentId}</span>
                     {resident.room ? <span>居室 {resident.room}</span> : null}
-                    {resident.episode ? <span>エピソード {resident.episode}</span> : null}
-                    {resident.status ? <span>状態 {resident.status}</span> : null}
+                    {resident.episodeId ? (
+                      <span>エピソード {resident.episodeId}</span>
+                    ) : null}
+                    {resident.spineStatus ? <span>状態 {resident.spineStatus}</span> : null}
                     {resident.locationUnknown ? (
                       <span className="magi-resident-selector__unknown">居場所未確認</span>
                     ) : null}

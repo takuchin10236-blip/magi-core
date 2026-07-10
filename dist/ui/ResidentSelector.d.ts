@@ -8,11 +8,11 @@ export type ResidentSelectorMode = 'create' | 'search';
 export interface ResidentSelectorResident {
     /** Five-digit resident ID. Keep this as a string so leading zeroes are preserved. */
     residentId: string;
-    displayName: string;
+    name: string;
     kana?: string;
     room?: string;
-    episode?: string;
-    status?: string;
+    episodeId?: string;
+    spineStatus?: string;
     locationUnknown?: boolean;
     /** Server decision. Required to be true for a create-mode candidate to be shown. */
     createAllowed?: boolean;

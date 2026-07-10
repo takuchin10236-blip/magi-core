@@ -10,11 +10,15 @@
 - `search` モードはサーバー認可済みのタブだけを表示。候補とタブはAPI順を維持する。
 - 氏名・かな・居室・5桁ID検索、loading/error/empty/retry/clear、矢印/Enter操作とARIA、
   `locationUnknown` 表示を追加。
+- B2契約正本のfield名（`name` / `episodeId` / `spineStatus` 等）へ厳密に合わせ、
+  5桁でない `residentId` は作成・検索とも表示しないfail-closedを追加。
+- loader失敗後に親管理の `data` へ切り替えた場合、内部エラーを解除して表示復旧する。
 - 8テーマ既存tokenだけを参照する共通CSSを `design-system.css` へ追加。
 
 ### Verification
 - Vitest + Testing Library + jsdomをdevDependenciesに追加し、作成許可の二重条件、検索順序、
-  loader失敗時のfail-closed、再試行、選択解除、キーボード選択を非通信テスト化。
+  5桁ID検査、loader失敗時のfail-closedと親dataによる復旧、再試行、選択解除、
+  キーボード選択を非通信テスト化。
 - `private: true` を維持。publish・tag・remote反映はこの候補に含めない。
 
 ## v0.4.1 (2026-06-19)
