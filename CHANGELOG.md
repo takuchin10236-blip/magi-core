@@ -16,11 +16,14 @@
   `locationUnknown` 欠落も選択不可とする（明示された `false` は有効）。
 - loader失敗後に親管理の `data` へ切り替えた場合、内部エラーを解除して表示復旧する。
 - 8テーマ既存tokenだけを参照する共通CSSを `design-system.css` へ追加。
+- 既知の制約: `page`（`pageSize` / `nextPageToken`）と `searchScopeApplied` は未対応。
+  現在は親から渡された1ページ分だけをローカルで絞り込む。サーバーページング開始時は、
+  Phase 2のB2接続で次ページ取得と検索範囲の適用結果を扱えるよう拡張する。
 
 ### Verification
 - Vitest + Testing Library + jsdomをdevDependenciesに追加し、作成許可の二重条件、検索順序、
   5桁ID検査、loader失敗時のfail-closedと親dataによる復旧、再試行、選択解除、
-  キーボード選択を非通信テスト化。
+  キーボード選択、検索モードで作成不可・終了済みの退所候補を表示することを非通信テスト化。
 - `private: true` を維持。publish・tag・remote反映はこの候補に含めない。
 
 ## v0.4.1 (2026-06-19)

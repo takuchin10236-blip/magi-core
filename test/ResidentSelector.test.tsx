@@ -101,6 +101,35 @@ describe('ResidentSelector', () => {
     expect(screen.getByRole('option')).toHaveTextContent('利用者3');
   });
 
+  it('shows a fully supplied retired candidate in search mode regardless of create decisions', () => {
+    render(
+      <ResidentSelector
+        mode="search"
+        data={{
+          tabs: [
+            {
+              id: 'past',
+              label: '過去',
+              residents: [
+                {
+                  ...allowed,
+                  residentId: '00004',
+                  name: '退所済み利用者',
+                  spineStatus: '退所',
+                  createAllowed: false,
+                  episodeOpen: false,
+                },
+              ],
+            },
+          ],
+        }}
+        onSelect={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole('option', { name: /退所済み利用者/ })).toBeInTheDocument();
+  });
+
   it('loads through the prop loader, hides raw errors, and retries fail-closed', async () => {
     const loadData = vi
       .fn()
