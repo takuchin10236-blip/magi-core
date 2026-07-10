@@ -12,6 +12,8 @@
   `locationUnknown` 表示を追加。
 - B2契約正本のfield名（`name` / `episodeId` / `spineStatus` 等）へ厳密に合わせ、
   5桁でない `residentId` は作成・検索とも表示しないfail-closedを追加。
+- B2必須fieldを型と実行時の両方で検査。作成・検索共通の必須field欠落に加え、作成候補の
+  `locationUnknown` 欠落も選択不可とする（明示された `false` は有効）。
 - loader失敗後に親管理の `data` へ切り替えた場合、内部エラーを解除して表示復旧する。
 - 8テーマ既存tokenだけを参照する共通CSSを `design-system.css` へ追加。
 

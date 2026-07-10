@@ -1,8 +1,12 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ResidentSelector, type ResidentSelectorResident } from '../src/ui';
+import {
+  ResidentSelector,
+  type ResidentSelectorCreateResident,
+  type ResidentSelectorResident,
+} from '../src/ui';
 
-const allowed: ResidentSelectorResident = {
+const allowed: ResidentSelectorCreateResident = {
   residentId: '00123',
   name: '利用者1',
   kana: 'りようしゃいち',
@@ -11,7 +15,18 @@ const allowed: ResidentSelectorResident = {
   spineStatus: '入所中',
   createAllowed: true,
   episodeOpen: true,
+  locationUnknown: false,
 };
+
+function malformedCreate(
+  resident: Partial<ResidentSelectorCreateResident>,
+): ResidentSelectorCreateResident {
+  return resident as ResidentSelectorCreateResident;
+}
+
+function malformedSearch(resident: Partial<ResidentSelectorResident>): ResidentSelectorResident {
+  return resident as ResidentSelectorResident;
+}
 
 describe('ResidentSelector', () => {
   it('create mode only shows candidates explicitly allowed by both server decisions', () => {
@@ -23,6 +38,8 @@ describe('ResidentSelector', () => {
             { ...allowed, createAllowed: false, name: '作成不可' },
             { ...allowed, episodeOpen: false, name: '終了済み' },
             { ...allowed, residentId: '1234', name: '4桁ID' },
+            malformedCreate({ ...allowed, episodeId: undefined, name: 'episodeId欠落' }),
+            malformedCreate({ ...allowed, locationUnknown: undefined, name: '居場所判定欠落' }),
             allowed,
           ],
         }}
@@ -34,6 +51,8 @@ describe('ResidentSelector', () => {
     expect(screen.queryByText('作成不可')).not.toBeInTheDocument();
     expect(screen.queryByText('終了済み')).not.toBeInTheDocument();
     expect(screen.queryByText('4桁ID')).not.toBeInTheDocument();
+    expect(screen.queryByText('episodeId欠落')).not.toBeInTheDocument();
+    expect(screen.queryByText('居場所判定欠落')).not.toBeInTheDocument();
     expect(screen.getByText('ID 00123')).toBeInTheDocument();
   });
 
@@ -50,6 +69,8 @@ describe('ResidentSelector', () => {
                 { ...allowed, residentId: '00002', name: '利用者2' },
                 { ...allowed, residentId: '00001', name: '利用者1' },
                 { ...allowed, residentId: '999999', name: '6桁ID' },
+                malformedSearch({ ...allowed, kana: undefined, name: 'かな欠落' }),
+                malformedSearch({ ...allowed, createAllowed: undefined, name: '許可判定欠落' }),
               ],
             },
             {
@@ -67,6 +88,8 @@ describe('ResidentSelector', () => {
     expect(options[0]).toHaveTextContent('利用者2');
     expect(options[1]).toHaveTextContent('利用者1');
     expect(screen.queryByText('6桁ID')).not.toBeInTheDocument();
+    expect(screen.queryByText('かな欠落')).not.toBeInTheDocument();
+    expect(screen.queryByText('許可判定欠落')).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: '00001' } });
     expect(screen.getAllByRole('option')).toHaveLength(1);

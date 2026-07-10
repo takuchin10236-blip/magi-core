@@ -143,6 +143,8 @@ propで候補を渡します。**この画面は認可装置ではありませ�
 利用者データのfield名はB2契約正本に合わせます。主要項目は `residentId`, `name`, `kana`, `room`,
 `episodeId`, `spineStatus`, `episodeOpen`, `createAllowed`, `locationUnknown` です。
 画面独自の `displayName` / `episode` / `status` へ言い換えず、APIとのadapter driftを防ぎます。
+`residentId`, `name`, `kana`, `episodeId`, `spineStatus`, `episodeOpen`, `createAllowed` は
+作成・検索とも必須です。作成候補では `locationUnknown` もboolean必須です（`false` を欠落扱いしません）。
 
 ```tsx
 import { ResidentSelector } from '@magi/core/ui';
@@ -163,7 +165,8 @@ import '@magi/core/ui/design-system.css';
 ```
 
 5桁IDは先頭ゼロを守るため、数値ではなく文字列で渡します。`/^\d{5}$/` に合わない候補は
-作成・検索とも選択肢に出さないfail-closedです。利用者の並び順はAPIを正本とし、
+作成・検索とも選択肢に出さないfail-closedです。上記必須fieldの欠落・空文字・型違いも同様に
+選択肢へ出しません。利用者の並び順はAPIを正本とし、
 コンポーネントは勝手に並べ替えません。loaderの生エラーは画面に出さず、利用者向けの定型文で
 fail-closed（新規選択不可）にします。
 

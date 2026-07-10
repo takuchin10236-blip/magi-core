@@ -19,20 +19,25 @@ export interface ResidentSelectorResident {
   /** Five-digit resident ID. Keep this as a string so leading zeroes are preserved. */
   residentId: string;
   name: string;
-  kana?: string;
+  kana: string;
   room?: string;
-  episodeId?: string;
-  spineStatus?: string;
+  episodeId: string;
+  spineStatus: string;
   locationUnknown?: boolean;
-  /** Server decision. Required to be true for a create-mode candidate to be shown. */
-  createAllowed?: boolean;
-  /** Server decision. Required to be true for a create-mode candidate to be shown. */
-  episodeOpen?: boolean;
+  /** Server decision. Create mode only shows true; search accepts either boolean value. */
+  createAllowed: boolean;
+  /** Server decision. Create mode only shows true; search accepts either boolean value. */
+  episodeOpen: boolean;
+}
+
+export interface ResidentSelectorCreateResident extends ResidentSelectorResident {
+  /** B2 create contract requires an explicit boolean, including when the value is false. */
+  locationUnknown: boolean;
 }
 
 export interface ResidentSelectorCreateData {
   /** Already-authorized candidates in the server's canonical display order. */
-  residents: readonly ResidentSelectorResident[];
+  residents: readonly ResidentSelectorCreateResident[];
 }
 
 export interface ResidentSelectorTab {
@@ -94,14 +99,30 @@ function searchableText(resident: ResidentSelectorResident): string {
 
 function isCreateCandidate(resident: ResidentSelectorResident): boolean {
   return (
-    isFiveDigitResidentId(resident) &&
+    hasRequiredB2Fields(resident) &&
+    typeof resident.locationUnknown === 'boolean' &&
     resident.createAllowed === true &&
     resident.episodeOpen === true
   );
 }
 
-function isFiveDigitResidentId(resident: ResidentSelectorResident): boolean {
-  return /^\d{5}$/.test(resident.residentId);
+function hasRequiredB2Fields(resident: ResidentSelectorResident): boolean {
+  return (
+    resident !== null &&
+    typeof resident === 'object' &&
+    typeof resident.residentId === 'string' &&
+    /^\d{5}$/.test(resident.residentId) &&
+    typeof resident.name === 'string' &&
+    resident.name.trim().length > 0 &&
+    typeof resident.kana === 'string' &&
+    resident.kana.trim().length > 0 &&
+    typeof resident.episodeId === 'string' &&
+    resident.episodeId.trim().length > 0 &&
+    typeof resident.spineStatus === 'string' &&
+    resident.spineStatus.trim().length > 0 &&
+    typeof resident.createAllowed === 'boolean' &&
+    typeof resident.episodeOpen === 'boolean'
+  );
 }
 
 function residentKey(resident: ResidentSelectorResident, index: number): string {
@@ -206,7 +227,7 @@ export function ResidentSelector(props: ResidentSelectorProps) {
       props.mode === 'create'
         ? (createData?.residents ?? []).filter(isCreateCandidate)
         : (tabs.find((tab) => tab.id === selectedTabId)?.residents ?? []).filter(
-            isFiveDigitResidentId,
+            hasRequiredB2Fields,
           );
     const normalizedQuery = query.trim().toLocaleLowerCase('ja-JP');
     if (!normalizedQuery) return source;

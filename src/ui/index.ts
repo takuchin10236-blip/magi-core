@@ -74,6 +74,7 @@ export type {
   ResidentSelectorProps,
   ResidentSelectorMode,
   ResidentSelectorResident,
+  ResidentSelectorCreateResident,
   ResidentSelectorCreateData,
   ResidentSelectorSearchData,
   ResidentSelectorTab,

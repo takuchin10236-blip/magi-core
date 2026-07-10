@@ -9,19 +9,23 @@ export interface ResidentSelectorResident {
     /** Five-digit resident ID. Keep this as a string so leading zeroes are preserved. */
     residentId: string;
     name: string;
-    kana?: string;
+    kana: string;
     room?: string;
-    episodeId?: string;
-    spineStatus?: string;
+    episodeId: string;
+    spineStatus: string;
     locationUnknown?: boolean;
-    /** Server decision. Required to be true for a create-mode candidate to be shown. */
-    createAllowed?: boolean;
-    /** Server decision. Required to be true for a create-mode candidate to be shown. */
-    episodeOpen?: boolean;
+    /** Server decision. Create mode only shows true; search accepts either boolean value. */
+    createAllowed: boolean;
+    /** Server decision. Create mode only shows true; search accepts either boolean value. */
+    episodeOpen: boolean;
+}
+export interface ResidentSelectorCreateResident extends ResidentSelectorResident {
+    /** B2 create contract requires an explicit boolean, including when the value is false. */
+    locationUnknown: boolean;
 }
 export interface ResidentSelectorCreateData {
     /** Already-authorized candidates in the server's canonical display order. */
-    residents: readonly ResidentSelectorResident[];
+    residents: readonly ResidentSelectorCreateResident[];
 }
 export interface ResidentSelectorTab {
     id: string;

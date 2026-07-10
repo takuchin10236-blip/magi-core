@@ -7,12 +7,26 @@ function searchableText(resident) {
         .toLocaleLowerCase('ja-JP');
 }
 function isCreateCandidate(resident) {
-    return (isFiveDigitResidentId(resident) &&
+    return (hasRequiredB2Fields(resident) &&
+        typeof resident.locationUnknown === 'boolean' &&
         resident.createAllowed === true &&
         resident.episodeOpen === true);
 }
-function isFiveDigitResidentId(resident) {
-    return /^\d{5}$/.test(resident.residentId);
+function hasRequiredB2Fields(resident) {
+    return (resident !== null &&
+        typeof resident === 'object' &&
+        typeof resident.residentId === 'string' &&
+        /^\d{5}$/.test(resident.residentId) &&
+        typeof resident.name === 'string' &&
+        resident.name.trim().length > 0 &&
+        typeof resident.kana === 'string' &&
+        resident.kana.trim().length > 0 &&
+        typeof resident.episodeId === 'string' &&
+        resident.episodeId.trim().length > 0 &&
+        typeof resident.spineStatus === 'string' &&
+        resident.spineStatus.trim().length > 0 &&
+        typeof resident.createAllowed === 'boolean' &&
+        typeof resident.episodeOpen === 'boolean');
 }
 function residentKey(resident, index) {
     return `${resident.residentId}:${resident.episodeId ?? ''}:${index}`;
@@ -100,7 +114,7 @@ export function ResidentSelector(props) {
     const candidates = useMemo(() => {
         const source = props.mode === 'create'
             ? (createData?.residents ?? []).filter(isCreateCandidate)
-            : (tabs.find((tab) => tab.id === selectedTabId)?.residents ?? []).filter(isFiveDigitResidentId);
+            : (tabs.find((tab) => tab.id === selectedTabId)?.residents ?? []).filter(hasRequiredB2Fields);
         const normalizedQuery = query.trim().toLocaleLowerCase('ja-JP');
         if (!normalizedQuery)
             return source;
