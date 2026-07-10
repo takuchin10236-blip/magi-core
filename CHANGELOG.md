@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.5.0 candidate (2026-07-10)
+
+### `@magi/core/ui`
+- API非依存の共通 `ResidentSelector` を追加。`data` / `loadData` propでのみ候補を受け取り、
+  URL・fetch・秘密情報・業務データを内包しない。
+- `create` モードは、サーバーが明示した `createAllowed && episodeOpen` の候補だけを表示する
+  fail-closed二重防御。退所者タブを持たない。
+- `search` モードはサーバー認可済みのタブだけを表示。候補とタブはAPI順を維持する。
+- 氏名・かな・居室・5桁ID検索、loading/error/empty/retry/clear、矢印/Enter操作とARIA、
+  `locationUnknown` 表示を追加。
+- 8テーマ既存tokenだけを参照する共通CSSを `design-system.css` へ追加。
+
+### Verification
+- Vitest + Testing Library + jsdomをdevDependenciesに追加し、作成許可の二重条件、検索順序、
+  loader失敗時のfail-closed、再試行、選択解除、キーボード選択を非通信テスト化。
+- `private: true` を維持。publish・tag・remote反映はこの候補に含めない。
+
 ## v0.4.1 (2026-06-19)
 
 ### Fixed

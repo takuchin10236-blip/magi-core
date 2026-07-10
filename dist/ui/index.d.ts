@@ -1,5 +1,5 @@
 /**
- * @magi/core/ui — 背骨UIエントリ（v0.4）
+ * @magi/core/ui — 背骨UIエントリ（v0.5候補）
  *
  * 公開API:
  *   部品3つ（v0.1〜）:
@@ -16,6 +16,8 @@
  *     - 型: ManualContent / ManualSection / ManualBlock（器と中身の契約）
  *   状態表示（v0.4 追加）:
  *     - StatusBadge（状態バッジ原子部品。title属性一本化・data-tooltip非使用）
+ *   利用者選択（v0.5 追加）:
+ *     - ResidentSelector（API非依存・作成/検索モード・認可済み候補だけを表示）
  *
  * CSS は採用側アプリが直接 import する:
  *     import '@magi/core/ui/design-system.css';  // v0.2: 完全な8テーマ（推奨）
@@ -43,4 +45,6 @@ export type { ManualEntryProps } from './ManualEntry';
 export type { ManualBlock, ManualSection, ManualContent } from './manual-types';
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusTone } from './StatusBadge';
+export { ResidentSelector } from './ResidentSelector';
+export type { ResidentSelectorProps, ResidentSelectorMode, ResidentSelectorResident, ResidentSelectorCreateData, ResidentSelectorSearchData, ResidentSelectorTab, ResidentSelectorLoadContext, } from './ResidentSelector';
 //# sourceMappingURL=index.d.ts.map

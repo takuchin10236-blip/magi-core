@@ -4,7 +4,7 @@ MAGI 2階老健システム群の共有コア。3アプリ（omutsu-inventory / 
 散らばっていた「データ契約・CIガード・背骨UI」の原本を1箇所に集約する。
 
 - 最終更新: 2026-06-09
-- バージョン: v0.3.2
+- バージョン: v0.5.0（候補・ローカル検証段階）
 - 担当: 開発部（実装=タチコマ / レビュー=バトー）
 
 ---
@@ -122,6 +122,45 @@ omutsu の18行ヘッダ無検証版ではなく、resident `access.js` の **RS
 ## v0.3 送り（v0.1 には入れない）
 
 zod / 楽観ロック / 監査ログ / Durable Object。これらは v0.1 のスコープ外。
+
+---
+
+## v0.5候補：共通利用者選択 `ResidentSelector`
+
+`ResidentSelector` はAPIに接続しない表示部品です。アプリ側が `data` または `loadData`
+propで候補を渡します。**この画面は認可装置ではありません。** APIはログイン中の職員が
+閲覧できる利用者と検索範囲だけを返してください。メールアドレス等の権限情報を画面へ渡し、
+画面側で候補を削る設計は禁止です。
+
+- `mode="create"`: サーバー判定 `createAllowed === true` かつ `episodeOpen === true` の候補だけを
+  二重防御で表示します。退所・終了済み専用タブは持ちません。
+- `mode="search"`: サーバーが返した `tabs` だけを、その順序のまま表示します。過去利用者を含めるかは
+  サーバー側の権限・用途別APIが決めます。
+- 氏名・かな・居室・5桁IDのローカル絞り込み、読込中・失敗・0件、再試行、選択解除、
+  Tab/矢印/Enter操作とARIAを備えます。
+- 8テーマ対応のため、採用アプリは `@magi/core/ui/design-system.css` を読み込んでください。
+
+```tsx
+import { ResidentSelector } from '@magi/core/ui';
+import '@magi/core/ui/design-system.css';
+
+<ResidentSelector
+  mode="create"
+  loadData={async () => {
+    // このAPIは、署名検証・職員権限確認後の候補だけを返す。
+    const response = await fetch('/api/residents/for-record-create');
+    if (!response.ok) throw new Error('resident selector load failed');
+    return response.json();
+  }}
+  value={selectedResident}
+  onSelect={setSelectedResident}
+  onClear={() => setSelectedResident(null)}
+/>
+```
+
+5桁IDは先頭ゼロを守るため、数値ではなく文字列で渡します。利用者の並び順はAPIを正本とし、
+コンポーネントは勝手に並べ替えません。loaderの生エラーは画面に出さず、利用者向けの定型文で
+fail-closed（新規選択不可）にします。
 
 ---
 

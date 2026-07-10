@@ -3060,3 +3060,193 @@ mark.search-hit {
 .print-only {
   display: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * ResidentSelector (v0.5)
+ * API非依存の利用者選択。色・面・文字は8テーマ共通tokenだけを参照する。
+ * ═══════════════════════════════════════════════════════════════════════ */
+.magi-resident-selector {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  color: var(--text-primary);
+  font-family: var(--ui-font);
+  font-size: 15px;
+}
+
+.magi-resident-selector__selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--card-radius);
+  background: var(--color-primary-light);
+}
+
+.magi-resident-selector__selected > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.magi-resident-selector__selected-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.magi-resident-selector__clear,
+.magi-resident-selector__tab,
+.magi-resident-selector__error button {
+  min-height: 44px;
+  padding: 8px 14px;
+}
+
+.magi-resident-selector__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.magi-resident-selector__tab {
+  border: 1px solid var(--border-default);
+  border-radius: var(--button-radius);
+  background: var(--control);
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.magi-resident-selector__tab[aria-selected="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary-light-foreground);
+}
+
+.magi-resident-selector__search-label {
+  display: grid;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.magi-resident-selector__search {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.magi-resident-selector__state:empty {
+  display: none;
+}
+
+.magi-resident-selector__state p,
+.magi-resident-selector__empty {
+  margin: 0;
+}
+
+.magi-resident-selector__error {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--card-radius);
+  background: var(--bg-importance-urgent);
+  color: var(--text-primary);
+}
+
+.magi-resident-selector__list {
+  display: grid;
+  gap: 8px;
+  max-height: min(52vh, 520px);
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.magi-resident-selector__option {
+  display: grid;
+  gap: 8px;
+  min-height: 56px;
+  padding: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.magi-resident-selector__option:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-surface-alt);
+}
+
+.magi-resident-selector__option[aria-selected="true"] {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.magi-resident-selector__identity,
+.magi-resident-selector__details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+}
+
+.magi-resident-selector__identity > span,
+.magi-resident-selector__details {
+  color: var(--text-secondary);
+}
+
+.magi-resident-selector__id {
+  font-family: var(--mono-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.magi-resident-selector__unknown {
+  padding: 2px 8px;
+  border-radius: var(--button-radius);
+  background: var(--badge-bg-amber);
+  color: var(--badge-text-amber);
+  font-weight: 700;
+}
+
+.magi-resident-selector__empty {
+  padding: 20px 12px;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--card-radius);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.magi-resident-selector button:focus-visible,
+.magi-resident-selector input:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.magi-resident-selector button:disabled,
+.magi-resident-selector input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+  .magi-resident-selector__selected {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .magi-resident-selector__clear {
+    width: 100%;
+  }
+}
