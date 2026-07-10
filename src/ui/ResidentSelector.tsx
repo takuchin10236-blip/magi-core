@@ -234,10 +234,7 @@ export function ResidentSelector(props: ResidentSelectorProps) {
     return source.filter((resident) => searchableText(resident).includes(normalizedQuery));
   }, [createData?.residents, props.mode, query, selectedTabId, tabs]);
 
-  useEffect(() => {
-    optionRefs.current.length = candidates.length;
-  }, [candidates.length]);
-
+  optionRefs.current.length = candidates.length;
   const effectiveLoading = loading ?? internalLoading;
   const effectiveError = error ?? internalError;
   const canRetry = Boolean(onRetry || props.loadData);
