@@ -22,7 +22,9 @@
  *
  * 検査（npm run check から呼ばれる）:
  *   (a) 標準値一致     … standard-lumen の基準トークン（--primary:#6bbf95 等）が index.css にある
- *   (b) 必須シェル構造 … topbar(themed-card) / app-body-grid / app-side-panel / side-peek-toggle が src/ にある
+ *   (b) 必須シェル構造 … トップメニュー型（top-menu-bar/tabs/panel・07 §4-4 現行標準）が揃っていれば合格。
+ *                        無ければ旧サイドパネル型（topbar(themed-card) / app-body-grid / app-side-panel /
+ *                        side-peek-toggle）を項目別に検査（従来どおり・逸脱承認で通せる）
  *   (c) 禁止パターン   … ネイティブ confirm/alert/prompt を src/ で呼んでいない
  *   (d) StatusBadge    … 状態バッジは @magi/core/ui の StatusBadge を使い、旧 tooltip/CSS コピーを残さない
  *   (d) 逸脱の承認     … 上記が欠けるなら TYPE_DEVIATIONS.md に status=承認済 で記載されているか
@@ -102,6 +104,17 @@ const REQUIRED_SHELL = [
   { name: 'app-body-grid', pattern: /\bapp-body-grid\b/ },
   { name: 'app-side-panel', pattern: /\bapp-side-panel\b/ },
   { name: 'side-peek-toggle', pattern: /\bside-peek-toggle\b/ },
+];
+
+// ── トップメニュー型シェル（07 §4-4・2026-06 サイドパネル廃止後の現行標準） ──
+//   v0.4.2 新設: 3クラスが src/ に全部あればシェル検査(b)は合格。旧サイドパネル型の
+//   クラスや退役 LegacyShell の残置は不要になる（magi-manual-app / magi-adl-app で
+//   「ガードが旧シェル前提のため退役JSXを置いて通す」回避策が2例発生した実装フィードバック）。
+//   1つでも欠ければ従来どおり REQUIRED_SHELL の項目別検査へフォールバック（fail-closed）。
+const TOPMENU_SHELL = [
+  { name: 'top-menu-bar', pattern: /\btop-menu-bar\b/ },
+  { name: 'top-menu-tabs', pattern: /\btop-menu-tabs\b/ },
+  { name: 'top-menu-panel', pattern: /\btop-menu-panel\b/ },
 ];
 
 // ── 禁止パターン（ネイティブダイアログ。専用モーダル+Toastに統一・07/規約6） ──
@@ -191,11 +204,17 @@ const srcFiles = existsSync(join(APP_ROOT, 'src')) ? collectFiles(join(APP_ROOT,
 const srcText = srcFiles.map((f) => readFileSync(f, 'utf8')).join('\n');
 
 // ── (b) 必須シェル構造（src 全体を1つの文字列として検査） ──
-for (const shell of REQUIRED_SHELL) {
-  if (shell.pattern.test(srcText)) {
-    passes.push(`(b) シェル構造: ${shell.name}`);
-  } else {
-    recordMissing('(b) シェル構造', shell.name);
+//   トップメニュー型（現行標準）が完備ならそれで合格。欠けるなら旧サイドパネル型を
+//   項目別に検査する（既存アプリの承認済み逸脱運用はそのまま生きる＝後方互換）。
+if (TOPMENU_SHELL.every((shell) => shell.pattern.test(srcText))) {
+  passes.push('(b) シェル構造: トップメニュー型（top-menu-bar / top-menu-tabs / top-menu-panel・07 §4-4）');
+} else {
+  for (const shell of REQUIRED_SHELL) {
+    if (shell.pattern.test(srcText)) {
+      passes.push(`(b) シェル構造: ${shell.name}`);
+    } else {
+      recordMissing('(b) シェル構造', shell.name);
+    }
   }
 }
 
