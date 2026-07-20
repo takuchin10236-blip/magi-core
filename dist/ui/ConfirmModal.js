@@ -57,10 +57,10 @@ export function ConfirmModal({ title, subtitle, message, tone = 'info', cancelTe
         },
     };
     const t = tones[tone];
-    return (_jsxs(DraggableModal, { onClose: submitting ? () => undefined : onClose, title: title, subtitle: subtitle, maxWidth: maxWidth, titleColorClass: t.titleClass, children: [_jsx("div", { className: "rounded p-3 text-sm mb-3", style: {
-                    background: `light-dark(${t.bg}, ${t.bgDark})`,
-                    borderLeft: `4px solid ${t.color}`,
-                    color: 'var(--text-primary)',
-                }, children: typeof message === 'string' ? (_jsx("p", { className: "whitespace-pre-wrap leading-relaxed", children: message })) : (message) }), _jsxs("div", { className: "flex justify-end gap-2", children: [_jsx("button", { type: "button", onClick: onClose, className: "themed-btn-secondary px-4 py-2 rounded text-sm", disabled: submitting, title: cancelTitle || cancelText, children: cancelText }), _jsx("button", { type: "button", onClick: submit, disabled: submitting, className: "px-4 py-2 rounded font-bold text-sm text-[var(--primary-button-text)] disabled:opacity-50", style: { background: t.color }, title: confirmTitle || confirmText, children: submitting ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "btn-spinner", "aria-hidden": true }), "\u51E6\u7406\u4E2D..."] })) : (confirmText) })] })] }));
+    return (_jsx(DraggableModal, { onClose: submitting ? () => undefined : onClose, title: title, subtitle: subtitle, maxWidth: maxWidth, titleColorClass: t.titleClass, footer: (_jsxs("div", { className: "flex justify-end gap-2", children: [_jsx("button", { type: "button", onClick: onClose, className: "themed-btn-secondary px-4 py-2 rounded text-sm", disabled: submitting, title: cancelTitle || cancelText, children: cancelText }), _jsx("button", { type: "button", onClick: submit, disabled: submitting, className: "px-4 py-2 rounded font-bold text-sm text-[var(--primary-button-text)] disabled:opacity-50", style: { background: t.color }, title: confirmTitle || confirmText, children: submitting ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "btn-spinner", "aria-hidden": true }), "\u51E6\u7406\u4E2D..."] })) : (confirmText) })] })), children: _jsx("div", { className: "rounded p-3 text-sm mb-3", style: {
+                background: `light-dark(${t.bg}, ${t.bgDark})`,
+                borderLeft: `4px solid ${t.color}`,
+                color: 'var(--text-primary)',
+            }, children: typeof message === 'string' ? (_jsx("p", { className: "whitespace-pre-wrap leading-relaxed", children: message })) : (message) }) }));
 }
 //# sourceMappingURL=ConfirmModal.js.map
