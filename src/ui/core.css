@@ -324,6 +324,13 @@
   color: var(--text-primary);
 }
 
+.magi-modal-close-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
 .magi-modal-close:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--color-primary);

@@ -178,7 +178,14 @@ export function DraggableModal({
                 aria-label="閉じる"
                 title="閉じます"
               >
-                <span aria-hidden="true">×</span>
+                <svg
+                  aria-hidden="true"
+                  className="magi-modal-close-icon"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2.4" />
+                </svg>
               </button>
             </div>
           )}
