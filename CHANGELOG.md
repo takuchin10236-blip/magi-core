@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.5.0 candidate (2026-07-23 / isolated rehearsal only)
+
+- B2必須fieldと5桁`residentId`をfail-closedで検証する`ResidentSelector`を追加。
+- `search`は必須fieldが揃った退所者を含み、`create`は`createAllowed`と`episodeOpen`が
+  ともにtrueの候補だけを表示する回帰検査を追加。
+- loader失敗・不正boolean・必須field欠落・不正IDは候補0件へ倒す。
+- 既知の制約: `page`（`pageSize` / `nextPageToken`）と`searchScopeApplied`は未対応。
+  現在は親が渡す1回分のデータだけをローカル絞り込みし、ページ分割対応はPhase 2のB2接続工程で扱う。
+- v0.4.4のU8モーダル閉じる印の光学中央修正を含む最新remote `main` 上で統合予行演習した。
+- 隔離候補のみ。publish、push、main merge、deployは行わない。
+
 ## v0.4.4 (2026-07-21)
 
 ### U8モーダルの閉じる印を光学中央へ修正

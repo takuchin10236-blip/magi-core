@@ -38,4 +38,6 @@ export { ManualViewer } from './ManualViewer';
 export { ManualEntry } from './ManualEntry';
 // 状態表示（v0.4）
 export { StatusBadge } from './StatusBadge';
+// 利用者選択（v0.5候補）
+export { ResidentSelector, filterResidentSelectorCandidates, normalizeResidentSelectorData, resolveResidentSelectorLoad, } from './ResidentSelector';
 //# sourceMappingURL=index.js.map

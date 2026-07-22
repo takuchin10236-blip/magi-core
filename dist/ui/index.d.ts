@@ -43,4 +43,6 @@ export type { ManualEntryProps } from './ManualEntry';
 export type { ManualBlock, ManualSection, ManualContent } from './manual-types';
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusTone } from './StatusBadge';
+export { ResidentSelector, filterResidentSelectorCandidates, normalizeResidentSelectorData, resolveResidentSelectorLoad, } from './ResidentSelector';
+export type { ResidentSelectorMode, ResidentSelectorProps, ResidentSelectorResident, } from './ResidentSelector';
 //# sourceMappingURL=index.d.ts.map

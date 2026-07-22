@@ -65,3 +65,16 @@ export type { ManualBlock, ManualSection, ManualContent } from './manual-types';
 // 状態表示（v0.4）
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusTone } from './StatusBadge';
+
+// 利用者選択（v0.5候補）
+export {
+  ResidentSelector,
+  filterResidentSelectorCandidates,
+  normalizeResidentSelectorData,
+  resolveResidentSelectorLoad,
+} from './ResidentSelector';
+export type {
+  ResidentSelectorMode,
+  ResidentSelectorProps,
+  ResidentSelectorResident,
+} from './ResidentSelector';
