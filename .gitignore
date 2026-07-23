@@ -2,3 +2,7 @@ node_modules/
 *.log
 .DS_Store
 .wrangler/
+
+# 版マトリクス生成物（機械生成・ローカル状態を含む）
+docs/verified-combos/version-matrix.json
+docs/verified-combos/version-matrix.md
