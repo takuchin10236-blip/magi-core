@@ -3,8 +3,8 @@
 MAGI 2階老健システム群の共有コア。3アプリ（omutsu-inventory / resident-spine / staff-master）に
 散らばっていた「データ契約・CIガード・背骨UI」の原本を1箇所に集約する。
 
-- 最終更新: 2026-07-21
-- バージョン: v0.4.3
+- 最終更新: 2026-07-22
+- バージョン: v0.5.0候補（ローカル検証用・未公開）
 - 担当: 開発部（実装=タチコマ / レビュー=バトー）
 
 ---
@@ -50,6 +50,23 @@ import '@magi/core/ui/core.css';
 
 `react` / `react-dom` / `lucide-react` / `react-draggable` は **peerDependencies**
 （採用側アプリのものを使う。@magi/core はこれらを bundle しない）。
+
+### v0.5候補: `ResidentSelector`
+
+`ResidentSelector`は、親から渡された認可済み候補を、検索用または新規記録作成用に選ぶ部品。
+5桁の`residentId`とB2必須fieldを満たさない候補は表示しない。B2で任意の`room`は
+空または省略を受け入れ、画面では「居室未設定」と表示する。`locationUnknown`は
+`search`では省略可能、`create`ではboolean必須として扱う。`create`モードは
+`createAllowed === true`かつ`episodeOpen === true`で、`locationUnknown`がbooleanの候補だけを表示する。
+`search`モードでは必須fieldが揃った退所者も検索できる。`data`と`loadData`の両方が
+無くなった場合は、以前の候補を画面に残さず0件へ戻す。
+
+この部品は認可装置ではない。role別scope・件数上限・検索監査はサーバー側で実施する。
+
+既知の制約: B2契約の任意項目`page`（`pageSize` / `nextPageToken`）と
+`searchScopeApplied`はv0.5では未対応。本部品は親から渡された1回分のデータだけを
+ローカルで絞り込む。サーバーがページ分割応答を始める場合は、Phase 2のB2接続工程で
+次ページ取得と検索範囲の適用結果を扱えるよう拡張する。
 
 ---
 
