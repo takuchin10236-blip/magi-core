@@ -1,0 +1,1 @@
+{"version":3,"file":"SgLumenLogo.d.ts","sourceRoot":"","sources":["../../src/ui/SgLumenLogo.tsx"],"names":[],"mappings":"AASA,MAAM,MAAM,gBAAgB,GAAG;IAC7B,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,IAAI,CAAC,EAAE,OAAO,CAAC;IACf,yCAAyC;IACzC,KAAK,CAAC,EAAE,MAAM,CAAC;CAChB,CAAC;AAIF,wBAAgB,WAAW,CAAC,EAAE,SAAS,EAAE,IAAY,EAAE,KAA2B,EAAE,EAAE,gBAAgB,+BA4ErG"}

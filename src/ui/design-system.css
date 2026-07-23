@@ -3151,3 +3151,444 @@ mark.search-hit {
 .print-only {
   display: none;
 }
+
+/* === AppShell v0.5 === */
+/*
+ * MAGI 共通 AppShell（SgLumenLogo / MagiStatusSummary / MagiVersionChip /
+ * BusinessNav / ColorModeSwitch / MagiAppShell）の見た目。
+ * magi-resident-spine origin/main src/styles/index.css の該当スタイルから必要分を移植し、
+ * クラス名を magi-appshell-* 系へ改名して既存定義との衝突を避ける。既存定義は変更しない。
+ * 色・寸法はテーマトークン（--color-primary / --border-default 等）に追従する。
+ */
+
+/* -- shell 骨格 -- */
+.magi-appshell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.magi-appshell-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.magi-appshell-brand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.magi-appshell-logo {
+  width: 88px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.magi-appshell-titles {
+  min-width: 0;
+}
+
+.magi-appshell-kicker {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.magi-appshell-floor {
+  color: var(--text-secondary);
+}
+
+.magi-appshell-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--display-font);
+  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+  font-weight: 850;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.magi-appshell-header-right {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.magi-appshell-main {
+  min-width: 0;
+}
+
+/* -- MagiStatusSummary（状態要約） -- */
+.magi-appshell-status-cluster {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  overflow: visible;
+}
+
+.magi-appshell-status-badges {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.magi-appshell-status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.magi-appshell-status-details {
+  position: static;
+  z-index: 75;
+}
+
+.magi-appshell-status-details > summary {
+  display: inline-flex;
+  min-height: 36px;
+  cursor: pointer;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.magi-appshell-status-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.magi-appshell-status-details[open] > summary {
+  color: var(--color-primary);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--border-default));
+}
+
+.magi-appshell-status-details[open] > summary svg:last-child {
+  transform: rotate(180deg);
+}
+
+.magi-appshell-status-detail-body {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  z-index: 100;
+  width: min(520px, calc(100vw - 36px));
+  padding: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  box-shadow: var(--floating-shadow);
+  overflow-wrap: anywhere;
+}
+
+.magi-appshell-status-detail-body dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.magi-appshell-status-detail-body dl > div {
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: var(--bg-surface-alt);
+}
+
+.magi-appshell-status-detail-body dt {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.magi-appshell-status-detail-body dd {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.magi-appshell-status-close {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 10px auto;
+  padding: 7px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 9px;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.magi-appshell-status-close:hover,
+.magi-appshell-status-close:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  outline: none;
+}
+
+/* -- MagiVersionChip（版チップ） -- */
+.magi-appshell-version {
+  position: static;
+}
+
+.magi-appshell-version-chip {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  font-family: var(--mono-font);
+  font-size: 0.78rem;
+  font-weight: 850;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.magi-appshell-version-chip:hover,
+.magi-appshell-version-chip:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  outline: none;
+}
+
+.magi-appshell-version-panel {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  z-index: 100;
+  width: min(320px, calc(100vw - 36px));
+  padding: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  box-shadow: var(--floating-shadow);
+}
+
+.magi-appshell-version-panel dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.magi-appshell-version-panel dl > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: var(--bg-surface-alt);
+}
+
+.magi-appshell-version-panel dt {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.magi-appshell-version-panel dd {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--mono-font);
+  font-size: 13px;
+}
+
+/* -- BusinessNav（トップメニュー） -- */
+.magi-appshell-nav {
+  position: relative;
+  z-index: 35;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, var(--mode-radius));
+  background: var(--bg-surface);
+  overflow: visible;
+}
+
+.magi-appshell-nav-tabs,
+.magi-appshell-nav-right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.magi-appshell-nav-tab {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--button-radius, 10px);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 750;
+  line-height: 1.1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.magi-appshell-nav-tab:hover,
+.magi-appshell-nav-tab:focus-visible {
+  border-color: color-mix(in srgb, var(--color-primary) 26%, var(--border-default));
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--bg-surface));
+  color: var(--text-primary);
+  outline: none;
+}
+
+.magi-appshell-nav-tab.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+}
+
+.magi-appshell-role-chip {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.magi-appshell-menu {
+  position: relative;
+}
+
+.magi-appshell-menu-caret {
+  transition: transform 0.15s ease;
+}
+
+.magi-appshell-menu-caret.open {
+  transform: rotate(180deg);
+}
+
+.magi-appshell-menu-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  display: flex;
+  width: min(300px, calc(100vw - 32px));
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, var(--mode-radius));
+  background: var(--bg-surface);
+  box-shadow: var(--floating-shadow);
+}
+
+.magi-appshell-menu-item {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--button-radius, 10px);
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 750;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.magi-appshell-menu-item:hover,
+.magi-appshell-menu-item:focus-visible {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--border-default));
+  color: var(--color-primary);
+  outline: none;
+}
+
+/* -- ColorModeSwitch（White/Dark 2択） -- */
+.magi-appshell-colormode {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+}
+
+.magi-appshell-colormode button {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.magi-appshell-colormode button:hover,
+.magi-appshell-colormode button:focus-visible {
+  color: var(--text-primary);
+  outline: none;
+}
+
+.magi-appshell-colormode button.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+}
+
+@media (max-width: 640px) {
+  .magi-appshell-header {
+    align-items: flex-start;
+  }
+
+  .magi-appshell-header-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .magi-appshell-title {
+    white-space: normal;
+  }
+}
