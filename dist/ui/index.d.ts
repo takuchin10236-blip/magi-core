@@ -48,14 +48,14 @@ export type { SgLumenLogoProps } from './SgLumenLogo';
 export { ColorModeSwitch } from './ColorModeSwitch';
 export type { ColorModeSwitchProps } from './ColorModeSwitch';
 export { MagiStatusSummary } from './MagiStatusSummary';
-export type { MagiStatusSummaryProps, WriteDetector } from './MagiStatusSummary';
+export type { MagiStatusSummaryProps } from './MagiStatusSummary';
 export { MagiVersionChip } from './MagiVersionChip';
 export type { MagiVersionChipProps } from './MagiVersionChip';
 export { BusinessNav } from './BusinessNav';
 export type { BusinessNavProps, BusinessNavTab, BusinessNavMenuItem } from './BusinessNav';
 export { MagiAppShell } from './MagiAppShell';
 export type { MagiAppShellProps } from './MagiAppShell';
-export { detectRuntime, validateDeclaredState, deriveStatusDisplay, } from './statusDetection';
-export type { RuntimeSurface, DeclarableState, DeclaredStateValidation, RuntimeDetectorConfig, StatusDisplayItem, StatusDisplayResult, StatusResolution, } from './statusDetection';
+export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createEndpointWriteDetector, } from './statusDetection';
+export type { RuntimeSurface, DeclarableState, DeclaredStateValidation, RuntimeDetectorConfig, StatusDisplayItem, StatusDisplayResult, StatusResolution, WriteDetector, TrustedWriteDetector, } from './statusDetection';
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
 //# sourceMappingURL=index.d.ts.map

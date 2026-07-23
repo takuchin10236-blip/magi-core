@@ -1,11 +1,18 @@
 /**
- * MagiStatusSummary — 重要状態の表示・安全側集約・不明時展開（v0.5・AppShell）。
+ * MagiStatusSummary — 重要状態の表示・安全側集約・不明時展開（v0.5.1・AppShell / Sol R1 修正）。
  *
  * 最重要・P0対策の中核。設計の背骨は候補_core_AppShell部品設計.md §0:
  *   - 本番URL・書込ON/OFF は機械検出のみ（アプリは検出設定/検出関数を渡すだけ、値は渡せない）
  *   - 宣言できるのは許可リスト型 DeclarableState（業務本番化のみ）＝必ず「無検証」バッジ併記
  *   - fail-closed 集約: 安全に揃った時だけ1バッジへ畳み、不明・不整合・宣言存在なら個別展開
  *   - 誤申告（不正 kind）は表示せずエラー個別表示（拒否）
+ *
+ * Sol R1 修正（v0.5.1）:
+ *   - R1-C2-PROP-TYPE-BYPASS: 公開 declaredStates を許可リスト型 readonly DeclarableState[] に。
+ *     JS/外部境界用は unsafeDeclaredStates?: unknown[]（実行時検証してから合流）に分離。
+ *   - R1-C2-DETECTOR-SELFDECLARATION: 書込検出器が Core提供ファクトリ由来（信頼済み）かを
+ *     実行時判定し、生関数の結果は無検証併記＋集約除外にする（deriveStatusDisplay の writeTrusted）。
+ *   - R1-C2-FAILCLOSED-EDGE: 書込結果は typeof boolean のみ受理（Boolean() 丸めを廃止）。
  *
  * 見た目は magi-resident-spine の StatusStrip/statusDisplay の2段レイアウトを踏襲
  *   （1段目=バッジ群、2段目=版チップ＋状態の説明 details）。表示原子は既存 StatusBadge。
@@ -16,27 +23,35 @@ import { StatusBadge } from './StatusBadge';
 import {
   deriveStatusDisplay,
   detectRuntime,
+  isTrustedWriteDetector,
   validateDeclaredState,
   type DeclarableState,
   type RuntimeDetectorConfig,
   type RuntimeSurface,
   type StatusDisplayItem,
   type StatusResolution,
+  type WriteDetector,
 } from './statusDetection';
-
-/** 書込ON/OFF の検出関数。真偽値を直接渡す props は設けない（自己申告を型で塞ぐ）。 */
-export type WriteDetector = () => boolean | Promise<boolean>;
 
 export interface MagiStatusSummaryProps {
   /** ランタイム面（local/preview/production）の検出設定。 */
   runtimeDetector?: RuntimeDetectorConfig;
-  /** 書込ON/OFF の検出関数。未指定なら「書込確認中」を出す（fail-closed）。 */
+  /**
+   * 書込ON/OFF の検出関数。未指定なら「書込確認中」を出す（fail-closed）。
+   *   Core提供ファクトリ（createEnvWriteDetector / createEndpointWriteDetector）が返す
+   *   TrustedWriteDetector を渡すと信頼済み扱い。生関数を渡すと結果は「無検証」併記＋集約除外。
+   */
   writeDetector?: WriteDetector;
   /**
-   * アプリの状態宣言（許可リスト型のみ）。unknown[] を受け、実行時に許可リストへ照合する。
+   * アプリの状態宣言（許可リスト型・TypeScript 経路）。型で businessLive のみに縛られる
+   *   ＝本番URL・書込状態を騙る kind はコンパイルエラー（R1-C2-PROP-TYPE-BYPASS）。
+   */
+  declaredStates?: readonly DeclarableState[];
+  /**
+   * JS・外部入力境界用の状態宣言。unknown[] を受け、実行時に許可リストへ照合する。
    *   不正な形（本番URL・書込状態を騙る object 等）は拒否してエラー個別表示にする。
    */
-  declaredStates?: unknown[];
+  unsafeDeclaredStates?: unknown[];
   /** 状態の説明 details に載せる補助情報（データ接続名・本人確認の状態など・任意）。 */
   detailRows?: Array<{ label: string; value: string }>;
   className?: string;
@@ -53,19 +68,23 @@ export function MagiStatusSummary({
   runtimeDetector,
   writeDetector,
   declaredStates,
+  unsafeDeclaredStates,
   detailRows,
   className,
 }: MagiStatusSummaryProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
-  // 宣言状態の許可リスト照合は render 中に確定できる（同期・純粋）。
-  const validated = (declaredStates ?? []).map(validateDeclaredState);
-  const declared: DeclarableState[] = [];
+  // 型経路（declaredStates）は許可リスト型で縛られ済み＝そのまま信頼。
+  // JS/外部境界経路（unsafeDeclaredStates）だけ実行時に許可リスト照合する。
+  const declared: DeclarableState[] = [...(declaredStates ?? [])];
   const rejected: StatusResolution['rejected'] = [];
-  for (const entry of validated) {
+  for (const entry of (unsafeDeclaredStates ?? []).map(validateDeclaredState)) {
     if (entry.ok) declared.push(entry.state);
     else rejected.push({ reason: entry.reason, received: entry.received });
   }
+
+  // 書込検出器が Core提供ファクトリ由来（信頼済み）か。生関数は無検証扱い（R1-C2）。
+  const writeTrusted = writeDetector !== undefined && isTrustedWriteDetector(writeDetector);
 
   // ランタイム面は同期検出、書込は非同期になり得るので effect で解決する。
   const runtimeSurface = detectRuntime(runtimeDetector);
@@ -86,7 +105,13 @@ export function MagiStatusSummary({
     Promise.resolve()
       .then(() => writeDetector())
       .then((value) => {
-        if (!cancelled) setWriteState({ writable: Boolean(value), failed: false, ready: true });
+        if (cancelled) return;
+        // boolean 以外（undefined/null/0/''/非boolean）は検出失敗へ落とす（Boolean 丸め廃止・R1-C2）。
+        if (typeof value === 'boolean') {
+          setWriteState({ writable: value, failed: false, ready: true });
+        } else {
+          setWriteState({ writable: null, failed: true, ready: true });
+        }
       })
       .catch(() => {
         if (!cancelled) setWriteState({ writable: null, failed: true, ready: true });
@@ -101,6 +126,7 @@ export function MagiStatusSummary({
     runtimeSurface,
     writable: writeState.writable,
     writeDetectorFailed: writeState.failed,
+    writeTrusted,
     declared,
     rejected,
   };

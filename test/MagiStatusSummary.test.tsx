@@ -1,15 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MagiStatusSummary } from '../src/ui/MagiStatusSummary';
+import { createEnvWriteDetector } from '../src/ui/statusDetection';
 
 // jsdom の location.hostname は 'localhost'（＝detectRuntime→'local'）を既定に使う。
+// 信頼済み検出器（createEnvWriteDetector）でないと安全側集約は起きない（v0.5.1・R1-C2）。
 
 describe('MagiStatusSummary（P0・状態表示）', () => {
-  it('(a) 誤申告拒否: 不正 kind の declaredStates は表示せずエラー個別表示', async () => {
+  it('(a) 誤申告拒否: 不正 kind を unsafeDeclaredStates に渡すと表示せずエラー個別表示', async () => {
     render(
       <MagiStatusSummary
-        writeDetector={() => false}
-        declaredStates={[{ kind: 'production', value: true, basis: '偽装' }]}
+        writeDetector={createEnvWriteDetector(() => false)}
+        unsafeDeclaredStates={[{ kind: 'production', value: true, basis: '偽装' }]}
       />,
     );
     await waitFor(() => {
@@ -20,10 +22,10 @@ describe('MagiStatusSummary（P0・状態表示）', () => {
     expect(screen.queryByText('このPC内・書込OFF')).toBeNull();
   });
 
-  it('(c) 集約除外: 無検証宣言があると安全側集約が発動せず個別表示', async () => {
+  it('(c) 集約除外: 無検証宣言（declaredStates）があると安全側集約が発動せず個別表示', async () => {
     render(
       <MagiStatusSummary
-        writeDetector={() => false}
+        writeDetector={createEnvWriteDetector(() => false)}
         declaredStates={[{ kind: 'businessLive', value: false, basis: '運用台帳' }]}
       />,
     );
@@ -36,9 +38,9 @@ describe('MagiStatusSummary（P0・状態表示）', () => {
   it('(d) fail-closed: 書込検出が例外で落ちると集約せず「書込確認中」を展開', async () => {
     render(
       <MagiStatusSummary
-        writeDetector={() => {
+        writeDetector={createEnvWriteDetector(() => {
           throw new Error('detector down');
-        }}
+        })}
       />,
     );
     await waitFor(() => {
@@ -47,10 +49,30 @@ describe('MagiStatusSummary（P0・状態表示）', () => {
     expect(screen.queryByText('このPC内・書込OFF')).toBeNull();
   });
 
-  it('安全側: local + 書込OFF + 宣言なしなら1バッジへ集約', async () => {
-    render(<MagiStatusSummary writeDetector={() => false} />);
+  it('安全側: local + 信頼済み書込OFF + 宣言なしなら1バッジへ集約', async () => {
+    render(<MagiStatusSummary writeDetector={createEnvWriteDetector(() => false)} />);
     await waitFor(() => {
       expect(screen.getByText('このPC内・書込OFF')).toBeTruthy();
     });
+  });
+
+  // R1-C2-DETECTOR-SELFDECLARATION: 生関数（未検証）は安全側集約させない
+  it('未検証（生関数）の書込OFFは集約せず「書込OFF」＋「無検証」を個別表示', async () => {
+    render(<MagiStatusSummary writeDetector={() => false} />);
+    await waitFor(() => {
+      expect(screen.getByText('書込OFF')).toBeTruthy();
+    });
+    expect(screen.getByText('無検証')).toBeTruthy();
+    expect(screen.queryByText('このPC内・書込OFF')).toBeNull();
+  });
+
+  // R1-C2-FAILCLOSED-EDGE: 非boolean を返す生関数は検出失敗へ落ちる（書込OFFにしない）
+  it('検出器が非booleanを返すと「書込確認中」（書込OFFに丸めない）', async () => {
+    // @ts-expect-error 生JS境界を模す: 検出器が boolean 以外を返すケース
+    render(<MagiStatusSummary writeDetector={() => 'yes'} />);
+    await waitFor(() => {
+      expect(screen.getByText('書込確認中')).toBeTruthy();
+    });
+    expect(screen.queryByText('書込OFF')).toBeNull();
   });
 });

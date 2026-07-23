@@ -3,6 +3,9 @@ import {
   detectRuntime,
   validateDeclaredState,
   deriveStatusDisplay,
+  createEnvWriteDetector,
+  createEndpointWriteDetector,
+  isTrustedWriteDetector,
   type StatusResolution,
 } from '../src/ui/statusDetection';
 
@@ -12,6 +15,7 @@ function baseResolution(overrides: Partial<StatusResolution> = {}): StatusResolu
     runtimeSurface: 'preview',
     writable: false,
     writeDetectorFailed: false,
+    writeTrusted: true,
     declared: [],
     rejected: [],
     ...overrides,
@@ -29,9 +33,18 @@ describe('detectRuntime', () => {
   it('production は明示設定で判定', () => {
     expect(detectRuntime({ productionHosts: ['magi.example.jp'] }, 'magi.example.jp')).toBe('production');
   });
+  // R1-C2-FAILCLOSED-EDGE: 空文字・hostname不能を local に丸めない。
+  //   （明示 undefined はデフォルト引数 currentHostname() に置換されるため、
+  //    hostname 不能の実体＝空文字ガードで担保する。SSR等では currentHostname()→undefined→同ガード。）
+  it('空文字ホストは unknown（local に丸めない）', () => {
+    expect(detectRuntime({}, '')).toBe('unknown');
+  });
+  it('空文字は localHosts に混ぜても local へ丸めない（先頭ガードで unknown 確定）', () => {
+    expect(detectRuntime({ localHosts: [''] }, '')).toBe('unknown');
+  });
 });
 
-describe('validateDeclaredState（許可リスト照合）', () => {
+describe('validateDeclaredState（許可リスト照合・R1-C2-INVALID-KIND-THROW）', () => {
   it('businessLive は通す', () => {
     const result = validateDeclaredState({ kind: 'businessLive', value: true, basis: '運用開始台帳' });
     expect(result.ok).toBe(true);
@@ -44,10 +57,55 @@ describe('validateDeclaredState（許可リスト照合）', () => {
     expect(validateDeclaredState({ kind: 'businessLive', value: true, basis: '' }).ok).toBe(false);
     expect(validateDeclaredState({ kind: 'businessLive', value: 'yes', basis: 'x' }).ok).toBe(false);
   });
+  it('BigInt kind でも throw せず ok:false（JSON.stringify 事故の回避）', () => {
+    expect(() => validateDeclaredState({ kind: 10n, value: true, basis: 'x' })).not.toThrow();
+    expect(validateDeclaredState({ kind: 10n, value: true, basis: 'x' }).ok).toBe(false);
+  });
+  it('循環参照 object の kind でも throw せず ok:false', () => {
+    const circular: Record<string, unknown> = { value: true, basis: 'x' };
+    circular.self = circular;
+    circular.kind = circular; // kind に循環 object
+    expect(() => validateDeclaredState(circular)).not.toThrow();
+    expect(validateDeclaredState(circular).ok).toBe(false);
+  });
+  it('Symbol kind でも throw せず ok:false', () => {
+    expect(() => validateDeclaredState({ kind: Symbol('x'), value: true, basis: 'x' })).not.toThrow();
+    expect(validateDeclaredState({ kind: Symbol('x'), value: true, basis: 'x' }).ok).toBe(false);
+  });
+  it('複数の不正入力を連続照合しても throw しない', () => {
+    const inputs: unknown[] = [null, 42, 'str', { kind: 5n }, { kind: 'production' }, undefined];
+    expect(() => inputs.map(validateDeclaredState)).not.toThrow();
+    expect(inputs.map(validateDeclaredState).every((r) => r.ok === false)).toBe(true);
+  });
+});
+
+describe('書込検出ファクトリ（R1-C2-DETECTOR-SELFDECLARATION）', () => {
+  it('createEnvWriteDetector は信頼済みブランドを持つ', () => {
+    const d = createEnvWriteDetector(() => false);
+    expect(isTrustedWriteDetector(d)).toBe(true);
+  });
+  it('createEndpointWriteDetector も信頼済みブランドを持つ', () => {
+    const d = createEndpointWriteDetector('/api/health');
+    expect(isTrustedWriteDetector(d)).toBe(true);
+  });
+  it('生関数は信頼済みでない', () => {
+    const raw = () => false;
+    expect(isTrustedWriteDetector(raw)).toBe(false);
+  });
+  it('createEnvWriteDetector は boolean を返す（同期）', () => {
+    expect(createEnvWriteDetector(() => true)()).toBe(true);
+    expect(createEnvWriteDetector(() => false)()).toBe(false);
+  });
+  it('createEnvWriteDetector は非boolean で throw（fail-closed）', () => {
+    // read() は () => unknown。boolean 以外は同期 throw → 呼び出し側で failed に落ちる。
+    expect(() => createEnvWriteDetector(() => 'yes')()).toThrow();
+    expect(() => createEnvWriteDetector(() => undefined)()).toThrow();
+    expect(() => createEnvWriteDetector(() => 0)()).toThrow();
+  });
 });
 
 describe('deriveStatusDisplay', () => {
-  it('全検出成功かつ安全側で 1 バッジへ集約する', () => {
+  it('信頼済み検出器の書込OFF＋安全側で 1 バッジへ集約する', () => {
     const result = deriveStatusDisplay(baseResolution());
     expect(result.mode).toBe('aggregate');
     expect(result.visible.map((i) => i.label)).toEqual(['試験運用・書込OFF']);
@@ -57,6 +115,22 @@ describe('deriveStatusDisplay', () => {
     const result = deriveStatusDisplay(baseResolution({ runtimeSurface: 'local' }));
     expect(result.mode).toBe('aggregate');
     expect(result.visible[0].label).toBe('このPC内・書込OFF');
+  });
+
+  // R1-C2-DETECTOR-SELFDECLARATION: 未検証（生関数）書込は集約させない
+  it('未検証（生関数）の書込OFFは集約せず「書込OFF（無検証）」を個別表示', () => {
+    const result = deriveStatusDisplay(baseResolution({ writeTrusted: false }));
+    expect(result.mode).toBe('exposed');
+    const off = result.visible.find((i) => i.label === '書込OFF');
+    expect(off?.unverified).toBe(true);
+  });
+
+  it('未検証の書込ONは無検証併記の danger 個別表示', () => {
+    const result = deriveStatusDisplay(baseResolution({ writable: true, writeTrusted: false }));
+    expect(result.mode).toBe('exposed');
+    const on = result.visible.find((i) => i.label === '書込ON');
+    expect(on?.tone).toBe('danger');
+    expect(on?.unverified).toBe(true);
   });
 
   it('無検証宣言があると集約せず個別表示する（宣言があるだけで集約禁止）', () => {
