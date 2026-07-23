@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.5.1 (2026-07-24)
+
+### Sol R1 レビュー修正（AppShell 状態表示の堅牢化）
+- **R1-C2-PROP-TYPE-BYPASS**: `MagiStatusSummary` の公開 `declaredStates` を許可リスト型 `readonly DeclarableState[]` に変更（型で businessLive のみに縛る）。JS/外部境界用に `unsafeDeclaredStates?: unknown[]`（実行時検証してから合流）を新設。Props 型経路の `@ts-expect-error` 試験を追加。
+- **R1-C2-DETECTOR-SELFDECLARATION**: 任意 `classify` を `RuntimeDetectorConfig` から撤去（hostname リストのみ＝Core所有）。書込検出は Core提供ファクトリ `createEnvWriteDetector` / `createEndpointWriteDetector`（`TrustedWriteDetector` を返す）を正とし、生関数の結果は書込バッジに「無検証」を併記して安全側集約から除外する。
+- **R1-C2-FAILCLOSED-EDGE**: `DEFAULT_LOCAL_HOSTS` から空文字を除外、hostname 取得不能は `unknown`、書込結果は `typeof value === 'boolean'` のみ受理（`Boolean()` 丸めを廃止）、検出器の例外・reject は failed へ。各回帰試験を追加。
+- **R1-C2-INVALID-KIND-THROW**: 拒否理由生成の `JSON.stringify` を例外安全な記述関数へ置換。validator は BigInt・循環参照・Symbol でも throw せず `ok:false` を返す。
+- **R1-C4-GUARDRAIL-FALLBACK**: `ci/check-ui-guardrails.mjs` に **SHELL-APPSHELL** 検査を追加。`MagiAppShell` / `BusinessNav`（コンポーネント使用 or `magi-appshell-*` クラス）を第3の合格シェル型として認識する（既存2型の判定は不変）。採用アプリは退役 LegacyShell の fallback に頼らず live の AppShell を直接検査できる。
+- **R1-C1-VERSION-SOT**: `docs/verified-combos/` を .gitignore から外し版SoTとして追跡対象に。`collect-version-matrix.mts` の出力に `generated_at`（`--now` で外部注入可）と `source_hashes`（読取元 package.json・`git tag` 出力の SHA-256）を追加。
+
+## v0.5.0 (2026-07-24)
+
+### AppShell 部品群を追加（利用者マスタ実証の外枠を共通化）
+- `SgLumenLogo` / `MagiAppShell` / `MagiStatusSummary` / `MagiVersionChip` / `BusinessNav` / `ColorModeSwitch` を新設し `@magi/core/ui` から export。
+- 状態表示は自己申告にしない設計（2026-07-24裁定）: 本番URL・書込ON/OFF は機械検出、宣言できるのは許可リスト型 `DeclarableState`（業務本番化のみ）＝必ず「無検証」バッジ併記、fail-closed 集約。
+- `statusDetection.ts`（純ロジック）・`versionFormat.ts`・`design-system.css` の AppShell セクション・`verify:shell` / `verify:types` / vitest 試験・`collect-version-matrix.mts` を追加。
+
 ## v0.4.4 (2026-07-21)
 
 ### U8モーダルの閉じる印を光学中央へ修正
