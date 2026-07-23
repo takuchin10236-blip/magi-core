@@ -65,3 +65,32 @@ export type { ManualBlock, ManualSection, ManualContent } from './manual-types';
 // 状態表示（v0.4）
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusTone } from './StatusBadge';
+
+// AppShell 部品群（v0.5）
+export { SgLumenLogo } from './SgLumenLogo';
+export type { SgLumenLogoProps } from './SgLumenLogo';
+export { ColorModeSwitch } from './ColorModeSwitch';
+export type { ColorModeSwitchProps } from './ColorModeSwitch';
+export { MagiStatusSummary } from './MagiStatusSummary';
+export type { MagiStatusSummaryProps, WriteDetector } from './MagiStatusSummary';
+export { MagiVersionChip } from './MagiVersionChip';
+export type { MagiVersionChipProps } from './MagiVersionChip';
+export { BusinessNav } from './BusinessNav';
+export type { BusinessNavProps, BusinessNavTab, BusinessNavMenuItem } from './BusinessNav';
+export { MagiAppShell } from './MagiAppShell';
+export type { MagiAppShellProps } from './MagiAppShell';
+export {
+  detectRuntime,
+  validateDeclaredState,
+  deriveStatusDisplay,
+} from './statusDetection';
+export type {
+  RuntimeSurface,
+  DeclarableState,
+  DeclaredStateValidation,
+  RuntimeDetectorConfig,
+  StatusDisplayItem,
+  StatusDisplayResult,
+  StatusResolution,
+} from './statusDetection';
+export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';

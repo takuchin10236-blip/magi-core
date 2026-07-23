@@ -3,8 +3,8 @@
 MAGI 2階老健システム群の共有コア。3アプリ（omutsu-inventory / resident-spine / staff-master）に
 散らばっていた「データ契約・CIガード・背骨UI」の原本を1箇所に集約する。
 
-- 最終更新: 2026-06-09
-- バージョン: v0.3.2
+- 最終更新: 2026-07-21
+- バージョン: v0.4.3
 - 担当: 開発部（実装=タチコマ / レビュー=バトー）
 
 ---
@@ -34,6 +34,8 @@ MAGI_CORE_GUARD_ROOT=/path/to/app node node_modules/@magi/core/ci/check-ui-guard
 原本 = resident/staff（部品 byte 一致）。
 
 - `ConfirmModal` / `DraggableModal` / `Toast`（`ToastProvider` / `useToast`）。
+- U8モーダル標準: 44pxの閉じるボタン、画面中央の初期表示、枠内スクロール、固定フッタ、
+  Escapeキー、背景スクロール停止、閉じた後のフォーカス復帰。
 - 状態色トークン（`--primary:#6bbf95` 等）＋背骨シェル最小CSS（topbar / app-body-grid /
   app-side-panel / side-peek-toggle の核）を `src/ui/core.css` に切り出し。
 - 使い方：
@@ -42,6 +44,9 @@ MAGI_CORE_GUARD_ROOT=/path/to/app node node_modules/@magi/core/ci/check-ui-guard
 import { ConfirmModal, ToastProvider, useToast } from '@magi/core/ui';
 import '@magi/core/ui/core.css';
 ```
+
+`DraggableModal` の `footer` prop に操作ボタンを渡すと、長い本文をスクロールしても
+操作ボタンは下部に固定される。`ConfirmModal` はこの構造を標準で使う。
 
 `react` / `react-dom` / `lucide-react` / `react-draggable` は **peerDependencies**
 （採用側アプリのものを使う。@magi/core はこれらを bundle しない）。

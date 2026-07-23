@@ -38,4 +38,13 @@ export { ManualViewer } from './ManualViewer';
 export { ManualEntry } from './ManualEntry';
 // 状態表示（v0.4）
 export { StatusBadge } from './StatusBadge';
+// AppShell 部品群（v0.5）
+export { SgLumenLogo } from './SgLumenLogo';
+export { ColorModeSwitch } from './ColorModeSwitch';
+export { MagiStatusSummary } from './MagiStatusSummary';
+export { MagiVersionChip } from './MagiVersionChip';
+export { BusinessNav } from './BusinessNav';
+export { MagiAppShell } from './MagiAppShell';
+export { detectRuntime, validateDeclaredState, deriveStatusDisplay, } from './statusDetection';
+export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
 //# sourceMappingURL=index.js.map

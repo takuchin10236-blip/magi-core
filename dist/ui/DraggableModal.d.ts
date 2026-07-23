@@ -13,8 +13,10 @@
  * 実装ポイント:
  *   - react-draggable v4 を採用（軽量・実績あり）
  *   - findDOMNode 非推奨警告回避のため nodeRef を使う
- *   - bounds=parent ではなく明示的に画面範囲制限（モーダル外の余白を考慮）
+ *   - bounds=parent でオーバーレイ内に制限し、画面外へ出さない
  *   - オーバーレイクリックで閉じる動作は維持（モーダル本体のクリックは伝播停止）
+ *   - ヘッダ・スクロール本文・固定フッタの3層構造（U8標準）
+ *   - 閉じるボタンは44px、Escape対応、背景スクロール停止、閉じた後に元の場所へフォーカス復帰
  *
  * 使い方:
  *   <DraggableModal onClose={onClose} title="モーダルのタイトル" maxWidth="xl">
@@ -40,11 +42,13 @@ type Props = {
     extraClass?: string;
     /** モーダル本体（ヘッダの下に表示） */
     children: ReactNode;
+    /** 本文とは別に固定表示するフッタ（操作ボタン等） */
+    footer?: ReactNode;
     /** z-index（デフォルト 50。ConfirmPostModal等の重ねモーダルは 60 にする） */
     zIndex?: number;
     /** タイトルの色クラス（デフォルト 'text-[var(--color-primary)]'） */
     titleColorClass?: string;
 };
-export declare function DraggableModal({ onClose, title, subtitle, customHeader, maxWidth, extraClass, children, zIndex, titleColorClass, }: Props): import("react").JSX.Element;
+export declare function DraggableModal({ onClose, title, subtitle, customHeader, maxWidth, extraClass, children, footer, zIndex, titleColorClass, }: Props): import("react").JSX.Element;
 export {};
 //# sourceMappingURL=DraggableModal.d.ts.map

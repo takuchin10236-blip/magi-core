@@ -1,6 +1,6 @@
 {
   "name": "@magi/core",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "MAGI 2階老健システム群の共有コア。データ契約（Sheets/書込ゲート/D4署名検証アクセス制御）・CIガード原本・完全なデザインシステム（8テーマ＋テーマ切替UI）・統一マニュアルビューア（v0.3）を1パッケージに集約する。",
   "type": "module",
   "license": "UNLICENSED",
@@ -31,12 +31,18 @@
   ],
   "scripts": {
     "build": "tsc",
+    "verify:modal": "node scripts/verify-modal-standard.mjs",
+    "verify:shell": "node scripts/verify-appshell-shell.mjs",
+    "verify:types": "tsc -p tsconfig.typecheck.json",
+    "test": "vitest run",
+    "version-matrix": "node scripts/collect-version-matrix.mts",
+    "check": "npm run build && npm run verify:modal && npm run verify:shell && npm run verify:types",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
+    "lucide-react": "^1.16.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "lucide-react": "^1.16.0",
     "react-draggable": "^4.5.0"
   },
   "peerDependenciesMeta": {
@@ -45,13 +51,16 @@
     }
   },
   "devDependencies": {
-    "typescript": "~6.0.2",
+    "@cloudflare/workers-types": "^4.20240605.0",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "jsdom": "^29.1.1",
+    "lucide-react": "^1.16.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-draggable": "^4.5.0",
-    "lucide-react": "^1.16.0",
-    "@cloudflare/workers-types": "^4.20240605.0"
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.10"
   }
 }

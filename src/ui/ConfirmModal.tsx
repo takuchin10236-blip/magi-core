@@ -105,6 +105,36 @@ export function ConfirmModal({
       subtitle={subtitle}
       maxWidth={maxWidth}
       titleColorClass={t.titleClass}
+      footer={(
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="themed-btn-secondary px-4 py-2 rounded text-sm"
+            disabled={submitting}
+            title={cancelTitle || cancelText}
+          >
+            {cancelText}
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={submitting}
+            className="px-4 py-2 rounded font-bold text-sm text-[var(--primary-button-text)] disabled:opacity-50"
+            style={{ background: t.color }}
+            title={confirmTitle || confirmText}
+          >
+            {submitting ? (
+              <>
+                <span className="btn-spinner" aria-hidden />
+                処理中...
+              </>
+            ) : (
+              confirmText
+            )}
+          </button>
+        </div>
+      )}
     >
       <div
         className="rounded p-3 text-sm mb-3"
@@ -121,34 +151,6 @@ export function ConfirmModal({
         )}
       </div>
 
-      <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="themed-btn-secondary px-4 py-2 rounded text-sm"
-          disabled={submitting}
-          title={cancelTitle || cancelText}
-        >
-          {cancelText}
-        </button>
-        <button
-          type="button"
-          onClick={submit}
-          disabled={submitting}
-          className="px-4 py-2 rounded font-bold text-sm text-[var(--primary-button-text)] disabled:opacity-50"
-          style={{ background: t.color }}
-          title={confirmTitle || confirmText}
-        >
-          {submitting ? (
-            <>
-              <span className="btn-spinner" aria-hidden />
-              処理中...
-            </>
-          ) : (
-            confirmText
-          )}
-        </button>
-      </div>
     </DraggableModal>
   );
 }
