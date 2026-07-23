@@ -1,5 +1,5 @@
 /**
- * collect-version-matrix — 版同期・検証済み組合せ一覧の機械収集（v0.5・最小実装）。
+ * collect-version-matrix — 版同期・検証済み組合せ一覧の機械収集（v0.5.1・Sol R1-C1-VERSION-SOT）。
  *
  * 仕様: 候補_版同期_検証済み組合せ一覧_自動生成仕様.md §3。
  *   数字は機械に写させ、人は判断だけ書く。本スクリプトは読取専用（他repoへ書かない）。
@@ -10,8 +10,14 @@
  *      package.json にある @magi/core 固定タグ
  *   3) 各repoの origin/main HEAD と ローカルHEAD の乖離・dirty
  * 出力: docs/verified-combos/version-matrix.json ＋ .md（このworktree内のみ）。
+ *
+ * v0.5.1（R1-C1-VERSION-SOT）:
+ *   - generated_at は `--now <iso>` で外部注入可（CIの再現性・鮮度検査のため）。未指定は現在時刻。
+ *   - source_hashes: 読んだ各 package.json と `git tag` 出力の SHA-256 を出力に含める
+ *     （生成物の鮮度・出所を機械検査できるようにする）。
  */
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -19,6 +25,10 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const coreRoot = join(here, '..');
+
+function sha256(text: string): string {
+  return createHash('sha256').update(text, 'utf8').digest('hex');
+}
 
 function git(cwd: string, args: string[]): string | null {
   try {
@@ -28,9 +38,12 @@ function git(cwd: string, args: string[]): string | null {
   }
 }
 
-function readPackageJson(repoRoot: string): { version?: string; deps: Record<string, string> } | null {
+type ParsedPackage = { version?: string; deps: Record<string, string>; rawSha256: string };
+
+function readPackageJson(repoRoot: string): ParsedPackage | null {
   try {
-    const raw = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8')) as {
+    const rawText = readFileSync(join(repoRoot, 'package.json'), 'utf8');
+    const raw = JSON.parse(rawText) as {
       version?: string;
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
@@ -38,6 +51,7 @@ function readPackageJson(repoRoot: string): { version?: string; deps: Record<str
     return {
       version: raw.version,
       deps: { ...(raw.dependencies ?? {}), ...(raw.devDependencies ?? {}) },
+      rawSha256: sha256(rawText),
     };
   } catch {
     return null;
@@ -64,10 +78,33 @@ function repoStatus(repoRoot: string) {
   return { available: true as const, localHead, originHead, dirty, diverged };
 }
 
+// --- 引数解析（--now でgenerated_at外部注入・残りは採用repo群） ---
+const rawArgs = process.argv.slice(2);
+let nowOverride: string | undefined;
+const positional: string[] = [];
+for (let i = 0; i < rawArgs.length; i += 1) {
+  const arg = rawArgs[i];
+  if (arg === '--now') {
+    nowOverride = rawArgs[i + 1];
+    i += 1;
+  } else if (arg.startsWith('--now=')) {
+    nowOverride = arg.slice('--now='.length);
+  } else {
+    positional.push(arg);
+  }
+}
+const generatedAt = nowOverride ?? new Date().toISOString();
+
+// source_hashes: 読んだ各 package.json と `git tag` 出力の SHA-256（鮮度・出所の機械検査用）。
+const sourceHashes: Record<string, string> = {};
+
 // --- core 側 ---
 const corePkg = readPackageJson(coreRoot);
 const coreVersion = corePkg?.version ?? '（不明）';
-const coreTags = (git(coreRoot, ['tag', '--list']) ?? '')
+if (corePkg) sourceHashes['core:package.json'] = corePkg.rawSha256;
+const coreTagsRaw = git(coreRoot, ['tag', '--list']) ?? '';
+sourceHashes['core:git-tag'] = sha256(coreTagsRaw);
+const coreTags = coreTagsRaw
   .split('\n')
   .map((t) => t.trim())
   .filter(Boolean);
@@ -76,15 +113,15 @@ const coreVersionHasTag = coreTags.includes(coreVersionTag) || coreTags.includes
 const coreLabel = coreVersionHasTag ? coreVersionTag : `${coreVersionTag}（作業中・タグ未作成）`;
 
 // --- 採用repo群 ---
-const argRepos = process.argv.slice(2);
 const defaultRepos = [
   join(homedir(), 'Documents', 'magi-webapp-template'),
   join(homedir(), 'Documents', 'magi-resident-spine'),
 ];
-const repoRoots = argRepos.length > 0 ? argRepos : defaultRepos;
+const repoRoots = positional.length > 0 ? positional : defaultRepos;
 
 const adopters = repoRoots.map((repoRoot) => {
   const pkg = readPackageJson(repoRoot);
+  if (pkg) sourceHashes[`${repoRoot}:package.json`] = pkg.rawSha256;
   const status = repoStatus(repoRoot);
   return {
     repo: repoRoot,
@@ -98,10 +135,10 @@ const adopters = repoRoots.map((repoRoot) => {
   };
 });
 
-const generatedAt = new Date().toISOString();
 const matrix = {
   generated_at: generatedAt,
   note: '機械生成。手書き版番号は禁止（候補_版同期_検証済み組合せ一覧_自動生成仕様.md）。',
+  source_hashes: sourceHashes,
   core: {
     version: coreVersion,
     version_tag: coreVersionTag,
@@ -137,7 +174,13 @@ for (const a of adopters) {
   );
 }
 lines.push('');
-lines.push('※ タグなき版は「作業中」。「検証済み」の確定（verified_at/evidence）は U4 検収green の記録から別途機械転記する（本最小実装は版の現況収集のみ）。');
+lines.push('## source_hashes（読取元の SHA-256・鮮度/出所の機械検査用）');
+lines.push('');
+for (const [key, value] of Object.entries(sourceHashes)) {
+  lines.push(`- \`${key}\`: ${value}`);
+}
+lines.push('');
+lines.push('※ タグなき版は「作業中」。「検証済み」の確定（verified_at/evidence）は U4 検収green の記録から別途機械転記する（本最小実装は版の現況収集とsource_hashesの記録まで）。');
 lines.push('');
 writeFileSync(join(outDir, 'version-matrix.md'), `${lines.join('\n')}\n`, 'utf8');
 

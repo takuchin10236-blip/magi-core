@@ -3,6 +3,5 @@ node_modules/
 .DS_Store
 .wrangler/
 
-# 版マトリクス生成物（機械生成・ローカル状態を含む）
-docs/verified-combos/version-matrix.json
-docs/verified-combos/version-matrix.md
+# 版マトリクス生成物（docs/verified-combos/）は版SoTなので追跡する（R1-C1-VERSION-SOT）。
+# 親がタグ後に最終状態で再生成して commit する。source_hashes/generated_at で鮮度を機械検査できる。
