@@ -3,6 +3,9 @@
 ## v0.5.0 candidate (2026-07-23 / isolated rehearsal only)
 
 - B2必須fieldと5桁`residentId`をfail-closedで検証する`ResidentSelector`を追加。
+- B2任意fieldの`room`は空・省略を受け入れ、`locationUnknown`はsearchで省略可、
+  createではboolean必須として扱うよう契約を修正。
+- `data`と`loadData`の両方が消えたとき、以前の候補を残さず0件へ戻す。
 - `search`は必須fieldが揃った退所者を含み、`create`は`createAllowed`と`episodeOpen`が
   ともにtrueの候補だけを表示する回帰検査を追加。
 - loader失敗・不正boolean・必須field欠落・不正IDは候補0件へ倒す。

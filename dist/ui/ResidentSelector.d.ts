@@ -8,7 +8,7 @@ export interface ResidentSelectorResident {
     spineStatus: string;
     episodeOpen: boolean;
     createAllowed: boolean;
-    locationUnknown: boolean;
+    locationUnknown?: boolean;
 }
 export interface ResidentSelectorProps {
     /** searchは過去利用者を含む検索、createは新規記録作成可能な利用者だけを表示する。 */
@@ -25,7 +25,7 @@ export interface ResidentSelectorProps {
     className?: string;
 }
 export declare function normalizeResidentSelectorData(data: unknown): ResidentSelectorResident[];
-export declare function filterResidentSelectorCandidates(residents: ResidentSelectorResident[], mode: ResidentSelectorMode, query?: string): ResidentSelectorResident[];
+export declare function filterResidentSelectorCandidates(residents: ResidentSelectorResident[], mode: ResidentSelectorMode, query?: string, sourceAvailable?: boolean): ResidentSelectorResident[];
 export declare function resolveResidentSelectorLoad(loadData: () => Promise<unknown>): Promise<{
     residents: ResidentSelectorResident[];
     failed: boolean;

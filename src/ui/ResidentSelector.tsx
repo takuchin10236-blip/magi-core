@@ -17,7 +17,7 @@ export interface ResidentSelectorResident {
   spineStatus: string;
   episodeOpen: boolean;
   createAllowed: boolean;
-  locationUnknown: boolean;
+  locationUnknown?: boolean;
 }
 
 export interface ResidentSelectorProps {
@@ -36,8 +36,8 @@ export interface ResidentSelectorProps {
 }
 
 const RESIDENT_ID_PATTERN = /^\d{5}$/;
-const REQUIRED_TEXT_FIELDS = ['residentId', 'name', 'kana', 'room', 'episodeId', 'spineStatus'] as const;
-const REQUIRED_BOOLEAN_FIELDS = ['episodeOpen', 'createAllowed', 'locationUnknown'] as const;
+const REQUIRED_TEXT_FIELDS = ['residentId', 'name', 'kana', 'episodeId', 'spineStatus'] as const;
+const REQUIRED_BOOLEAN_FIELDS = ['episodeOpen', 'createAllowed'] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -52,16 +52,18 @@ function normalizeResident(value: unknown): ResidentSelectorResident | null {
   for (const field of REQUIRED_BOOLEAN_FIELDS) {
     if (typeof value[field] !== 'boolean') return null;
   }
+  if (value.room !== undefined && typeof value.room !== 'string') return null;
+  if (value.locationUnknown !== undefined && typeof value.locationUnknown !== 'boolean') return null;
   return {
     residentId: (value.residentId as string).trim(),
     name: (value.name as string).trim(),
     kana: (value.kana as string).trim(),
-    room: (value.room as string).trim(),
+    room: typeof value.room === 'string' ? value.room.trim() : '',
     episodeId: (value.episodeId as string).trim(),
     spineStatus: (value.spineStatus as string).trim(),
     episodeOpen: value.episodeOpen as boolean,
     createAllowed: value.createAllowed as boolean,
-    locationUnknown: value.locationUnknown as boolean,
+    locationUnknown: value.locationUnknown as boolean | undefined,
   };
 }
 
@@ -78,11 +80,19 @@ export function filterResidentSelectorCandidates(
   residents: ResidentSelectorResident[],
   mode: ResidentSelectorMode,
   query = '',
+  sourceAvailable = true,
 ): ResidentSelectorResident[] {
-  if (mode !== 'search' && mode !== 'create') return [];
+  if (!sourceAvailable || (mode !== 'search' && mode !== 'create')) return [];
   const normalizedQuery = query.trim().toLocaleLowerCase('ja-JP');
   return residents.filter((resident) => {
-    if (mode === 'create' && !(resident.createAllowed === true && resident.episodeOpen === true)) return false;
+    if (
+      mode === 'create'
+      && !(
+        resident.createAllowed === true
+        && resident.episodeOpen === true
+        && typeof resident.locationUnknown === 'boolean'
+      )
+    ) return false;
     if (!normalizedQuery) return true;
     return [resident.residentId, resident.name, resident.kana, resident.room]
       .some((value) => value.toLocaleLowerCase('ja-JP').includes(normalizedQuery));
@@ -118,11 +128,18 @@ export function ResidentSelector({
   const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
-    if (data === undefined) return;
+    if (data === undefined) {
+      if (!loadData) {
+        setResidents([]);
+        setLoadFailed(false);
+        setLoading(false);
+      }
+      return;
+    }
     setResidents(normalizeResidentSelectorData(data));
     setLoadFailed(false);
     setLoading(false);
-  }, [data]);
+  }, [data, loadData]);
 
   useEffect(() => {
     if (data !== undefined || !loadData) return;
@@ -143,9 +160,10 @@ export function ResidentSelector({
     };
   }, [data, loadData]);
 
+  const sourceAvailable = data !== undefined || Boolean(loadData);
   const candidates = useMemo(
-    () => filterResidentSelectorCandidates(residents, mode, query),
-    [mode, query, residents],
+    () => filterResidentSelectorCandidates(residents, mode, query, sourceAvailable),
+    [mode, query, residents, sourceAvailable],
   );
 
   const statusText = loading
@@ -209,7 +227,7 @@ export function ResidentSelector({
             >
               <strong>{resident.name}</strong>
               <span style={{ marginLeft: 8, color: 'var(--text-secondary)' }}>
-                {resident.residentId} / {resident.room}室 / {resident.spineStatus}
+                {resident.residentId} / {resident.room ? `${resident.room}室` : '居室未設定'} / {resident.spineStatus}
               </span>
               {resident.locationUnknown ? <span> / 所在要確認</span> : null}
             </button>

@@ -7,8 +7,8 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  */
 import { useEffect, useId, useMemo, useState } from 'react';
 const RESIDENT_ID_PATTERN = /^\d{5}$/;
-const REQUIRED_TEXT_FIELDS = ['residentId', 'name', 'kana', 'room', 'episodeId', 'spineStatus'];
-const REQUIRED_BOOLEAN_FIELDS = ['episodeOpen', 'createAllowed', 'locationUnknown'];
+const REQUIRED_TEXT_FIELDS = ['residentId', 'name', 'kana', 'episodeId', 'spineStatus'];
+const REQUIRED_BOOLEAN_FIELDS = ['episodeOpen', 'createAllowed'];
 function isRecord(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -25,11 +25,15 @@ function normalizeResident(value) {
         if (typeof value[field] !== 'boolean')
             return null;
     }
+    if (value.room !== undefined && typeof value.room !== 'string')
+        return null;
+    if (value.locationUnknown !== undefined && typeof value.locationUnknown !== 'boolean')
+        return null;
     return {
         residentId: value.residentId.trim(),
         name: value.name.trim(),
         kana: value.kana.trim(),
-        room: value.room.trim(),
+        room: typeof value.room === 'string' ? value.room.trim() : '',
         episodeId: value.episodeId.trim(),
         spineStatus: value.spineStatus.trim(),
         episodeOpen: value.episodeOpen,
@@ -45,12 +49,15 @@ export function normalizeResidentSelectorData(data) {
             : [];
     return rows.map(normalizeResident).filter((resident) => resident !== null);
 }
-export function filterResidentSelectorCandidates(residents, mode, query = '') {
-    if (mode !== 'search' && mode !== 'create')
+export function filterResidentSelectorCandidates(residents, mode, query = '', sourceAvailable = true) {
+    if (!sourceAvailable || (mode !== 'search' && mode !== 'create'))
         return [];
     const normalizedQuery = query.trim().toLocaleLowerCase('ja-JP');
     return residents.filter((resident) => {
-        if (mode === 'create' && !(resident.createAllowed === true && resident.episodeOpen === true))
+        if (mode === 'create'
+            && !(resident.createAllowed === true
+                && resident.episodeOpen === true
+                && typeof resident.locationUnknown === 'boolean'))
             return false;
         if (!normalizedQuery)
             return true;
@@ -74,12 +81,18 @@ export function ResidentSelector({ mode, data, loadData, onSelect, selectedResid
     const [loading, setLoading] = useState(Boolean(data === undefined && loadData));
     const [loadFailed, setLoadFailed] = useState(false);
     useEffect(() => {
-        if (data === undefined)
+        if (data === undefined) {
+            if (!loadData) {
+                setResidents([]);
+                setLoadFailed(false);
+                setLoading(false);
+            }
             return;
+        }
         setResidents(normalizeResidentSelectorData(data));
         setLoadFailed(false);
         setLoading(false);
-    }, [data]);
+    }, [data, loadData]);
     useEffect(() => {
         if (data !== undefined || !loadData)
             return;
@@ -101,7 +114,8 @@ export function ResidentSelector({ mode, data, loadData, onSelect, selectedResid
             active = false;
         };
     }, [data, loadData]);
-    const candidates = useMemo(() => filterResidentSelectorCandidates(residents, mode, query), [mode, query, residents]);
+    const sourceAvailable = data !== undefined || Boolean(loadData);
+    const candidates = useMemo(() => filterResidentSelectorCandidates(residents, mode, query, sourceAvailable), [mode, query, residents, sourceAvailable]);
     const statusText = loading
         ? '利用者候補を読み込んでいます。'
         : loadFailed
@@ -127,6 +141,6 @@ export function ResidentSelector({ mode, data, loadData, onSelect, selectedResid
                                 : 'var(--surface-1, var(--bg-surface, #fff))',
                             color: 'var(--text-primary)',
                             cursor: disabled ? 'not-allowed' : 'pointer',
-                        }, children: [_jsx("strong", { children: resident.name }), _jsxs("span", { style: { marginLeft: 8, color: 'var(--text-secondary)' }, children: [resident.residentId, " / ", resident.room, "\u5BA4 / ", resident.spineStatus] }), resident.locationUnknown ? _jsx("span", { children: " / \u6240\u5728\u8981\u78BA\u8A8D" }) : null] }) }, `${resident.residentId}:${resident.episodeId}`))) })] }));
+                        }, children: [_jsx("strong", { children: resident.name }), _jsxs("span", { style: { marginLeft: 8, color: 'var(--text-secondary)' }, children: [resident.residentId, " / ", resident.room ? `${resident.room}室` : '居室未設定', " / ", resident.spineStatus] }), resident.locationUnknown ? _jsx("span", { children: " / \u6240\u5728\u8981\u78BA\u8A8D" }) : null] }) }, `${resident.residentId}:${resident.episodeId}`))) })] }));
 }
 //# sourceMappingURL=ResidentSelector.js.map

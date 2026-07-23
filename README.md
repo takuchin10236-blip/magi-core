@@ -54,9 +54,12 @@ import '@magi/core/ui/core.css';
 ### v0.5候補: `ResidentSelector`
 
 `ResidentSelector`は、親から渡された認可済み候補を、検索用または新規記録作成用に選ぶ部品。
-5桁の`residentId`とB2必須fieldを満たさない候補は表示しない。`create`モードは
-`createAllowed === true`かつ`episodeOpen === true`だけを表示し、`search`モードでは
-必須fieldが揃った退所者も検索できる。
+5桁の`residentId`とB2必須fieldを満たさない候補は表示しない。B2で任意の`room`は
+空または省略を受け入れ、画面では「居室未設定」と表示する。`locationUnknown`は
+`search`では省略可能、`create`ではboolean必須として扱う。`create`モードは
+`createAllowed === true`かつ`episodeOpen === true`で、`locationUnknown`がbooleanの候補だけを表示する。
+`search`モードでは必須fieldが揃った退所者も検索できる。`data`と`loadData`の両方が
+無くなった場合は、以前の候補を画面に残さず0件へ戻す。
 
 この部品は認可装置ではない。role別scope・件数上限・検索監査はサーバー側で実施する。
 
