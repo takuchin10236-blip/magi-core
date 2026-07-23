@@ -22,8 +22,9 @@
  *
  * 検査（npm run check から呼ばれる）:
  *   (a) 標準値一致     … standard-lumen の基準トークン（--primary:#6bbf95 等）が index.css にある
- *   (b) 必須シェル構造 … トップメニュー型（top-menu-bar/tabs/panel・07 §4-4 現行標準）が揃っていれば合格。
- *                        無ければ旧サイドパネル型（topbar(themed-card) / app-body-grid / app-side-panel /
+ *   (b) 必須シェル構造 … AppShell型（MagiAppShell/BusinessNav・v0.5 現行標準）が揃っていれば合格。
+ *                        無ければトップメニュー型（top-menu-bar/tabs/panel・前標準）、それも無ければ
+ *                        旧サイドパネル型（topbar(themed-card) / app-body-grid / app-side-panel /
  *                        side-peek-toggle）を項目別に検査（従来どおり・逸脱承認で通せる）
  *   (c) 禁止パターン   … ネイティブ confirm/alert/prompt を src/ で呼んでいない
  *   (d) StatusBadge    … 状態バッジは @magi/core/ui の StatusBadge を使い、旧 tooltip/CSS コピーを残さない
@@ -117,6 +118,16 @@ const TOPMENU_SHELL = [
   { name: 'top-menu-panel', pattern: /\btop-menu-panel\b/ },
 ];
 
+// ── AppShell 型シェル（v0.5・@magi/core/ui の MagiAppShell を採用する現行標準） ──
+//   v0.5.1 新設（Sol R1-C4-GUARDRAIL-FALLBACK 恒久解）: 採用アプリの src が MagiAppShell と
+//   BusinessNav（コンポーネント使用 or magi-appshell-* クラス）を持てば live の AppShell を
+//   直接検査でき、退役 LegacyShell の旧クラスによる fallback 合格に頼らなくてよい。
+//   既存2型（トップメニュー型・旧サイドパネル型）の判定は不変。
+const APPSHELL_SHELL = [
+  { name: 'MagiAppShell', pattern: /\bMagiAppShell\b|\bmagi-appshell\b/ },
+  { name: 'BusinessNav', pattern: /\bBusinessNav\b|\bmagi-appshell-nav\b/ },
+];
+
 // ── 禁止パターン（ネイティブダイアログ。専用モーダル+Toastに統一・07/規約6） ──
 // window.confirm( か、グローバル呼び出しの confirm(（直前が "." や識別子文字でない）だけを検出。
 // toast.confirm() など独自メソッドは別物なので拾わない。
@@ -204,9 +215,11 @@ const srcFiles = existsSync(join(APP_ROOT, 'src')) ? collectFiles(join(APP_ROOT,
 const srcText = srcFiles.map((f) => readFileSync(f, 'utf8')).join('\n');
 
 // ── (b) 必須シェル構造（src 全体を1つの文字列として検査） ──
-//   トップメニュー型（現行標準）が完備ならそれで合格。欠けるなら旧サイドパネル型を
-//   項目別に検査する（既存アプリの承認済み逸脱運用はそのまま生きる＝後方互換）。
-if (TOPMENU_SHELL.every((shell) => shell.pattern.test(srcText))) {
+//   AppShell 型（v0.5 現行標準）が完備ならそれで合格。次にトップメニュー型（前標準）。
+//   どちらも欠けるなら旧サイドパネル型を項目別に検査する（承認済み逸脱運用は生きる＝後方互換）。
+if (APPSHELL_SHELL.every((shell) => shell.pattern.test(srcText))) {
+  passes.push('(b) シェル構造: AppShell型（MagiAppShell / BusinessNav・v0.5）');
+} else if (TOPMENU_SHELL.every((shell) => shell.pattern.test(srcText))) {
   passes.push('(b) シェル構造: トップメニュー型（top-menu-bar / top-menu-tabs / top-menu-panel・07 §4-4）');
 } else {
   for (const shell of REQUIRED_SHELL) {
