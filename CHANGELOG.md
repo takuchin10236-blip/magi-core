@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.5.4 (2026-07-24)
+
+### Sol 延長run round2 最終精密修正
+- **R1-C1-VERSION-SOT（verified束縛の機械化）**: `--verified-entry` の申告を機械束縛へ。(a)`core_tag` は収集済みタグ一覧に実在＋deref先が `version_tag_commit` と一致（版タグ未作成の当該版は pending として許容）。(b)`app_commit` は core行=タグderef先（pendingは core origin/main HEAD）・採用repo行=記録済み origin/main HEAD と一致。(c)evidence ログに**機械可読の成功マーカー**（`exit 0`/`CHECK_EXIT=0`/`0 fail` 等）と**当該 core_tag 文字列**を含むことを検証。(d)collect時に `evidence_sha256` を各entryへ記録し、verify時に再計算突合（事後改変検出）。束縛検証を共有 `version-matrix-sources.mjs#validateVerifiedEntry` に集約し collect/verify で同一。`freshness_targets` に `core:origin-main-head` を追加。負例テスト（偽commit・偽タグ・失敗ログ・無関係ログ・evidence事後改変→exit 1）。
+- **R2-C2-STALE-DETECTOR-GUIDANCE（最後の1箇所）**: `MagiStatusSummary` 無検証書込バッジの detail 文言を「信頼済みは `createHealthWriteDetector()` のみ（createEndpointWriteDetector はその固定パス別名・非推奨）」へ修正。
+
 ## v0.5.3 (2026-07-24)
 
 ### Sol 残差レビュー 最終硬化
