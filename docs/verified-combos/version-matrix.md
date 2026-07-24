@@ -3,7 +3,7 @@
 > `scripts/collect-version-matrix.mts` の自動生成物。手で版番号を書かない。
 > 固定版は origin/main 確定commitから収集（dirty ローカルは使わない）。
 
-- 生成時刻: 2026-07-24T11:05:25+09:00
+- 生成時刻: 2026-07-24T16:30:00.000Z
 - Core: **v0.5.4**（tag数: 17）
 - template_commit（雛形 origin/main）: b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce
 
@@ -18,8 +18,8 @@
 
 | app | core_tag | template_commit | app_commit | verified_at | verified_by | evidence |
 |---|---|---|---|---|---|---|
-| core | v0.5.4 | b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce | ccf2738f25404120baae28efb8de7425b16b62de | 2026-07-24T11:05:25+09:00 | GOAL-20260724-002-R2 | magi-goal-work/GOAL-20260724-002/evidence/core_fix4_test.log |
-| magi-webapp-template | v0.5.3 | b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce | b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce | 2026-07-24T11:05:25+09:00 | GOAL-20260724-002-R2 | magi-goal-work/GOAL-20260724-002/evidence/template_v053_test.log |
+| @magi/core | v0.5.4 | b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce | ccf2738f25404120baae28efb8de7425b16b62de | 2026-07-24T11:00:00Z | tachikoma | magi-goal-work/GOAL-20260724-002/evidence/core_fix5_test.log |
+| magi-webapp-template | v0.5.3 | b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce | b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce | 2026-07-24T09:00:00Z | tachikoma | magi-goal-work/GOAL-20260724-002/evidence/template_v053_test.log |
 
 ## source_hashes（版pin実体の SHA-256・`npm run verify:matrix` が鮮度検査）
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-24T11:05:25+09:00",
+  "generated_at": "2026-07-24T16:30:00.000Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
     "version": "0.5.4",
@@ -46,22 +46,22 @@
   ],
   "verified": [
     {
-      "app": "core",
+      "app": "@magi/core",
       "core_tag": "v0.5.4",
       "template_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
       "app_commit": "ccf2738f25404120baae28efb8de7425b16b62de",
-      "verified_at": "2026-07-24T11:05:25+09:00",
-      "verified_by": "GOAL-20260724-002-R2",
-      "evidence": "magi-goal-work/GOAL-20260724-002/evidence/core_fix4_test.log",
-      "evidence_sha256": "f89727cd44b10e119e551765b44ab39a9c7a3b6711b9235ec4f67eb99fb32721"
+      "verified_at": "2026-07-24T11:00:00Z",
+      "verified_by": "tachikoma",
+      "evidence": "magi-goal-work/GOAL-20260724-002/evidence/core_fix5_test.log",
+      "evidence_sha256": "ed6319aad209a013b717f0a47456cde6f4ebcc31f5d9ab6c1767a5e25dd72aa6"
     },
     {
       "app": "magi-webapp-template",
       "core_tag": "v0.5.3",
       "template_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
       "app_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
-      "verified_at": "2026-07-24T11:05:25+09:00",
-      "verified_by": "GOAL-20260724-002-R2",
+      "verified_at": "2026-07-24T09:00:00Z",
+      "verified_by": "tachikoma",
       "evidence": "magi-goal-work/GOAL-20260724-002/evidence/template_v053_test.log",
       "evidence_sha256": "49105a451bb1dff33c4425642c376d95c78cf31161713d032f151def84efdfbc"
     }
@@ -73,7 +73,7 @@
   },
   "freshness_targets": {
     "core:version-tag-commit": "ccf2738f25404120baae28efb8de7425b16b62de",
-    "core:origin-main-head": "ccf2738f25404120baae28efb8de7425b16b62de",
+    "core:origin-main-head": "d93403926ad6beb35cd6e4e6633c4b397a579e25",
     "magi-webapp-template:origin-main-head": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158"
   }
