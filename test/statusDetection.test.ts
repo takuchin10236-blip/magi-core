@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import {
   detectRuntime,
   validateDeclaredState,
   deriveStatusDisplay,
   createEnvWriteDetector,
   createEndpointWriteDetector,
+  createHealthWriteDetector,
   isTrustedWriteDetector,
   type StatusResolution,
 } from '../src/ui/statusDetection';
@@ -115,26 +116,71 @@ describe('validateDeclaredState（許可リスト照合・R1-C2-INVALID-KIND-THR
   });
 });
 
-describe('書込検出ファクトリ（R1-C2-DETECTOR-SELFDECLARATION）', () => {
-  it('createEndpointWriteDetector（同一オリジン health 固定スキーマ）のみ信頼済み', () => {
-    const d = createEndpointWriteDetector('/api/health');
-    expect(isTrustedWriteDetector(d)).toBe(true);
+describe('書込検出ファクトリ（R1-C2-DETECTOR-SELFDECLARATION 最終硬化・v0.5.3）', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('createHealthWriteDetector（固定 /api/health）のみ信頼済み', () => {
+    expect(isTrustedWriteDetector(createHealthWriteDetector())).toBe(true);
   });
-  // round2 是正: 任意 read を受ける createEnvWriteDetector は「無検証」＝trusted にしない
-  it('createEnvWriteDetector は信頼済みでない（無検証へ降格）', () => {
+  it('createEndpointWriteDetector は @deprecated 別名だが依然信頼済み（引数は無視）', () => {
+    expect(isTrustedWriteDetector(createEndpointWriteDetector('/api/health'))).toBe(true);
+  });
+  it('createEnvWriteDetector は信頼済みでない（無検証）', () => {
     expect(isTrustedWriteDetector(createEnvWriteDetector(() => false))).toBe(false);
     expect(isTrustedWriteDetector(createEnvWriteDetector(() => true))).toBe(false);
   });
   it('生関数は信頼済みでない', () => {
+    expect(isTrustedWriteDetector(() => false)).toBe(false);
+  });
+
+  // (e) 別エンドポイントを指す手段が無い: 引数を渡しても常に /api/health を GET する
+  it('createEndpointWriteDetector に別URLを渡しても常に同一オリジン /api/health を GET する', async () => {
+    const expectedUrl = `${location.origin}/api/health`;
+    const fetchMock = vi.fn(async () => ({ ok: true, url: expectedUrl, json: async () => ({ storage: { writable: false } }) }));
+    vi.stubGlobal('fetch', fetchMock);
+    const detector = createEndpointWriteDetector('https://evil.example.com/fake-health');
+    await detector();
+    const [calledUrl, init] = fetchMock.mock.calls[0];
+    expect(String(calledUrl)).toBe(expectedUrl);
+    expect(init.method).toBe('GET');
+    expect(init.redirect).toBe('error');
+  });
+
+  // (e) redirect でクロスオリジンになったレスポンスは failed（throw）
+  it('レスポンスがクロスオリジンへリダイレクトされたら throw（failed）', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, url: 'https://evil.example.com/api/health', json: async () => ({ storage: { writable: false } }) })),
+    );
+    await expect(createHealthWriteDetector()()).rejects.toThrow();
+  });
+  it('fetch が redirect:error で reject したら throw（failed）', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Failed to fetch (redirect)'); }));
+    await expect(createHealthWriteDetector()()).rejects.toThrow();
+  });
+
+  // (e) Symbol/プロパティ複製・Proxy で信頼を偽装した生関数は untrusted のまま
+  it('信頼済み検出器のプロパティを複製しても生関数は untrusted（WeakSet は複製不能）', () => {
+    const trusted = createHealthWriteDetector();
     const raw = () => false;
+    // 発見可能な own プロパティ/Symbol をすべて複製しても信頼は移らない。
+    Object.defineProperties(raw, Object.getOwnPropertyDescriptors(trusted));
+    for (const s of Object.getOwnPropertySymbols(trusted)) {
+      (raw as unknown as Record<symbol, unknown>)[s] = (trusted as unknown as Record<symbol, unknown>)[s];
+    }
     expect(isTrustedWriteDetector(raw)).toBe(false);
   });
+  it('Proxy で信頼済み検出器をラップしても untrusted（ラッパーは WeakSet に無い）', () => {
+    const trusted = createHealthWriteDetector();
+    const proxied = new Proxy(trusted, {}) as unknown as () => boolean | Promise<boolean>;
+    expect(isTrustedWriteDetector(proxied)).toBe(false);
+  });
+
   it('createEnvWriteDetector は boolean を返す（同期）', () => {
     expect(createEnvWriteDetector(() => true)()).toBe(true);
     expect(createEnvWriteDetector(() => false)()).toBe(false);
   });
   it('createEnvWriteDetector は非boolean で throw（fail-closed）', () => {
-    // read() は () => unknown。boolean 以外は同期 throw → 呼び出し側で failed に落ちる。
     expect(() => createEnvWriteDetector(() => 'yes')()).toThrow();
     expect(() => createEnvWriteDetector(() => undefined)()).toThrow();
     expect(() => createEnvWriteDetector(() => 0)()).toThrow();

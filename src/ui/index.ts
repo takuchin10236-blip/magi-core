@@ -85,6 +85,7 @@ export {
   deriveStatusDisplay,
   isTrustedWriteDetector,
   createEnvWriteDetector,
+  createHealthWriteDetector,
   createEndpointWriteDetector,
 } from './statusDetection';
 export type {

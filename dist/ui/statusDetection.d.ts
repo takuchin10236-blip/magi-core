@@ -1,19 +1,23 @@
 /**
- * @magi/core/ui — 状態検出・安全集約ロジック（v0.5.1・AppShell / Sol R1 修正）
+ * @magi/core/ui — 状態検出・安全集約ロジック（v0.5.3・AppShell / Sol R1〜残差 修正）
  *
  * 設計の背骨（2026-07-24裁定・候補_core_AppShell部品設計.md §0）:
  *   「状態表示は自己申告にしない」。本番URL・書込ON/OFF はアプリが値を渡せない。
  *   アプリが宣言できるのは機械検出が困難な業務状態のみで、必ず「無検証」バッジを併記する。
  *
- * Sol R1 レビュー修正（v0.5.1）:
- *   - R1-C2-DETECTOR-SELFDECLARATION: 任意 classify を公開APIから撤去（hostnameリストのみ＝
- *     Core所有ロジック）。書込検出は Core提供ファクトリ（createEnvWriteDetector /
- *     createEndpointWriteDetector）が返す TrustedWriteDetector を「信頼済み」とし、
- *     生関数（未検証）の結果は書込バッジに「無検証」を併記して集約から除外する。
+ * 書込検出の信頼境界（v0.5.3 最終硬化・R1-C2-DETECTOR-SELFDECLARATION）:
+ *   - **信頼済み（安全側集約に入れる）のは createHealthWriteDetector() だけ**。固定パス
+ *     /api/health を GET・redirect 拒否・同一オリジン検証し、storage.writable 固定スキーマで観測する。
+ *   - createEnvWriteDetector（環境値アダプタ）・生関数・任意コールバックは **すべて無検証**＝
+ *     書込バッジに「無検証」を併記し集約から除外する（定数で安全状態を偽装できないように）。
+ *   - 信頼判定は module-private WeakSet メンバーシップ（発見可能な Symbol プロパティは廃止）。
+ *   - createEndpointWriteDetector は @deprecated 別名＝引数は無視され常に /api/health を観測する。
+ *
+ * その他の Sol 修正（継承）:
+ *   - R1-C2-DETECTOR-SELFDECLARATION(R1): 任意 classify を公開APIから撤去（hostnameリストのみ）。
  *   - R1-C2-FAILCLOSED-EDGE: 空文字ホストを local 既定から除外／hostname 不能は unknown／
  *     書込結果は typeof boolean のみ受理（Boolean() 丸めを廃止）。
- *   - R1-C2-INVALID-KIND-THROW: 拒否理由生成を JSON.stringify から例外安全な記述へ置換。
- *     validator は決して throw せず ok:false を返す。
+ *   - R1-C2-INVALID-KIND-THROW: validator 全体を例外境界で囲み、throwing getter/Proxy でも ok:false。
  *
  * 本ファイルは React に依存しない純ロジックだけを持ち、MagiStatusSummary（tsx）が
  *   非同期検出を回した結果をここへ渡して表示形へ畳む（単体テストで直接検証できる）。
@@ -68,34 +72,42 @@ export declare function detectRuntime(config?: RuntimeDetectorConfig, hostname?:
 export declare function validateDeclaredState(input: unknown): DeclaredStateValidation;
 /** 書込ON/OFF の検出関数。真偽値を直接渡す props は設けない（自己申告を型で塞ぐ）。 */
 export type WriteDetector = () => boolean | Promise<boolean>;
-declare const TRUSTED_WRITE_DETECTOR: unique symbol;
+declare const TRUSTED_WRITE_BRAND: unique symbol;
 /**
- * Core提供ファクトリが返す「信頼済み」書込検出器。生関数・任意コールバックと区別する。
- *   型ブランド＋実行時シンボルの二重化で、採用アプリが手で偽装できないようにする。
- *   R1-C2（round2）: 信頼済みになれるのは createEndpointWriteDetector（同一オリジン health を
- *   固定スキーマで観測）だけ。任意 read/extract を受けるアダプタは trusted にしない。
+ * Core が観測元も抽出方法も固定できる「信頼済み」書込検出器。
+ *   R1-C2 最終硬化（v0.5.3）: 信頼判定を **module-private WeakSet** で持つ（発見可能な Symbol
+ *   プロパティを廃止）＝ブランドのコピー・Symbol 付与・Proxy では偽装できない。
+ *   信頼済みになれるのは createHealthWriteDetector（固定パス /api/health を GET・redirect 拒否・
+ *   同一オリジン検証・storage.writable 固定スキーマで観測）だけ。生関数・任意コールバック・
+ *   環境値アダプタ（createEnvWriteDetector）は無検証扱い（集約されない）。
  */
 export type TrustedWriteDetector = WriteDetector & {
-    readonly [TRUSTED_WRITE_DETECTOR]: true;
+    readonly [TRUSTED_WRITE_BRAND]: true;
 };
-/** 検出器が Core提供ファクトリ由来（信頼済み）かを実行時に判定する。 */
+/** 検出器が Core提供ファクトリ由来（信頼済み）かを WeakSet メンバーシップで判定する。 */
 export declare function isTrustedWriteDetector(fn: WriteDetector): fn is TrustedWriteDetector;
 /**
- * 環境値から書込可否を読むアダプタ。**無検証扱い（trusted にしない）**。
- *   R1-C2（round2 修正）: 任意 read を無条件に信頼できない（定数 false 等で安全状態を偽装できる）。
- *   ブランドを付けないため、生関数と同じく書込バッジに「無検証」を併記し安全側集約から除外される。
- *   boolean 以外は throw して検出失敗（fail-closed）へ落とす。後方互換のため名前は残す。
- *   信頼済みで観測したい場合は createEndpointWriteDetector（同一オリジン health）を使う。
+ * 環境値から書込可否を読むアダプタ。**無検証扱い（trusted にしない・集約されない）**。
+ *   任意 read を無条件に信頼できない（定数 false 等で安全状態を偽装できる）ため WeakSet に入れない。
+ *   生関数と同じく書込バッジに「無検証」を併記し安全側集約から除外される。boolean 以外は throw。
+ *   信頼済みで観測したいときは createHealthWriteDetector() を使う。
  */
 export declare function createEnvWriteDetector(read: () => unknown): WriteDetector;
 /**
- * 同一オリジンの health エンドポイントを実観測して書込可否を読む**信頼済み**検出器を作る。
- *   R1-C2（round2）: 観測元と抽出方法を Core が固定する＝
- *     - path は同一オリジンに解決できる場合のみ（クロスオリジンは throw）
- *     - レスポンスの固定フィールド `storage.writable` が boolean の時だけ採用（カスタム extract 廃止）
- *   fetch 失敗・非OK・スキーマ不一致・非boolean はすべて throw＝検出失敗（fail-closed）へ落ちる。
+ * 同一オリジンの固定 health エンドポイント（/api/health）を GET 実観測して書込可否を読む
+ *   **信頼済み**検出器を作る（**引数なし**＝観測先を差し替える手段を公開 API から無くす）。
+ *   R1-C2 最終硬化（v0.5.3）:
+ *     - 固定パス /api/health のみ（別エンドポイント指定・クロスオリジンは不可能）
+ *     - GET 固定・`redirect: 'error'`（リダイレクト追従を拒否）＋最終 response.url の origin 検証
+ *     - 固定フィールド storage.writable が boolean の時だけ採用
+ *   fetch 失敗・非OK・リダイレクト・スキーマ不一致・非boolean はすべて throw＝検出失敗（fail-closed）。
  */
-export declare function createEndpointWriteDetector(path: string, init?: RequestInit): TrustedWriteDetector;
+export declare function createHealthWriteDetector(): TrustedWriteDetector;
+/**
+ * @deprecated v0.5.3 で固定パス化。**引数は無視され常に /api/health を GET 観測する**。
+ *   後方互換のため export を残す。新規コードは createHealthWriteDetector() を使うこと。
+ */
+export declare function createEndpointWriteDetector(_path?: string, _init?: RequestInit): TrustedWriteDetector;
 /** 表示アイテム。unverified は「無検証」バッジ併記対象、detail は tooltip 説明。 */
 export type StatusDisplayItem = {
     id: string;

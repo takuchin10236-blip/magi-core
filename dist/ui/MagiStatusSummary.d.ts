@@ -4,8 +4,9 @@ export interface MagiStatusSummaryProps {
     runtimeDetector?: RuntimeDetectorConfig;
     /**
      * 書込ON/OFF の検出関数。未指定なら「書込確認中」を出す（fail-closed）。
-     *   Core提供ファクトリ（createEnvWriteDetector / createEndpointWriteDetector）が返す
-     *   TrustedWriteDetector を渡すと信頼済み扱い。生関数を渡すと結果は「無検証」併記＋集約除外。
+     *   **信頼済み扱い（安全側集約に入る）は createHealthWriteDetector() が返す TrustedWriteDetector だけ**
+     *   （固定 /api/health を GET 観測）。createEnvWriteDetector・生関数・任意コールバックは無検証扱いで、
+     *   結果に「無検証」を併記し集約から除外する（v0.5.3・R1-C2）。
      */
     writeDetector?: WriteDetector;
     /**

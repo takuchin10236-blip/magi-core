@@ -45,6 +45,6 @@ export { MagiStatusSummary } from './MagiStatusSummary';
 export { MagiVersionChip } from './MagiVersionChip';
 export { BusinessNav } from './BusinessNav';
 export { MagiAppShell } from './MagiAppShell';
-export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createEndpointWriteDetector, } from './statusDetection';
+export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createHealthWriteDetector, createEndpointWriteDetector, } from './statusDetection';
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
 //# sourceMappingURL=index.js.map

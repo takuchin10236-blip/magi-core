@@ -55,7 +55,7 @@ export { BusinessNav } from './BusinessNav';
 export type { BusinessNavProps, BusinessNavTab, BusinessNavMenuItem } from './BusinessNav';
 export { MagiAppShell } from './MagiAppShell';
 export type { MagiAppShellProps } from './MagiAppShell';
-export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createEndpointWriteDetector, } from './statusDetection';
+export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createHealthWriteDetector, createEndpointWriteDetector, } from './statusDetection';
 export type { RuntimeSurface, DeclarableState, DeclaredStateValidation, RuntimeDetectorConfig, StatusDisplayItem, StatusDisplayResult, StatusResolution, WriteDetector, TrustedWriteDetector, } from './statusDetection';
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
 //# sourceMappingURL=index.d.ts.map
