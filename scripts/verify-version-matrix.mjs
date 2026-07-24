@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import {
   computeFreshnessTargets,
   computeSourceHashes,
+  coreAdvanceIsMatrixOnly,
   defaultAdopters,
   tagDerefCommit,
   validateVerifiedEntry,
@@ -63,12 +64,16 @@ if (hashDiffs.length > 0) fail('source_hashes が現在の読取元と不一致�
 // (2) freshness_targets（origin/main HEAD ＋ Coreタグ deref 先）
 const storedTargets = matrix.freshness_targets ?? {};
 const nowTargets = computeFreshnessTargets(coreRoot, adopters, matrix.core?.version_tag);
+
+// core:origin-main-head の前進が「docs/verified-combos/ 配下のみ」の commit 群なら例外合格する
+//   （matrix を commit→push すると core origin/main が前進して自己失効する循環を断つ・Sol実測）。
 const targetDiffs = [];
 for (const key of [...new Set([...Object.keys(storedTargets), ...Object.keys(nowTargets)])].sort()) {
-  // null 同士は一致（タグ未作成・repo取得不可）。片方でも変われば不一致。
-  if ((storedTargets[key] ?? null) !== (nowTargets[key] ?? null)) {
-    targetDiffs.push(`freshness_targets.${key}: stored=${storedTargets[key] ?? 'null'} / now=${nowTargets[key] ?? 'null'}`);
-  }
+  const s = storedTargets[key] ?? null;
+  const n = nowTargets[key] ?? null;
+  if (s === n) continue;
+  if (key === 'core:origin-main-head' && coreAdvanceIsMatrixOnly(coreRoot, s, n)) continue;
+  targetDiffs.push(`freshness_targets.${key}: stored=${s ?? 'null'} / now=${n ?? 'null'}`);
 }
 if (targetDiffs.length > 0) fail('freshness_targets（HEAD/タグ deref）が現在値と不一致（repo前進 or タグ移動）。', targetDiffs);
 

@@ -57,6 +57,11 @@ export function originMainHead(repoPath) {
   return git(repoPath, ['rev-parse', 'origin/main']);
 }
 
+/** ローカル HEAD の完全SHA（push 後に origin/main になる commit）。 */
+export function localHead(repoPath) {
+  return git(repoPath, ['rev-parse', 'HEAD']);
+}
+
 /** タグの deref 先 commit（annotated tag の指す実commit）。無ければ null。 */
 export function tagDerefCommit(coreRoot, tag) {
   if (!tag) return null;
@@ -79,11 +84,35 @@ export function coreTagList(coreRoot) {
 export function computeFreshnessTargets(coreRoot, adopters, coreVersionTag) {
   const targets = {};
   targets['core:version-tag-commit'] = tagDerefCommit(coreRoot, coreVersionTag);
-  targets['core:origin-main-head'] = originMainHead(coreRoot); // core自己verified entry(pending)の束縛基準
+  // core は開発中の当該repo。ローカル HEAD（push後に origin/main になる commit）を記録する。
+  //   これで「code commit → matrix docs-only commit」の前進が docs/verified-combos/ のみになり、
+  //   coreAdvanceIsMatrixOnly の例外合格で自己失効の循環を断てる（ローカルでも push 後でも収束）。
+  targets['core:origin-main-head'] = localHead(coreRoot);
   for (const adopter of adopters) {
     targets[`${adopter.name}:origin-main-head`] = originMainHead(adopter.path);
   }
   return targets;
+}
+
+/**
+ * stored..now の前進が `docs/verified-combos/` 配下のみに触れる commit 群かを判定する。
+ *   matrix を commit→push すると core origin/main が前進して freshness が自己失効する循環を、
+ *   「版SoT生成物だけの前進」に限って例外合格させるための判定（Sol 実測フィードバック）。
+ *   - stored/now が同一・空・null → false（例外にしない）
+ *   - `git log stored..now --name-only` が取れない（非祖先・不明rev）→ false（＝従来どおり fail 側）
+ *   - 変更ファイルが1つでも docs/verified-combos/ 以外 → false
+ *   - すべて docs/verified-combos/ 配下 → true（例外合格）
+ */
+export function coreAdvanceIsMatrixOnly(repoRoot, stored, now) {
+  if (!stored || !now || stored === now) return false;
+  // stored が now の厳密な祖先であることを要求（非祖先＝判定不能は例外にしない）。
+  //   git()は exit0で''（=祖先）・非0でnull（=非祖先/不明rev）を返す。
+  if (git(repoRoot, ['merge-base', '--is-ancestor', stored, now]) === null) return false;
+  const names = git(repoRoot, ['log', '--name-only', '--pretty=format:', `${stored}..${now}`]);
+  if (names === null) return false;
+  const files = names.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (files.length === 0) return false;
+  return files.every((f) => f.startsWith('docs/verified-combos/'));
 }
 
 // ── verified エントリの機械束縛検証（Sol R1-C1-VERSION-SOT 最終・collect/verify 共用） ──

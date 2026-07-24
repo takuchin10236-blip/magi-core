@@ -22,6 +22,7 @@ import {
   computeFreshnessTargets,
   computeSourceHashes,
   defaultAdopters,
+  localHead,
   originMainHead,
   pinnedCoreTag,
   readOriginMainPackage,
@@ -110,7 +111,7 @@ const templateCommit = templateRow?.app_commit ?? null;
 const appCommitByName = new Map(adopterRows.map((r) => [r.name, r.app_commit] as const));
 
 // --- verified 配列（--verified-entry から。11 §0.5・機械束縛検証＋evidence_sha256 記録） ---
-const coreHead = originMainHead(coreRoot); // core 自身の origin/main HEAD
+const coreHead = localHead(coreRoot); // core 自身のローカル HEAD（push後に origin/main になる commit）
 const coreVersionTagCommit = tagDerefCommit(coreRoot, coreVersionTag);
 const appCommitByNameObj: Record<string, string | null> = Object.fromEntries(
   adopterRows.map((r) => [r.name, r.app_commit]),
