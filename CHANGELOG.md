@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.3 (2026-07-24)
+
+### Sol 残差レビュー 最終硬化
+- **R1-C2-DETECTOR-SELFDECLARATION（最終）**: 信頼済み書込検出器を最終硬化。(a)**固定パス化**＝`createHealthWriteDetector()`（引数なし・`HEALTH_PATH='/api/health'` 固定）を新設。別エンドポイントを指す手段を公開 API から排除。(b)**GET 固定**（RequestInit 引数撤去）。(c)**redirect 拒否**（`redirect:'error'` ＋最終 `response.url` の origin 検証）。(d)信頼判定を**module-private WeakSet** へ（発見可能な Symbol プロパティを廃止＝ブランド複製・Proxy・Symbol 付与で偽装不能）。`createEndpointWriteDetector` は `@deprecated` 別名＝引数は無視され常に `/api/health` を観測。負例テスト追加（別URLでも /api/health を GET・クロスオリジンリダイレクト→failed・プロパティ/Symbol 複製・Proxy でも untrusted）。
+- **R1-C1-VERSION-SOT（最終）**: `verify:matrix` の鮮度対象に **各採用repoの origin/main HEAD** と **Coreタグの deref 先 commit** を追加（`freshness_targets`・記録値と現在値を突合）。`--verified-entry` は**全フィールド非null必須**＋**evidence ログの実在検証**（`~/Documents/` / `~/Documents/magi-goal-work/` 起点）。負例テスト（HEAD前進・タグ移動・null field・不在evidence→exit 1）。
+- **R2-C2-STALE-DETECTOR-GUIDANCE**: `createEnvWriteDetector` を trusted と説明していた古い doc コメント（statusDetection.ts ヘッダ・MagiStatusSummary props・README）を「無検証（集約されない）＝信頼済みは createHealthWriteDetector のみ」へ更新。
+
 ## v0.5.2 (2026-07-24)
 
 ### Sol R2 修正（persistent 3件の恒久対処）
