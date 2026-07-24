@@ -1,86 +1,58 @@
 /**
- * collect-version-matrix — 版同期・検証済み組合せ一覧の機械収集（v0.5.1・Sol R1-C1-VERSION-SOT）。
+ * collect-version-matrix — 版同期・検証済み組合せ一覧の機械収集（v0.5.2・Sol R1-C1-VERSION-SOT round2）。
  *
- * 仕様: 候補_版同期_検証済み組合せ一覧_自動生成仕様.md §3。
+ * 仕様: 候補_版同期_検証済み組合せ一覧_自動生成仕様.md §3 ／ 11_型同期ルール §0.5。
  *   数字は機械に写させ、人は判断だけ書く。本スクリプトは読取専用（他repoへ書かない）。
  *
- * 収集:
- *   1) core の git tag 一覧 と package.json version（タグなき版は「作業中」）
- *   2) 引数で渡す採用repo群（既定: magi-webapp-template / magi-resident-spine）の
- *      package.json にある @magi/core 固定タグ
- *   3) 各repoの origin/main HEAD と ローカルHEAD の乖離・dirty
- * 出力: docs/verified-combos/version-matrix.json ＋ .md（このworktree内のみ）。
- *
- * v0.5.1（R1-C1-VERSION-SOT）:
- *   - generated_at は `--now <iso>` で外部注入可（CIの再現性・鮮度検査のため）。未指定は現在時刻。
- *   - source_hashes: 読んだ各 package.json と `git tag` 出力の SHA-256 を出力に含める
- *     （生成物の鮮度・出所を機械検査できるようにする）。
+ * round2 修正（R1-C1-VERSION-SOT）:
+ *   - 各採用repoの固定タグ・版は **dirty ローカル作業ツリーでなく `git show origin/main:package.json`
+ *     （確定commit）** から読む。
+ *   - `app_commit`（origin/main HEAD 完全SHA）・`template_commit`（雛形の origin/main HEAD）を記録。
+ *   - `--verified-entry app=...,core_tag=...,evidence=...,verified_at=...[,verified_by=...]`（反復可）で
+ *     検証記録を受けて `verified` 配列へ格納（11 §0.5 の検証済み組合せスキーマ）。
+ *   - `source_hashes`（版pin実体の SHA-256）を出力。`npm run verify:matrix` が鮮度を機械検査する。
+ *   - `--now <iso>` で generated_at を外部注入可（再現性）。
+ *   出力: docs/verified-combos/version-matrix.json ＋ .md（このworktree内のみ）。
  */
-import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  coreTagList,
+  computeSourceHashes,
+  defaultAdopters,
+  originMainHead,
+  pinnedCoreTag,
+  readOriginMainPackage,
+} from './version-matrix-sources.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const coreRoot = join(here, '..');
 
-function sha256(text: string): string {
-  return createHash('sha256').update(text, 'utf8').digest('hex');
-}
+type VerifiedEntry = {
+  app: string;
+  core_tag: string;
+  template_commit: string | null;
+  app_commit: string | null;
+  verified_at: string | null;
+  verified_by: string | null;
+  evidence: string | null;
+};
 
-function git(cwd: string, args: string[]): string | null {
-  try {
-    return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-  } catch {
-    return null;
+function parseVerifiedEntry(spec: string): Record<string, string> {
+  const obj: Record<string, string> = {};
+  for (const pair of spec.split(',')) {
+    const idx = pair.indexOf('=');
+    if (idx === -1) continue;
+    obj[pair.slice(0, idx).trim()] = pair.slice(idx + 1).trim();
   }
+  return obj;
 }
 
-type ParsedPackage = { version?: string; deps: Record<string, string>; rawSha256: string };
-
-function readPackageJson(repoRoot: string): ParsedPackage | null {
-  try {
-    const rawText = readFileSync(join(repoRoot, 'package.json'), 'utf8');
-    const raw = JSON.parse(rawText) as {
-      version?: string;
-      dependencies?: Record<string, string>;
-      devDependencies?: Record<string, string>;
-    };
-    return {
-      version: raw.version,
-      deps: { ...(raw.dependencies ?? {}), ...(raw.devDependencies ?? {}) },
-      rawSha256: sha256(rawText),
-    };
-  } catch {
-    return null;
-  }
-}
-
-function pinnedCoreTag(deps: Record<string, string>): string {
-  const spec = deps['@magi/core'];
-  if (!spec) return '（未参照）';
-  // git+...#v0.4.4 / npm:...@v0.4.4 / file:... など。タグ部分を素朴に取り出す。
-  const tagMatch = spec.match(/#(v?\d+\.\d+\.\d+[^\s]*)/) ?? spec.match(/@(v?\d+\.\d+\.\d+[^\s]*)$/);
-  if (tagMatch) return tagMatch[1];
-  if (spec.startsWith('file:') || spec.startsWith('link:') || spec.startsWith('workspace:')) return `（ローカル参照: ${spec}）`;
-  return spec;
-}
-
-function repoStatus(repoRoot: string) {
-  const localHead = git(repoRoot, ['rev-parse', '--short', 'HEAD']);
-  if (localHead === null) return { available: false as const };
-  const originHead = git(repoRoot, ['rev-parse', '--short', 'origin/main']);
-  const dirtyRaw = git(repoRoot, ['status', '--porcelain']);
-  const dirty = dirtyRaw !== null && dirtyRaw.length > 0;
-  const diverged = originHead !== null && originHead !== localHead;
-  return { available: true as const, localHead, originHead, dirty, diverged };
-}
-
-// --- 引数解析（--now でgenerated_at外部注入・残りは採用repo群） ---
+// --- 引数解析（--now / --verified-entry / 残りは採用repo名 or パス） ---
 const rawArgs = process.argv.slice(2);
 let nowOverride: string | undefined;
+const verifiedSpecs: string[] = [];
 const positional: string[] = [];
 for (let i = 0; i < rawArgs.length; i += 1) {
   const arg = rawArgs[i];
@@ -89,56 +61,68 @@ for (let i = 0; i < rawArgs.length; i += 1) {
     i += 1;
   } else if (arg.startsWith('--now=')) {
     nowOverride = arg.slice('--now='.length);
+  } else if (arg === '--verified-entry') {
+    verifiedSpecs.push(rawArgs[i + 1] ?? '');
+    i += 1;
+  } else if (arg.startsWith('--verified-entry=')) {
+    verifiedSpecs.push(arg.slice('--verified-entry='.length));
   } else {
     positional.push(arg);
   }
 }
 const generatedAt = nowOverride ?? new Date().toISOString();
 
-// source_hashes: 読んだ各 package.json と `git tag` 出力の SHA-256（鮮度・出所の機械検査用）。
-const sourceHashes: Record<string, string> = {};
+// 採用repo: 位置引数があればそれをパスとして名前=basename で扱う。無ければ既定。
+const adopters =
+  positional.length > 0
+    ? positional.map((p) => ({ name: p.split('/').filter(Boolean).pop() ?? p, path: p }))
+    : defaultAdopters();
 
-// --- core 側 ---
-const corePkg = readPackageJson(coreRoot);
-const coreVersion = corePkg?.version ?? '（不明）';
-if (corePkg) sourceHashes['core:package.json'] = corePkg.rawSha256;
-const coreTagsRaw = git(coreRoot, ['tag', '--list']) ?? '';
-sourceHashes['core:git-tag'] = sha256(coreTagsRaw);
-const coreTags = coreTagsRaw
-  .split('\n')
-  .map((t) => t.trim())
-  .filter(Boolean);
+// --- core 側（作業ツリー package.json＝版bump対象・タグは版存在判定用） ---
+const corePkg = JSON.parse(readFileSync(join(coreRoot, 'package.json'), 'utf8')) as { version?: string };
+const coreVersion = corePkg.version ?? '（不明）';
+const coreTags = coreTagList(coreRoot);
 const coreVersionTag = `v${coreVersion}`;
 const coreVersionHasTag = coreTags.includes(coreVersionTag) || coreTags.includes(coreVersion);
 const coreLabel = coreVersionHasTag ? coreVersionTag : `${coreVersionTag}（作業中・タグ未作成）`;
 
-// --- 採用repo群 ---
-const defaultRepos = [
-  join(homedir(), 'Documents', 'magi-webapp-template'),
-  join(homedir(), 'Documents', 'magi-resident-spine'),
-];
-const repoRoots = positional.length > 0 ? positional : defaultRepos;
-
-const adopters = repoRoots.map((repoRoot) => {
-  const pkg = readPackageJson(repoRoot);
-  if (pkg) sourceHashes[`${repoRoot}:package.json`] = pkg.rawSha256;
-  const status = repoStatus(repoRoot);
+// --- 採用repo（すべて origin/main 確定commitから） ---
+const adopterRows = adopters.map((adopter) => {
+  const pkg = readOriginMainPackage(adopter.path);
+  const appCommit = originMainHead(adopter.path);
   return {
-    repo: repoRoot,
-    available: status.available && pkg !== null,
+    name: adopter.name,
+    available: pkg !== null && appCommit !== null,
     app_version: pkg?.version ?? null,
     core_pinned_tag: pkg ? pinnedCoreTag(pkg.deps) : null,
-    local_head: status.available ? status.localHead : null,
-    origin_head: status.available ? status.originHead : null,
-    dirty: status.available ? status.dirty : null,
-    diverged: status.available ? status.diverged : null,
+    app_commit: appCommit, // origin/main 完全SHA（機械独立）
   };
 });
 
+// 雛形（magi-webapp-template）の origin/main HEAD を template_commit とする。
+const templateRow = adopterRows.find((r) => r.name === 'magi-webapp-template');
+const templateCommit = templateRow?.app_commit ?? null;
+const appCommitByName = new Map(adopterRows.map((r) => [r.name, r.app_commit] as const));
+
+// --- verified 配列（--verified-entry から。11 §0.5 の検証済み組合せ） ---
+const verified: VerifiedEntry[] = verifiedSpecs
+  .map(parseVerifiedEntry)
+  .filter((e) => e.app && e.core_tag)
+  .map((e) => ({
+    app: e.app,
+    core_tag: e.core_tag,
+    template_commit: templateCommit,
+    app_commit: appCommitByName.get(e.app) ?? null,
+    verified_at: e.verified_at ?? null,
+    verified_by: e.verified_by ?? null,
+    evidence: e.evidence ?? null,
+  }));
+
+const sourceHashes = computeSourceHashes(coreRoot, adopters);
+
 const matrix = {
   generated_at: generatedAt,
-  note: '機械生成。手書き版番号は禁止（候補_版同期_検証済み組合せ一覧_自動生成仕様.md）。',
-  source_hashes: sourceHashes,
+  note: '機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。',
   core: {
     version: coreVersion,
     version_tag: coreVersionTag,
@@ -146,7 +130,10 @@ const matrix = {
     label: coreLabel,
     tags: coreTags,
   },
-  adopters,
+  template_commit: templateCommit,
+  adopters: adopterRows,
+  verified,
+  source_hashes: sourceHashes,
 };
 
 const outDir = join(coreRoot, 'docs', 'verified-combos');
@@ -157,35 +144,51 @@ writeFileSync(join(outDir, 'version-matrix.json'), `${JSON.stringify(matrix, nul
 const lines: string[] = [];
 lines.push('# 版同期・検証済み組合せ一覧（機械生成）');
 lines.push('');
-lines.push('> このファイルは `scripts/collect-version-matrix.mts` の自動生成物。手で版番号を書かない。');
+lines.push('> `scripts/collect-version-matrix.mts` の自動生成物。手で版番号を書かない。');
+lines.push('> 固定版は origin/main 確定commitから収集（dirty ローカルは使わない）。');
 lines.push('');
 lines.push(`- 生成時刻: ${generatedAt}`);
 lines.push(`- Core: **${coreLabel}**（tag数: ${coreTags.length}）`);
+lines.push(`- template_commit（雛形 origin/main）: ${templateCommit ?? '（取得不可）'}`);
 lines.push('');
-lines.push('| 採用repo | app version | @magi/core 固定タグ | local HEAD | origin/main | 乖離 | dirty |');
-lines.push('|---|---|---|---|---|---|---|');
-for (const a of adopters) {
-  if (!a.available) {
-    lines.push(`| ${a.repo} | （取得不可） | - | - | - | - | - |`);
+lines.push('## 採用repo（origin/main 確定commit）');
+lines.push('');
+lines.push('| repo | app version | @magi/core 固定タグ | app_commit(origin/main) |');
+lines.push('|---|---|---|---|');
+for (const r of adopterRows) {
+  if (!r.available) {
+    lines.push(`| ${r.name} | （取得不可） | - | - |`);
     continue;
   }
-  lines.push(
-    `| ${a.repo} | ${a.app_version ?? '?'} | ${a.core_pinned_tag ?? '?'} | ${a.local_head ?? '?'} | ${a.origin_head ?? '?'} | ${a.diverged ? '⚠️あり' : 'なし'} | ${a.dirty ? '⚠️あり' : 'なし'} |`,
-  );
+  lines.push(`| ${r.name} | ${r.app_version ?? '?'} | ${r.core_pinned_tag ?? '?'} | ${r.app_commit ?? '?'} |`);
 }
 lines.push('');
-lines.push('## source_hashes（読取元の SHA-256・鮮度/出所の機械検査用）');
+lines.push('## verified（検証済み組合せ・11 §0.5）');
+lines.push('');
+if (verified.length === 0) {
+  lines.push('（未登録。`--verified-entry app=...,core_tag=...,evidence=...,verified_at=...` で追加）');
+} else {
+  lines.push('| app | core_tag | template_commit | app_commit | verified_at | verified_by | evidence |');
+  lines.push('|---|---|---|---|---|---|---|');
+  for (const v of verified) {
+    lines.push(
+      `| ${v.app} | ${v.core_tag} | ${v.template_commit ?? '-'} | ${v.app_commit ?? '-'} | ${v.verified_at ?? '-'} | ${v.verified_by ?? '-'} | ${v.evidence ?? '-'} |`,
+    );
+  }
+}
+lines.push('');
+lines.push('## source_hashes（版pin実体の SHA-256・`npm run verify:matrix` が鮮度検査）');
 lines.push('');
 for (const [key, value] of Object.entries(sourceHashes)) {
   lines.push(`- \`${key}\`: ${value}`);
 }
 lines.push('');
-lines.push('※ タグなき版は「作業中」。「検証済み」の確定（verified_at/evidence）は U4 検収green の記録から別途機械転記する（本最小実装は版の現況収集とsource_hashesの記録まで）。');
-lines.push('');
 writeFileSync(join(outDir, 'version-matrix.md'), `${lines.join('\n')}\n`, 'utf8');
 
 console.log(`version matrix written: ${outDir}`);
 console.log(`  core: ${coreLabel}`);
-for (const a of adopters) {
-  console.log(`  adopter: ${a.repo} → ${a.available ? `core=${a.core_pinned_tag}` : '取得不可'}`);
+console.log(`  template_commit: ${templateCommit ?? '(取得不可)'}`);
+for (const r of adopterRows) {
+  console.log(`  adopter: ${r.name} → ${r.available ? `core=${r.core_pinned_tag} @${r.app_commit?.slice(0, 12)}` : '取得不可'}`);
 }
+console.log(`  verified entries: ${verified.length}`);
