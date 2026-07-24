@@ -262,7 +262,7 @@ export function deriveStatusDisplay(resolution) {
             label: resolution.writable ? '書込ON' : '書込OFF',
             tone: resolution.writable ? 'danger' : 'neutral',
             unverified: true,
-            detail: '信頼済み検出器（createEnvWriteDetector / createEndpointWriteDetector）ではないため無検証',
+            detail: '信頼済みは createHealthWriteDetector() のみ（createEndpointWriteDetector はその固定パス別名・非推奨）。この検出器はそれ以外のため無検証',
         });
     }
     else if (resolution.writable) {
