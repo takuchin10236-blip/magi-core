@@ -68,29 +68,41 @@ function describeUnknown(value) {
  * アプリから渡された宣言状態を許可リストへ照合する。
  *   kind が 'businessLive' 以外／構造不正なら拒否（ok:false）＝表示せずエラーにする。
  *   本番URL・書込状態を騙る object はここで弾かれ、「無検証つき表示」すら許さない。
- *   どんな入力でも決して throw しない（BigInt・循環参照・Symbol 等も ok:false へ）。
+ *   R1-C2-INVALID-KIND-THROW: 構造検査と全プロパティアクセス（kind/value/basis）を含む
+ *   validator 全体を例外境界で囲む。throwing getter・Proxy でも throw せず ok:false を返す
+ *   （BigInt・循環参照・Symbol も同様）＝レンダー中断を起こさない。
  */
 export function validateDeclaredState(input) {
-    if (typeof input !== 'object' || input === null) {
-        return { ok: false, reason: '状態宣言がオブジェクトではありません', received: input };
+    try {
+        if (typeof input !== 'object' || input === null) {
+            return { ok: false, reason: '状態宣言がオブジェクトではありません', received: input };
+        }
+        const record = input;
+        const kind = record.kind; // throwing getter/Proxy はこの読取時点で catch される
+        if (kind !== 'businessLive') {
+            return {
+                ok: false,
+                reason: `許可されていない状態種別です（kind=${describeUnknown(kind)}）`,
+                received: input,
+            };
+        }
+        const value = record.value;
+        if (typeof value !== 'boolean') {
+            return { ok: false, reason: 'value が真偽値ではありません', received: input };
+        }
+        const basis = record.basis;
+        if (typeof basis !== 'string' || basis.length === 0) {
+            return { ok: false, reason: '宣言根拠（basis）が空です', received: input };
+        }
+        return { ok: true, state: { kind: 'businessLive', value, basis } };
     }
-    const record = input;
-    if (record.kind !== 'businessLive') {
-        return {
-            ok: false,
-            reason: `許可されていない状態種別です（kind=${describeUnknown(record.kind)}）`,
-            received: input,
-        };
+    catch {
+        // プロパティアクセス（throwing getter/Proxy）等で例外が出てもレンダーを止めない。
+        // received に危険な object を持ち越さない（後続で再アクセスさせない）ため null にする。
+        return { ok: false, reason: '状態宣言の読み取り中にエラーが発生しました', received: null };
     }
-    if (typeof record.value !== 'boolean') {
-        return { ok: false, reason: 'value が真偽値ではありません', received: input };
-    }
-    if (typeof record.basis !== 'string' || record.basis.length === 0) {
-        return { ok: false, reason: '宣言根拠（basis）が空です', received: input };
-    }
-    return { ok: true, state: { kind: 'businessLive', value: record.value, basis: record.basis } };
 }
-// 信頼済みマーカー（Core提供ファクトリだけが付与できる）。型ブランドと実行時判定に使う。
+// 信頼済みマーカー（Core が観測元と抽出方法を固定できる検出器だけが付与できる）。
 const TRUSTED_WRITE_DETECTOR = Symbol('magi.trustedWriteDetector');
 function brandTrusted(fn) {
     Object.defineProperty(fn, TRUSTED_WRITE_DETECTOR, { value: true, enumerable: false });
@@ -102,43 +114,60 @@ export function isTrustedWriteDetector(fn) {
         fn[TRUSTED_WRITE_DETECTOR] === true);
 }
 /**
- * 環境値（環境変数・設定エンドポイントの実値）から書込可否を読む信頼済み検出器を作る。
- *   read() の戻りは boolean のみ受理。それ以外は throw して検出失敗（fail-closed）へ落とす。
+ * 環境値から書込可否を読むアダプタ。**無検証扱い（trusted にしない）**。
+ *   R1-C2（round2 修正）: 任意 read を無条件に信頼できない（定数 false 等で安全状態を偽装できる）。
+ *   ブランドを付けないため、生関数と同じく書込バッジに「無検証」を併記し安全側集約から除外される。
+ *   boolean 以外は throw して検出失敗（fail-closed）へ落とす。後方互換のため名前は残す。
+ *   信頼済みで観測したい場合は createEndpointWriteDetector（同一オリジン health）を使う。
  */
 export function createEnvWriteDetector(read) {
-    return brandTrusted(() => {
+    return () => {
         const value = read();
         if (typeof value !== 'boolean') {
             throw new Error('write flag is not a boolean');
         }
         return value;
-    });
+    };
 }
 /**
- * エンドポイント（/api/health 等）を実観測して書込可否を読む信頼済み検出器を作る。
- *   fetch 失敗・非OK・非boolean はすべて throw＝検出失敗（fail-closed）へ落ちる。
- *   既定は payload.writable / payload.storage.writable を読む。extract で差し替え可能。
+ * 同一オリジンの health エンドポイントを実観測して書込可否を読む**信頼済み**検出器を作る。
+ *   R1-C2（round2）: 観測元と抽出方法を Core が固定する＝
+ *     - path は同一オリジンに解決できる場合のみ（クロスオリジンは throw）
+ *     - レスポンスの固定フィールド `storage.writable` が boolean の時だけ採用（カスタム extract 廃止）
+ *   fetch 失敗・非OK・スキーマ不一致・非boolean はすべて throw＝検出失敗（fail-closed）へ落ちる。
  */
-export function createEndpointWriteDetector(url, options = {}) {
-    const extract = options.extract ?? defaultWritableExtract;
+export function createEndpointWriteDetector(path, init) {
     return brandTrusted(async () => {
-        const res = await fetch(url, options.init);
+        const url = resolveSameOrigin(path);
+        const res = await fetch(url, init);
         if (!res.ok)
             throw new Error(`write endpoint responded ${res.status}`);
         const payload = (await res.json());
-        const writable = extract(payload);
+        const writable = readStorageWritable(payload);
         if (typeof writable !== 'boolean') {
-            throw new Error('write endpoint payload has no boolean writable flag');
+            throw new Error('write endpoint payload has no boolean storage.writable');
         }
         return writable;
     });
 }
-function defaultWritableExtract(payload) {
+/** path を同一オリジンに解決する。クロスオリジン・解決不能は throw（信頼済み経路の前提）。 */
+function resolveSameOrigin(path) {
+    if (typeof location === 'undefined') {
+        if (path.startsWith('/'))
+            return path; // SSR等: 相対パスのみ許可
+        throw new Error('write endpoint must be a same-origin path');
+    }
+    const url = new URL(path, location.origin);
+    if (url.origin !== location.origin) {
+        throw new Error('write endpoint must be same-origin');
+    }
+    return url.toString();
+}
+/** health レスポンスの固定フィールド storage.writable を読む（それ以外の経路は設けない）。 */
+function readStorageWritable(payload) {
     if (payload && typeof payload === 'object') {
         const p = payload;
-        if (typeof p.writable === 'boolean')
-            return p.writable;
-        if (p.storage && typeof p.storage === 'object' && typeof p.storage.writable === 'boolean') {
+        if (p.storage && typeof p.storage === 'object') {
             return p.storage.writable;
         }
     }

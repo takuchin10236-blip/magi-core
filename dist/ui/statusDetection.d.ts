@@ -61,15 +61,19 @@ export declare function detectRuntime(config?: RuntimeDetectorConfig, hostname?:
  * アプリから渡された宣言状態を許可リストへ照合する。
  *   kind が 'businessLive' 以外／構造不正なら拒否（ok:false）＝表示せずエラーにする。
  *   本番URL・書込状態を騙る object はここで弾かれ、「無検証つき表示」すら許さない。
- *   どんな入力でも決して throw しない（BigInt・循環参照・Symbol 等も ok:false へ）。
+ *   R1-C2-INVALID-KIND-THROW: 構造検査と全プロパティアクセス（kind/value/basis）を含む
+ *   validator 全体を例外境界で囲む。throwing getter・Proxy でも throw せず ok:false を返す
+ *   （BigInt・循環参照・Symbol も同様）＝レンダー中断を起こさない。
  */
 export declare function validateDeclaredState(input: unknown): DeclaredStateValidation;
 /** 書込ON/OFF の検出関数。真偽値を直接渡す props は設けない（自己申告を型で塞ぐ）。 */
 export type WriteDetector = () => boolean | Promise<boolean>;
 declare const TRUSTED_WRITE_DETECTOR: unique symbol;
 /**
- * Core提供ファクトリが返す「信頼済み」書込検出器。生関数（自己申告）と区別する。
+ * Core提供ファクトリが返す「信頼済み」書込検出器。生関数・任意コールバックと区別する。
  *   型ブランド＋実行時シンボルの二重化で、採用アプリが手で偽装できないようにする。
+ *   R1-C2（round2）: 信頼済みになれるのは createEndpointWriteDetector（同一オリジン health を
+ *   固定スキーマで観測）だけ。任意 read/extract を受けるアダプタは trusted にしない。
  */
 export type TrustedWriteDetector = WriteDetector & {
     readonly [TRUSTED_WRITE_DETECTOR]: true;
@@ -77,19 +81,21 @@ export type TrustedWriteDetector = WriteDetector & {
 /** 検出器が Core提供ファクトリ由来（信頼済み）かを実行時に判定する。 */
 export declare function isTrustedWriteDetector(fn: WriteDetector): fn is TrustedWriteDetector;
 /**
- * 環境値（環境変数・設定エンドポイントの実値）から書込可否を読む信頼済み検出器を作る。
- *   read() の戻りは boolean のみ受理。それ以外は throw して検出失敗（fail-closed）へ落とす。
+ * 環境値から書込可否を読むアダプタ。**無検証扱い（trusted にしない）**。
+ *   R1-C2（round2 修正）: 任意 read を無条件に信頼できない（定数 false 等で安全状態を偽装できる）。
+ *   ブランドを付けないため、生関数と同じく書込バッジに「無検証」を併記し安全側集約から除外される。
+ *   boolean 以外は throw して検出失敗（fail-closed）へ落とす。後方互換のため名前は残す。
+ *   信頼済みで観測したい場合は createEndpointWriteDetector（同一オリジン health）を使う。
  */
-export declare function createEnvWriteDetector(read: () => unknown): TrustedWriteDetector;
+export declare function createEnvWriteDetector(read: () => unknown): WriteDetector;
 /**
- * エンドポイント（/api/health 等）を実観測して書込可否を読む信頼済み検出器を作る。
- *   fetch 失敗・非OK・非boolean はすべて throw＝検出失敗（fail-closed）へ落ちる。
- *   既定は payload.writable / payload.storage.writable を読む。extract で差し替え可能。
+ * 同一オリジンの health エンドポイントを実観測して書込可否を読む**信頼済み**検出器を作る。
+ *   R1-C2（round2）: 観測元と抽出方法を Core が固定する＝
+ *     - path は同一オリジンに解決できる場合のみ（クロスオリジンは throw）
+ *     - レスポンスの固定フィールド `storage.writable` が boolean の時だけ採用（カスタム extract 廃止）
+ *   fetch 失敗・非OK・スキーマ不一致・非boolean はすべて throw＝検出失敗（fail-closed）へ落ちる。
  */
-export declare function createEndpointWriteDetector(url: string, options?: {
-    extract?: (payload: unknown) => unknown;
-    init?: RequestInit;
-}): TrustedWriteDetector;
+export declare function createEndpointWriteDetector(path: string, init?: RequestInit): TrustedWriteDetector;
 /** 表示アイテム。unverified は「無検証」バッジ併記対象、detail は tooltip 説明。 */
 export type StatusDisplayItem = {
     id: string;

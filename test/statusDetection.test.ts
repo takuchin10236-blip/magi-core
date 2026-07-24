@@ -77,16 +77,53 @@ describe('validateDeclaredState（許可リスト照合・R1-C2-INVALID-KIND-THR
     expect(() => inputs.map(validateDeclaredState)).not.toThrow();
     expect(inputs.map(validateDeclaredState).every((r) => r.ok === false)).toBe(true);
   });
+  // R1-C2-INVALID-KIND-THROW（round2）: プロパティアクセスの例外も境界内で ok:false
+  it('kind 取得で例外を投げる Proxy でも throw せず ok:false', () => {
+    const evil = new Proxy(
+      {},
+      {
+        get(_target, prop) {
+          if (prop === 'kind') throw new Error('boom');
+          return undefined;
+        },
+      },
+    );
+    expect(() => validateDeclaredState(evil)).not.toThrow();
+    expect(validateDeclaredState(evil).ok).toBe(false);
+  });
+  it('value が throwing getter でも throw せず ok:false', () => {
+    const obj = {
+      kind: 'businessLive',
+      get value(): boolean {
+        throw new Error('boom');
+      },
+      basis: 'x',
+    };
+    expect(() => validateDeclaredState(obj)).not.toThrow();
+    expect(validateDeclaredState(obj).ok).toBe(false);
+  });
+  it('basis が throwing getter でも throw せず ok:false', () => {
+    const obj = {
+      kind: 'businessLive',
+      value: true,
+      get basis(): string {
+        throw new Error('boom');
+      },
+    };
+    expect(() => validateDeclaredState(obj)).not.toThrow();
+    expect(validateDeclaredState(obj).ok).toBe(false);
+  });
 });
 
 describe('書込検出ファクトリ（R1-C2-DETECTOR-SELFDECLARATION）', () => {
-  it('createEnvWriteDetector は信頼済みブランドを持つ', () => {
-    const d = createEnvWriteDetector(() => false);
-    expect(isTrustedWriteDetector(d)).toBe(true);
-  });
-  it('createEndpointWriteDetector も信頼済みブランドを持つ', () => {
+  it('createEndpointWriteDetector（同一オリジン health 固定スキーマ）のみ信頼済み', () => {
     const d = createEndpointWriteDetector('/api/health');
     expect(isTrustedWriteDetector(d)).toBe(true);
+  });
+  // round2 是正: 任意 read を受ける createEnvWriteDetector は「無検証」＝trusted にしない
+  it('createEnvWriteDetector は信頼済みでない（無検証へ降格）', () => {
+    expect(isTrustedWriteDetector(createEnvWriteDetector(() => false))).toBe(false);
+    expect(isTrustedWriteDetector(createEnvWriteDetector(() => true))).toBe(false);
   });
   it('生関数は信頼済みでない', () => {
     const raw = () => false;
@@ -101,6 +138,33 @@ describe('書込検出ファクトリ（R1-C2-DETECTOR-SELFDECLARATION）', () =
     expect(() => createEnvWriteDetector(() => 'yes')()).toThrow();
     expect(() => createEnvWriteDetector(() => undefined)()).toThrow();
     expect(() => createEnvWriteDetector(() => 0)()).toThrow();
+  });
+});
+
+describe('集約は信頼済み検出器の書込OFFだけ（R1-C2 負例・round2）', () => {
+  function reso(writable: boolean | null, writeTrusted: boolean, failed = false): StatusResolution {
+    return {
+      healthReady: true,
+      runtimeSurface: 'preview',
+      writable,
+      writeDetectorFailed: failed,
+      writeTrusted,
+      declared: [],
+      rejected: [],
+    };
+  }
+  it('定数 false の生関数由来（未検証・writeTrusted=false）は集約されない', () => {
+    // 生関数 () => false → isTrustedWriteDetector=false → writeTrusted=false 相当
+    expect(isTrustedWriteDetector(() => false)).toBe(false);
+    expect(deriveStatusDisplay(reso(false, false)).mode).toBe('exposed');
+  });
+  it('env 経由（createEnvWriteDetector）も未検証なので集約されない', () => {
+    expect(isTrustedWriteDetector(createEnvWriteDetector(() => false))).toBe(false);
+    expect(deriveStatusDisplay(reso(false, false)).mode).toBe('exposed');
+  });
+  it('trusted endpoint 検出の書込OFFだけが集約に入る', () => {
+    expect(isTrustedWriteDetector(createEndpointWriteDetector('/api/health'))).toBe(true);
+    expect(deriveStatusDisplay(reso(false, true)).mode).toBe('aggregate');
   });
 });
 
