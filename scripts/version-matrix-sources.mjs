@@ -57,11 +57,32 @@ export function originMainHead(repoPath) {
   return git(repoPath, ['rev-parse', 'origin/main']);
 }
 
+/** タグの deref 先 commit（annotated tag の指す実commit）。無ければ null。 */
+export function tagDerefCommit(coreRoot, tag) {
+  if (!tag) return null;
+  return git(coreRoot, ['rev-parse', `${tag}^{commit}`]);
+}
+
 export function coreTagList(coreRoot) {
   return (git(coreRoot, ['tag', '--list']) ?? '')
     .split('\n')
     .map((t) => t.trim())
     .filter(Boolean);
+}
+
+/**
+ * 鮮度ターゲット（記録値と現在値を比較する commit 群）を決定的に計算（collect と verify で同一）。
+ *   - core:version-tag-commit … Core 版タグの deref 先（タグ未作成なら null）
+ *   - <name>:origin-main-head … 各採用repoの origin/main HEAD 完全SHA
+ *   package.json を変えずに repo が前進／タグが移動したケースを verify:matrix が exit 1 で捉える。
+ */
+export function computeFreshnessTargets(coreRoot, adopters, coreVersionTag) {
+  const targets = {};
+  targets['core:version-tag-commit'] = tagDerefCommit(coreRoot, coreVersionTag);
+  for (const adopter of adopters) {
+    targets[`${adopter.name}:origin-main-head`] = originMainHead(adopter.path);
+  }
+  return targets;
 }
 
 /** package.json の @magi/core spec から固定タグを取り出す。 */

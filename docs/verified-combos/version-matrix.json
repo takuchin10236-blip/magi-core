@@ -1,11 +1,12 @@
 {
-  "generated_at": "2026-07-24T09:07:25+09:00",
+  "generated_at": "2026-07-24T01:35:01.758Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
-    "version": "0.5.2",
-    "version_tag": "v0.5.2",
-    "version_has_tag": true,
-    "label": "v0.5.2",
+    "version": "0.5.3",
+    "version_tag": "v0.5.3",
+    "version_has_tag": false,
+    "version_tag_commit": null,
+    "label": "v0.5.3（作業中・タグ未作成）",
     "tags": [
       "v0.1.0",
       "v0.2.0",
@@ -43,27 +44,23 @@
   ],
   "verified": [
     {
-      "app": "magi-core",
-      "core_tag": "v0.5.2",
+      "app": "@magi/core",
+      "core_tag": "v0.5.3",
       "template_commit": "cd28b06209bc1600024c1bc2e4efba7120592c5a",
-      "app_commit": null,
-      "verified_at": "2026-07-24T09:07:25+09:00",
-      "verified_by": "GOAL-20260724-002",
-      "evidence": "magi-goal-work/GOAL-20260724-002/evidence/core_fix2_test.log(check+test exit0/41pass)"
-    },
-    {
-      "app": "magi-webapp-template",
-      "core_tag": "v0.5.2",
-      "template_commit": "cd28b06209bc1600024c1bc2e4efba7120592c5a",
-      "app_commit": "cd28b06209bc1600024c1bc2e4efba7120592c5a",
-      "verified_at": "2026-07-24T09:07:25+09:00",
-      "verified_by": "GOAL-20260724-002",
-      "evidence": "magi-goal-work/GOAL-20260724-002/evidence/template_v052pin_test.log(check exit0/48pass/AppShell型直接合格)"
+      "app_commit": "aa2c02822f02cded499bda4ad9c4662dc4493d18",
+      "verified_at": "2026-07-24T10:30:00Z",
+      "verified_by": "tachikoma",
+      "evidence": "magi-goal-work/GOAL-20260724-002/evidence/core_fix3_test.log"
     }
   ],
   "source_hashes": {
-    "core:package.json": "e4616d47cc5c6e6073cc79e30df05b770e8d3856c59a1838b41b12a7fca12d36",
+    "core:package.json": "82c313dcc70d02dfd819e9764f1d38749516ae4ccdf2ea0409c3bc23b82f0546",
     "magi-webapp-template:origin-main:package.json": "1a7117367dc729af2a2da7144e19d1bc4df45959b685d546b2075a86bc62030e",
     "magi-resident-spine:origin-main:package.json": "82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550"
+  },
+  "freshness_targets": {
+    "core:version-tag-commit": null,
+    "magi-webapp-template:origin-main-head": "cd28b06209bc1600024c1bc2e4efba7120592c5a",
+    "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158"
   }
 }

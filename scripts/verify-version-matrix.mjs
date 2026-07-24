@@ -1,54 +1,93 @@
 /**
- * verify-version-matrix — 版マトリクスの鮮度検査（Sol R1-C1-VERSION-SOT round2）。
+ * verify-version-matrix — 版マトリクスの鮮度・整合検査（Sol R1-C1-VERSION-SOT 最終・v0.5.3）。
  *
- * docs/verified-combos/version-matrix.json の source_hashes を、現在の読取元
- *   （core package.json ＋ 各採用repoの origin/main package.json）から再計算して突合する。
- *   不一致（版マトリクスが古い）なら **exit 1**＝CI/`npm run check` を止める。
- *   これで「生成元変更後も CI が古い一覧を通す」穴を塞ぐ。
+ * docs/verified-combos/version-matrix.json を現在の読取元と突合し、古い/不整合なら **exit 1**。
+ *   検査:
+ *     (1) source_hashes … core/採用repo の package.json 内容 SHA-256（版pin実体）
+ *     (2) freshness_targets … 各採用repo の origin/main HEAD ＋ Coreタグ deref 先 commit
+ *         （package.json を変えずに repo が前進／タグが移動したケースを捉える）
+ *     (3) verified 配列 … 各エントリの全フィールド非null ＋ evidence ログの実在
+ *   これで「コードやタグが動いても package.json 不変なら stale が通る」「未検証 entry が通る」穴を塞ぐ。
  *
  * ファイルが無い場合も exit 1（版SoTは追跡対象。`npm run version-matrix` で生成して commit する）。
  */
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { dirname, isAbsolute, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { computeSourceHashes, defaultAdopters } from './version-matrix-sources.mjs';
+import { computeFreshnessTargets, computeSourceHashes, defaultAdopters } from './version-matrix-sources.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const coreRoot = join(here, '..');
-const matrixPath = join(coreRoot, 'docs', 'verified-combos', 'version-matrix.json');
+// 既定は版SoT本体。負例テスト用に MAGI_MATRIX_PATH で差し替え可能（読取のみ）。
+const matrixPath = process.env.MAGI_MATRIX_PATH || join(coreRoot, 'docs', 'verified-combos', 'version-matrix.json');
+
+function fail(msg, detail) {
+  console.error(`verify:matrix FAIL: ${msg}`);
+  for (const line of detail ?? []) console.error(`  - ${line}`);
+  console.error('  → npm run version-matrix で再生成してから commit してください。');
+  process.exit(1);
+}
 
 let matrix;
 try {
   matrix = JSON.parse(readFileSync(matrixPath, 'utf8'));
 } catch {
-  console.error(`verify:matrix FAIL: ${matrixPath} が読めません。`);
-  console.error('  → npm run version-matrix で生成し、版SoTとして追跡（commit）してください。');
-  process.exit(1);
+  fail(`${matrixPath} が読めません。`, ['npm run version-matrix で生成し版SoTとして追跡（commit）してください。']);
 }
 
-// 採用repo: マトリクスに記録された名前を既定パス（~/Documents/<name>）へ解決して再計算。
+// 採用repo: マトリクス記録の名前を既定パス（~/Documents/<name>）へ解決して再計算。
 const known = new Map(defaultAdopters().map((a) => [a.name, a]));
 const names = (matrix.adopters ?? []).map((a) => a.name).filter(Boolean);
 const adopters = (names.length > 0 ? names : [...known.keys()]).map(
-  (name) => known.get(name) ?? { name, path: join(process.env.HOME ?? '', 'Documents', name) },
+  (name) => known.get(name) ?? { name, path: join(homedir(), 'Documents', name) },
 );
 
-const stored = matrix.source_hashes ?? {};
-const recomputed = computeSourceHashes(coreRoot, adopters);
-
-const keys = [...new Set([...Object.keys(stored), ...Object.keys(recomputed)])].sort();
-const diffs = [];
-for (const key of keys) {
-  if (stored[key] !== recomputed[key]) {
-    diffs.push({ key, stored: stored[key] ?? '(なし)', now: recomputed[key] ?? '(なし)' });
+// (1) source_hashes
+const storedHashes = matrix.source_hashes ?? {};
+const nowHashes = computeSourceHashes(coreRoot, adopters);
+const hashDiffs = [];
+for (const key of [...new Set([...Object.keys(storedHashes), ...Object.keys(nowHashes)])].sort()) {
+  if (storedHashes[key] !== nowHashes[key]) {
+    hashDiffs.push(`source_hashes.${key}: stored=${storedHashes[key] ?? '(なし)'} / now=${nowHashes[key] ?? '(なし)'}`);
   }
 }
+if (hashDiffs.length > 0) fail('source_hashes が現在の読取元と不一致（版pinが変わった）。', hashDiffs);
 
-if (diffs.length > 0) {
-  console.error('verify:matrix FAIL: source_hashes が現在の読取元と不一致（版マトリクスが古い）。');
-  for (const d of diffs) console.error(`  - ${d.key}: stored=${d.stored} / now=${d.now}`);
-  console.error('  → npm run version-matrix で再生成してから commit してください。');
-  process.exit(1);
+// (2) freshness_targets（origin/main HEAD ＋ Coreタグ deref 先）
+const storedTargets = matrix.freshness_targets ?? {};
+const nowTargets = computeFreshnessTargets(coreRoot, adopters, matrix.core?.version_tag);
+const targetDiffs = [];
+for (const key of [...new Set([...Object.keys(storedTargets), ...Object.keys(nowTargets)])].sort()) {
+  // null 同士は一致（タグ未作成・repo取得不可）。片方でも変われば不一致。
+  if ((storedTargets[key] ?? null) !== (nowTargets[key] ?? null)) {
+    targetDiffs.push(`freshness_targets.${key}: stored=${storedTargets[key] ?? 'null'} / now=${nowTargets[key] ?? 'null'}`);
+  }
 }
+if (targetDiffs.length > 0) fail('freshness_targets（HEAD/タグ deref）が現在値と不一致（repo前進 or タグ移動）。', targetDiffs);
 
-console.log(`verify:matrix OK: source_hashes ${keys.length} 件が一致（generated_at=${matrix.generated_at}）`);
+// (3) verified 配列: 全フィールド非null ＋ evidence 実在
+const EVIDENCE_BASES = [join(homedir(), 'Documents'), join(homedir(), 'Documents', 'magi-goal-work')];
+function evidenceExists(evidence) {
+  if (isAbsolute(evidence)) return existsSync(evidence);
+  return EVIDENCE_BASES.some((base) => existsSync(join(base, evidence)));
+}
+const REQUIRED_FIELDS = ['app', 'core_tag', 'template_commit', 'app_commit', 'verified_at', 'verified_by', 'evidence'];
+const verifiedDiffs = [];
+(matrix.verified ?? []).forEach((entry, i) => {
+  for (const field of REQUIRED_FIELDS) {
+    if (entry[field] === null || entry[field] === undefined || entry[field] === '') {
+      verifiedDiffs.push(`verified[${i}].${field} が空（全フィールド非null必須）`);
+    }
+  }
+  if (entry.evidence && !evidenceExists(entry.evidence)) {
+    verifiedDiffs.push(`verified[${i}].evidence が実在しない: ${entry.evidence}`);
+  }
+});
+if (verifiedDiffs.length > 0) fail('verified 配列が不整合（非null/evidence実在の要件違反）。', verifiedDiffs);
+
+const targetCount = Object.keys(nowTargets).length;
+const verifiedCount = (matrix.verified ?? []).length;
+console.log(
+  `verify:matrix OK: source_hashes ${Object.keys(nowHashes).length}件・freshness ${targetCount}件・verified ${verifiedCount}件 が一致（generated_at=${matrix.generated_at}）`,
+);
