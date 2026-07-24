@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.2 (2026-07-24)
+
+### Sol R2 修正（persistent 3件の恒久対処）
+- **R1-C2-DETECTOR-SELFDECLARATION**: 任意コールバックを無条件で trusted 化する抜け道を塞いだ。信頼済み経路は `createEndpointWriteDetector(path)` のみ——**同一オリジン強制**＋レスポンス固定フィールド `storage.writable` が boolean の時だけ採用（カスタム extract 廃止）。`createEnvWriteDetector` は **無検証へ降格**（ブランドを付けない＝生関数と同じ「無検証」表示・集約除外。名前は後方互換で残す）。定数 false の生関数・env 経由が集約されず、trusted endpoint だけが集約に入る負例試験を追加。
+- **R1-C2-INVALID-KIND-THROW**: `validateDeclaredState` 全体を例外境界で囲み、`kind`/`value`/`basis` のプロパティアクセスで throw する getter・Proxy でも throw せず `ok:false` を返す。throwing getter・Proxy の回帰試験を追加。
+- **R1-C1-VERSION-SOT**: `collect-version-matrix` を 11 §0.5 スキーマへ。各採用repoの固定タグ・版を **`git show origin/main:package.json`（確定commit）** から収集し、`app_commit`（origin/main HEAD）・`template_commit` を記録。`--verified-entry app=...,core_tag=...,evidence=...,verified_at=...[,verified_by=...]` で検証記録を `verified` 配列へ格納。`source_hashes`（版pin実体の SHA-256）を出力し、**`npm run verify:matrix`（不一致で exit 1）を新設して `check` に組込み**。共有ソース定義 `scripts/version-matrix-sources.mjs` を新設し collect/verify のハッシュ計算を一致させた。
+
 ## v0.5.1 (2026-07-24)
 
 ### Sol R1 レビュー修正（AppShell 状態表示の堅牢化）
