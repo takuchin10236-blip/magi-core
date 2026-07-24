@@ -14,9 +14,8 @@
  *   - `--now <iso>` で generated_at を外部注入可（再現性）。
  *   出力: docs/verified-combos/version-matrix.json ＋ .md（このworktree内のみ）。
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { dirname, isAbsolute, join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   coreTagList,
@@ -27,12 +26,13 @@ import {
   pinnedCoreTag,
   readOriginMainPackage,
   tagDerefCommit,
+  validateVerifiedEntry,
 } from './version-matrix-sources.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const coreRoot = join(here, '..');
 
-// 構築時は null 許容（直後に全フィールド非null を実行時検証してから確定する）。
+// 構築時は null 許容（validateVerifiedEntry が全フィールド非null＋機械束縛を検証してから確定する）。
 type VerifiedEntry = {
   app: string | null;
   core_tag: string | null;
@@ -41,6 +41,7 @@ type VerifiedEntry = {
   verified_at: string | null;
   verified_by: string | null;
   evidence: string | null;
+  evidence_sha256: string | null;
 };
 
 function parseVerifiedEntry(spec: string): Record<string, string> {
@@ -51,20 +52,6 @@ function parseVerifiedEntry(spec: string): Record<string, string> {
     obj[pair.slice(0, idx).trim()] = pair.slice(idx + 1).trim();
   }
   return obj;
-}
-
-// evidence（相対パス）を magi-goal-work 起点の候補ベースで解決し、実在を確認する。
-const EVIDENCE_BASES = [
-  join(homedir(), 'Documents'),
-  join(homedir(), 'Documents', 'magi-goal-work'),
-];
-function resolveEvidence(evidence: string): string | null {
-  if (isAbsolute(evidence)) return existsSync(evidence) ? evidence : null;
-  for (const base of EVIDENCE_BASES) {
-    const candidate = join(base, evidence);
-    if (existsSync(candidate)) return candidate;
-  }
-  return null;
 }
 
 // --- 引数解析（--now / --verified-entry / 残りは採用repo名 or パス） ---
@@ -122,41 +109,51 @@ const templateRow = adopterRows.find((r) => r.name === 'magi-webapp-template');
 const templateCommit = templateRow?.app_commit ?? null;
 const appCommitByName = new Map(adopterRows.map((r) => [r.name, r.app_commit] as const));
 
-// --- verified 配列（--verified-entry から。11 §0.5・全フィールド非null必須・evidence 実在必須） ---
-const coreHead = originMainHead(coreRoot); // core 自身の origin/main HEAD（core 自己エントリ用）
+// --- verified 配列（--verified-entry から。11 §0.5・機械束縛検証＋evidence_sha256 記録） ---
+const coreHead = originMainHead(coreRoot); // core 自身の origin/main HEAD
+const coreVersionTagCommit = tagDerefCommit(coreRoot, coreVersionTag);
+const appCommitByNameObj: Record<string, string | null> = Object.fromEntries(
+  adopterRows.map((r) => [r.name, r.app_commit]),
+);
+const bindCtx = {
+  coreTags,
+  coreVersionTag,
+  coreVersionHasTag,
+  coreVersionTagCommit,
+  coreOriginMainHead: coreHead,
+  appCommitByName: appCommitByNameObj,
+  templateCommit,
+  derefTag: (tag: string) => tagDerefCommit(coreRoot, tag),
+};
 const verified: VerifiedEntry[] = verifiedSpecs.map((spec, index) => {
   const e = parseVerifiedEntry(spec);
+  const isCore = e.app === '@magi/core' || e.app === 'core';
+  const pending = e.core_tag != null && e.core_tag === coreVersionTag && !coreVersionHasTag;
   const entry: VerifiedEntry = {
     app: e.app ?? null,
     core_tag: e.core_tag ?? null,
-    // 明示指定を優先し、無ければ採用repo名から自動解決（core 自己エントリは core HEAD）。
     template_commit: e.template_commit ?? templateCommit,
+    // 明示指定を優先。無ければ束縛の基準値を自動解決（core: pendingはHEAD/tagged はタグderef、採用repoは記録HEAD）。
     app_commit:
       e.app_commit ??
-      appCommitByName.get(e.app ?? '') ??
-      (e.app === '@magi/core' || e.app === 'core' ? coreHead : null),
+      (isCore ? (pending ? coreHead : coreVersionTagCommit) : appCommitByName.get(e.app ?? '') ?? null),
     verified_at: e.verified_at ?? null,
     verified_by: e.verified_by ?? null,
     evidence: e.evidence ?? null,
+    evidence_sha256: null,
   };
-  // 全フィールド非null必須。
-  for (const [key, val] of Object.entries(entry)) {
-    if (val === null || val === '') {
-      console.error(`collect FAIL: --verified-entry[${index}] の必須フィールド '${key}' が空です: ${spec}`);
-      process.exit(1);
-    }
-  }
-  // evidence の実在確認（magi-goal-work 起点）。
-  if (entry.evidence && resolveEvidence(entry.evidence) === null) {
-    console.error(`collect FAIL: --verified-entry[${index}] の evidence が実在しません: ${entry.evidence}`);
+  const { errors, evidenceSha256 } = validateVerifiedEntry(entry, bindCtx);
+  if (errors.length > 0) {
+    console.error(`collect FAIL: --verified-entry[${index}] 束縛違反: ${spec}`);
+    for (const m of errors) console.error(`  - ${m}`);
     process.exit(1);
   }
+  entry.evidence_sha256 = evidenceSha256;
   return entry;
 });
 
 const sourceHashes = computeSourceHashes(coreRoot, adopters);
 const freshnessTargets = computeFreshnessTargets(coreRoot, adopters, coreVersionTag);
-const coreVersionTagCommit = tagDerefCommit(coreRoot, coreVersionTag);
 
 const matrix = {
   generated_at: generatedAt,

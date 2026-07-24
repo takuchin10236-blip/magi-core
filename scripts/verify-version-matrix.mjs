@@ -11,11 +11,17 @@
  *
  * ファイルが無い場合も exit 1（版SoTは追跡対象。`npm run version-matrix` で生成して commit する）。
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, isAbsolute, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { computeFreshnessTargets, computeSourceHashes, defaultAdopters } from './version-matrix-sources.mjs';
+import {
+  computeFreshnessTargets,
+  computeSourceHashes,
+  defaultAdopters,
+  tagDerefCommit,
+  validateVerifiedEntry,
+} from './version-matrix-sources.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const coreRoot = join(here, '..');
@@ -66,25 +72,29 @@ for (const key of [...new Set([...Object.keys(storedTargets), ...Object.keys(now
 }
 if (targetDiffs.length > 0) fail('freshness_targets（HEAD/タグ deref）が現在値と不一致（repo前進 or タグ移動）。', targetDiffs);
 
-// (3) verified 配列: 全フィールド非null ＋ evidence 実在
-const EVIDENCE_BASES = [join(homedir(), 'Documents'), join(homedir(), 'Documents', 'magi-goal-work')];
-function evidenceExists(evidence) {
-  if (isAbsolute(evidence)) return existsSync(evidence);
-  return EVIDENCE_BASES.some((base) => existsSync(join(base, evidence)));
-}
-const REQUIRED_FIELDS = ['app', 'core_tag', 'template_commit', 'app_commit', 'verified_at', 'verified_by', 'evidence'];
+// (3) verified 配列: 機械束縛（tag/commit実在一致・成功マーカー・core_tag文字列）＋ evidence_sha256 の事後改変検出
+const bindCtx = {
+  coreTags: matrix.core?.tags ?? [],
+  coreVersionTag: matrix.core?.version_tag,
+  coreVersionHasTag: Boolean(matrix.core?.version_has_tag),
+  coreVersionTagCommit: matrix.core?.version_tag_commit ?? null,
+  coreOriginMainHead: storedTargets['core:origin-main-head'] ?? null,
+  appCommitByName: Object.fromEntries((matrix.adopters ?? []).map((a) => [a.name, a.app_commit ?? null])),
+  templateCommit: matrix.template_commit ?? null,
+  derefTag: (tag) => tagDerefCommit(coreRoot, tag), // 現在の deref（タグ移動を捉える）
+};
 const verifiedDiffs = [];
 (matrix.verified ?? []).forEach((entry, i) => {
-  for (const field of REQUIRED_FIELDS) {
-    if (entry[field] === null || entry[field] === undefined || entry[field] === '') {
-      verifiedDiffs.push(`verified[${i}].${field} が空（全フィールド非null必須）`);
-    }
-  }
-  if (entry.evidence && !evidenceExists(entry.evidence)) {
-    verifiedDiffs.push(`verified[${i}].evidence が実在しない: ${entry.evidence}`);
+  const { errors, evidenceSha256 } = validateVerifiedEntry(entry, bindCtx);
+  for (const e of errors) verifiedDiffs.push(`verified[${i}]: ${e}`);
+  // 事後改変検出: 記録済み evidence_sha256 と再計算値の突合。
+  if (entry.evidence_sha256 == null) {
+    verifiedDiffs.push(`verified[${i}].evidence_sha256 が未記録`);
+  } else if (evidenceSha256 !== null && entry.evidence_sha256 !== evidenceSha256) {
+    verifiedDiffs.push(`verified[${i}].evidence_sha256 が不一致（evidence 事後改変）: recorded=${entry.evidence_sha256} / now=${evidenceSha256}`);
   }
 });
-if (verifiedDiffs.length > 0) fail('verified 配列が不整合（非null/evidence実在の要件違反）。', verifiedDiffs);
+if (verifiedDiffs.length > 0) fail('verified 配列が機械束縛/整合の要件違反。', verifiedDiffs);
 
 const targetCount = Object.keys(nowTargets).length;
 const verifiedCount = (matrix.verified ?? []).length;

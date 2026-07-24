@@ -11,9 +11,9 @@
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
 
 export function sha256(text) {
   return createHash('sha256').update(text, 'utf8').digest('hex');
@@ -79,10 +79,95 @@ export function coreTagList(coreRoot) {
 export function computeFreshnessTargets(coreRoot, adopters, coreVersionTag) {
   const targets = {};
   targets['core:version-tag-commit'] = tagDerefCommit(coreRoot, coreVersionTag);
+  targets['core:origin-main-head'] = originMainHead(coreRoot); // core自己verified entry(pending)の束縛基準
   for (const adopter of adopters) {
     targets[`${adopter.name}:origin-main-head`] = originMainHead(adopter.path);
   }
   return targets;
+}
+
+// ── verified エントリの機械束縛検証（Sol R1-C1-VERSION-SOT 最終・collect/verify 共用） ──
+
+// evidence（相対パス）を magi-goal-work 起点の候補ベースで解決し実在確認する（絶対パスも可）。
+const EVIDENCE_BASES = [join(homedir(), 'Documents'), join(homedir(), 'Documents', 'magi-goal-work')];
+export function resolveEvidence(evidence) {
+  if (!evidence) return null;
+  if (isAbsolute(evidence)) return existsSync(evidence) ? evidence : null;
+  for (const base of EVIDENCE_BASES) {
+    const candidate = join(base, evidence);
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+// 機械可読の成功マーカー（exit 0 / CHECK_EXIT=0 / 0 fail 系）。
+const SUCCESS_MARKER = /(exit 0|EXIT=0|0 fail|fail 0|0 failed)/i;
+
+/**
+ * verified エントリを機械束縛検証する（collect と verify で同一ロジック）。
+ *   - 全フィールド非null（evidence_sha256 除く）
+ *   - core_tag: pending（当該版タグ未作成）を除き、収集済みタグに実在＋deref解決＋版タグ deref 一致
+ *   - app_commit: core行はタグ deref 先（pendingは core origin/main HEAD）、採用repo行は記録 HEAD と一致
+ *   - template_commit: 記録値と一致
+ *   - evidence: 実在＋成功マーカー＋core_tag 文字列を含む
+ *   戻り値 { errors:[], evidenceSha256 }。evidenceSha256 は評価対象ログの SHA-256（事後改変検出用）。
+ *   ctx: { coreTags, coreVersionTag, coreVersionHasTag, coreVersionTagCommit, coreOriginMainHead,
+ *          appCommitByName:{name:commit}, templateCommit, derefTag:(tag)=>commit|null }
+ */
+export function validateVerifiedEntry(entry, ctx) {
+  const errors = [];
+  const app = entry.app;
+  const coreTag = entry.core_tag;
+  const isCore = app === '@magi/core' || app === 'core';
+  const pending = coreTag != null && coreTag === ctx.coreVersionTag && !ctx.coreVersionHasTag;
+
+  for (const key of ['app', 'core_tag', 'template_commit', 'app_commit', 'verified_at', 'verified_by', 'evidence']) {
+    if (entry[key] == null || entry[key] === '') errors.push(`必須フィールド '${key}' が空`);
+  }
+
+  // (a) core_tag の実在＋deref
+  if (coreTag != null && !pending) {
+    if (!ctx.coreTags.includes(coreTag)) {
+      errors.push(`core_tag '${coreTag}' が収集済みタグ一覧に存在しない`);
+    } else {
+      const deref = ctx.derefTag(coreTag);
+      if (deref == null) errors.push(`core_tag '${coreTag}' の deref 先が解決できない`);
+      if (coreTag === ctx.coreVersionTag && deref !== ctx.coreVersionTagCommit) {
+        errors.push(`core_tag '${coreTag}' の deref が version_tag_commit と不一致`);
+      }
+    }
+  }
+
+  // (b) app_commit の束縛
+  if (isCore) {
+    const expect = pending ? ctx.coreOriginMainHead : ctx.coreVersionTagCommit;
+    if (entry.app_commit !== expect) {
+      errors.push(`core行の app_commit が ${pending ? 'core origin/main HEAD' : 'タグ deref 先'} と不一致`);
+    }
+  } else {
+    const recorded = ctx.appCommitByName[app] ?? null;
+    if (recorded == null) errors.push(`app '${app}' が採用repo一覧に無い`);
+    else if (entry.app_commit !== recorded) errors.push(`app_commit が採用repo記録の origin/main HEAD と不一致`);
+  }
+
+  // template_commit の束縛
+  if (entry.template_commit !== ctx.templateCommit) errors.push(`template_commit が記録値と不一致`);
+
+  // (c)(d) evidence: 実在＋成功マーカー＋core_tag 文字列＋SHA-256
+  let evidenceSha256 = null;
+  if (entry.evidence) {
+    const abs = resolveEvidence(entry.evidence);
+    if (abs == null) {
+      errors.push(`evidence が実在しない: ${entry.evidence}`);
+    } else {
+      const content = readFileSync(abs, 'utf8');
+      if (!SUCCESS_MARKER.test(content)) errors.push('evidence に成功マーカー（exit 0/CHECK_EXIT=0/0 fail）が無い');
+      if (coreTag && !content.includes(coreTag)) errors.push(`evidence に core_tag '${coreTag}' 文字列が無い`);
+      evidenceSha256 = sha256(content);
+    }
+  }
+
+  return { errors, evidenceSha256 };
 }
 
 /** package.json の @magi/core spec から固定タグを取り出す。 */
