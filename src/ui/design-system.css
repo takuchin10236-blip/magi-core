@@ -3184,7 +3184,9 @@ mark.search-hit {
 }
 
 .magi-appshell-logo {
-  width: 88px;
+  /* 112px＝基準実体（利用者マスタ magi-resident-spine `.sg-header-logo`）に合わせる。
+     2026-07-26 社長裁定「利用者マスタの形を正とする」。88px では基準より小さく見えていた。 */
+  width: 112px;
   height: auto;
   flex-shrink: 0;
 }
@@ -3193,16 +3195,19 @@ mark.search-hit {
   min-width: 0;
 }
 
+/* 施設名（＋フロア名）。基準実体＝利用者マスタ `.facility-name`
+   （color: var(--color-primary) / font-size: 0.82rem / font-weight: 850）に揃える。
+   2026-07-26 社長裁定「利用者マスタの形を正とする」。
+   従来は text-muted のグレー・12px・800 で、基準実体より弱く沈んで見えていた。 */
 .magi-appshell-kicker {
-  margin: 0 0 4px;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 800;
+  margin: 0 0 1px;
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 850;
 }
 
-.magi-appshell-floor {
-  color: var(--text-secondary);
-}
+/* フロア名は施設名と同じ扱い（色を変えない＝親の primary を継承）。
+   基準実体は施設名とフロアを1つの文字列で持ち、色を分けていない。 */
 
 .magi-appshell-title {
   margin: 0;
