@@ -100,3 +100,5 @@ export type {
   TrustedWriteDetector,
 } from './statusDetection';
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
+export { MagiBusinessSummary } from './MagiBusinessSummary';
+export type { MagiBusinessSummaryProps, MagiSummaryItem } from './MagiBusinessSummary';

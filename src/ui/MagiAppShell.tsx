@@ -46,7 +46,10 @@ export function MagiAppShell({
           <div className="magi-appshell-titles">
             <p className="magi-appshell-kicker">
               {facilityName}
-              {floorName ? <span className="magi-appshell-floor">・{floorName}</span> : null}
+              {/* 区切りは中黒（・）でなく半角スペース。基準実体（利用者マスタ）は
+                  「第二湘南グリーン 2F」と1つの文字列で名乗っており、中黒を挟まない。
+                  2026-07-26 社長裁定「利用者マスタの形を正とする」。 */}
+              {floorName ? <span className="magi-appshell-floor">{` ${floorName}`}</span> : null}
             </p>
             <h1 className="magi-appshell-title">{appName}</h1>
           </div>

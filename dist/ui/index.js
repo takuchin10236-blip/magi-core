@@ -47,4 +47,5 @@ export { BusinessNav } from './BusinessNav';
 export { MagiAppShell } from './MagiAppShell';
 export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createHealthWriteDetector, createEndpointWriteDetector, } from './statusDetection';
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
+export { MagiBusinessSummary } from './MagiBusinessSummary';
 //# sourceMappingURL=index.js.map

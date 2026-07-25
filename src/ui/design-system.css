@@ -3184,7 +3184,9 @@ mark.search-hit {
 }
 
 .magi-appshell-logo {
-  width: 88px;
+  /* 112px＝基準実体（利用者マスタ magi-resident-spine `.sg-header-logo`）に合わせる。
+     2026-07-26 社長裁定「利用者マスタの形を正とする」。88px では基準より小さく見えていた。 */
+  width: 112px;
   height: auto;
   flex-shrink: 0;
 }
@@ -3193,16 +3195,19 @@ mark.search-hit {
   min-width: 0;
 }
 
+/* 施設名（＋フロア名）。基準実体＝利用者マスタ `.facility-name`
+   （color: var(--color-primary) / font-size: 0.82rem / font-weight: 850）に揃える。
+   2026-07-26 社長裁定「利用者マスタの形を正とする」。
+   従来は text-muted のグレー・12px・800 で、基準実体より弱く沈んで見えていた。 */
 .magi-appshell-kicker {
-  margin: 0 0 4px;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 800;
+  margin: 0 0 1px;
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 850;
 }
 
-.magi-appshell-floor {
-  color: var(--text-secondary);
-}
+/* フロア名は施設名と同じ扱い（色を変えない＝親の primary を継承）。
+   基準実体は施設名とフロアを1つの文字列で持ち、色を分けていない。 */
 
 .magi-appshell-title {
   margin: 0;
@@ -3590,5 +3595,160 @@ mark.search-hit {
 
   .magi-appshell-title {
     white-space: normal;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * MagiBusinessSummary — 業務状況の要約パネル（v0.5・「現在の状況」＋ダッシュボード）
+ *   原本＝利用者マスタ magi-resident-spine の `.business-summary`（自前実装）。
+ *   2026-07-26 社長裁定「利用者マスタの形を正とする／枠は揃え、中身はアプリごとに自由」で
+ *   Core へ移した。クラス名は magi-business-summary-* 系へ改名し、既存定義との衝突を避ける
+ *   （AppShell 部品と同じ方針）。原本側の定義は変更しない。
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.magi-business-summary {
+  position: relative;
+  z-index: 24;
+  display: flex;
+  min-height: 44px;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 12px;
+}
+
+.magi-business-summary-label {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+/* 列数は項目数に追随（--magi-summary-columns は部品が style で渡す）。
+   原本は4項目固定だったが、アプリごとに項目数を変えられるよう可変にした。 */
+.magi-business-summary-chips {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(var(--magi-summary-columns, 4), minmax(0, 1fr));
+  gap: 5px;
+}
+
+.magi-business-summary-chips button,
+.magi-business-summary-item {
+  display: flex;
+  min-width: 0;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.magi-business-summary-item {
+  cursor: default;
+}
+
+.magi-business-summary-chips button:hover:not(:disabled),
+.magi-business-summary-chips button:focus-visible:not(:disabled) {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.magi-business-summary-chips button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.magi-business-summary-chips span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+}
+
+.magi-business-summary-chips strong {
+  font-size: 0.96rem;
+}
+
+.magi-business-summary-details {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.magi-business-summary-details > summary {
+  display: inline-flex;
+  min-height: 34px;
+  cursor: pointer;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 850;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.magi-business-summary-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.magi-business-summary-details[open] > summary {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.magi-business-summary-details[open] > summary svg {
+  transform: rotate(180deg);
+}
+
+.magi-business-summary-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 75;
+  display: grid;
+  width: min(390px, calc(100vw - 32px));
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  box-shadow: var(--floating-shadow);
+}
+
+.magi-business-summary-panel p {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: var(--bg-surface-alt);
+}
+
+.magi-business-summary-panel span {
+  color: var(--text-secondary);
+}
+
+/* 狭幅（モバイル）ではチップを折り返す。横スクロールを出さない方を優先する。 */
+@media (max-width: 720px) {
+  .magi-business-summary {
+    flex-wrap: wrap;
+  }
+
+  .magi-business-summary-chips {
+    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
   }
 }

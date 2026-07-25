@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.5.5 (2026-07-26)
+
+### AppShell を基準実体（利用者マスタ）へ揃え、業務状況パネルを Core 化
+
+2026-07-26 社長裁定「**利用者マスタ（magi-resident-spine）の形を正とし、Core を直す**」。
+職員マスタが v0.5 の AppShell を実採用した際、基準実体と見た目が食い違うことが判明したため、
+各アプリでの上書き（drift）を作らせないよう Core 側を基準実体へ合わせた。
+
+- **AppShellヘッダーの基準合わせ**（`design-system.css` / `MagiAppShell.tsx`）
+  - `.magi-appshell-logo`: `width` 88px → **112px**（基準実体 `.sg-header-logo` と同値）
+  - `.magi-appshell-kicker`: `color` を `--text-muted` → **`--color-primary`**、`font-size` 12px → **0.82rem**、`font-weight` 800 → **850**、`margin-bottom` 4px → 1px（基準実体 `.facility-name` と同値）。従来はグレーで基準より沈んで見えていた
+  - `.magi-appshell-floor`: 独自の `color` 指定を廃止し施設名と同色に（基準実体は施設名とフロアを1文字列で名乗り、色を分けていない）
+  - 施設名とフロア名の区切りを**中黒（・）から半角スペース**へ（基準実体は「第二湘南グリーン 2F」と表記）
+- **`MagiBusinessSummary` 新設**（「現在の状況」＋開閉式ダッシュボード）
+  - 原本＝利用者マスタの `.business-summary`（自前実装）を一般化。社長裁定「枠（パネルの形）は揃え、ダッシュボードの内容と各項目はアプリごとに変更してよい」に対応
+  - Core が持つのは**器**（ラベル＋チップ列＋開閉式ダッシュボード／寸法・配色・余白・挙動）、アプリが決めるのは**中身**（項目数・ラベル・値・押した時の動き・説明文）
+  - `onSelect` のある項目は button、無い項目は静的表示。`description` を持つ項目だけがダッシュボードに並び、0件ならダッシュボード自体を出さない
+  - 外側クリック・Escape でも閉じる（`MagiStatusSummary` と同じ流儀）。`storageKey` を渡すと開閉状態を localStorage に記憶
+  - 列数は原本の4項目固定をやめ、`--magi-summary-columns` で項目数に追随。狭幅（720px以下）は折返し
+  - クラス名は `.magi-business-summary-*` 系へ改名し既存定義との衝突を避ける（AppShell 部品と同じ方針）。原本側の定義は変更しない
+
+**採用第1号**: 職員マスタ `magi-staff-master`（AppShell実採用・本パネル採用）。
+
 ## v0.5.4 (2026-07-24)
 
 ### Sol 延長run round2 最終精密修正
