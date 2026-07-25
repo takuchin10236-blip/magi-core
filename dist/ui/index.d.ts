@@ -58,4 +58,6 @@ export type { MagiAppShellProps } from './MagiAppShell';
 export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createHealthWriteDetector, createEndpointWriteDetector, } from './statusDetection';
 export type { RuntimeSurface, DeclarableState, DeclaredStateValidation, RuntimeDetectorConfig, StatusDisplayItem, StatusDisplayResult, StatusResolution, WriteDetector, TrustedWriteDetector, } from './statusDetection';
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
+export { MagiBusinessSummary } from './MagiBusinessSummary';
+export type { MagiBusinessSummaryProps, MagiSummaryItem } from './MagiBusinessSummary';
 //# sourceMappingURL=index.d.ts.map
