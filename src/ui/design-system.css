@@ -227,6 +227,12 @@
   --color-primary-light: var(--primary-light);
   --color-primary-light-foreground: #0c3520;
   --color-accent: var(--accent);
+  /* 2026-07-28: ブランド緑「文字用」。--primary(#6bbf95) は面・枠・ロゴのための色で、
+     白地に文字として置くと 2.21:1 しか出ない（機械実測）。同じ色相150°のまま暗くした
+     版を文字専用に持つ。ロゴ・面・枠の --primary は変えない（社長裁定 2026-07-28）。 */
+  --brand-ink: #1b7447;
+  /* 警告の文字用。#d84315 は薄黄背景の上で 4.19:1 と僅かに足りない（機械実測）。 */
+  --status-warn-ink: #ba3a12;
   --bg-app: var(--background);
   --bg-surface: var(--card);
   --bg-surface-alt: var(--secondary);
@@ -282,6 +288,9 @@
   --color-primary-light: var(--primary-light);
   --color-primary-light-foreground: #99dcb8;
   --color-accent: var(--accent);
+  /* Dark は暗い面の上なので、ブランド緑をそのまま文字に使って 7.5:1 以上出る（機械実測）。 */
+  --brand-ink: var(--primary);
+  --status-warn-ink: var(--warn);
   --bg-app: var(--background);
   --bg-surface: var(--card);
   --bg-surface-alt: var(--secondary);
@@ -694,6 +703,11 @@
   --color-warning: var(--warn);
   --color-info: var(--brand);
   --color-danger: var(--danger);
+  /* 文字用インク（2026-07-28）。standard-lumen は上のプリセットブロックで実値を持つ
+     （そちらが specificity で勝つ）。ここは他プリセット向けの自動導出フォールバック＝
+     前景色を混ぜるので、White では暗く・Dark では明るく自動で寄る。 */
+  --brand-ink: color-mix(in srgb, var(--brand, var(--primary)) 62%, var(--foreground));
+  --status-warn-ink: color-mix(in srgb, var(--warn) 88%, var(--foreground));
   --bg-app: var(--background);
   --bg-surface: var(--card);
   --bg-surface-alt: var(--secondary);
@@ -1136,7 +1150,7 @@ button.magi-status-badge {
 }
 
 .magi-status-badge.status-warn {
-  color: var(--color-warning);
+  color: var(--status-warn-ink);
   border-color: color-mix(in srgb, var(--color-warning) 32%, var(--border-default));
   background: #fff8e5;
 }
@@ -1148,7 +1162,9 @@ button.magi-status-badge {
 }
 
 .magi-status-badge.status-info {
-  color: var(--color-info);
+  /* standard-lumen では --color-info はブランド緑。淡い緑地に淡い緑文字だと 2.06:1 しか
+     出ない（機械実測）ため、文字だけインクへ差し替える。枠・地の色は変えない。 */
+  color: var(--brand-ink);
   border-color: color-mix(in srgb, var(--color-info) 30%, var(--border-default));
   background: color-mix(in srgb, var(--color-info) 10%, var(--bg-surface));
 }
@@ -3203,7 +3219,8 @@ mark.search-hit {
    従来は text-muted のグレー・12px・800 で、基準実体より弱く沈んで見えていた。 */
 .magi-appshell-kicker {
   margin: 0 0 1px;
-  color: var(--color-primary);
+  /* 施設名＋フロアは「文字」なので面用の --color-primary ではなく文字用インクを使う。 */
+  color: var(--brand-ink);
   font-size: 0.82rem;
   font-weight: 850;
 }

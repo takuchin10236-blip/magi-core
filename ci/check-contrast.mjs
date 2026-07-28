@@ -38,7 +38,18 @@ const chromePath =
 
 /** ページ内で走る本体。色の正規化は canvas に任せる（color(srgb ...) 等の新記法も正しく読める）。 */
 function auditInPage(colorMode) {
+  // 2026-07-28: White/Dark を切り替えた直後に同じ処理内で読むため、`transition` を持つ要素は
+  // 「切替前の色」を返してしまう（.operator-chip が Dark で白背景 2.15:1 と誤検出された真因）。
+  // 計測の間だけ遷移とアニメーションを止め、切替後の確定値だけを読む。
+  if (!document.getElementById('__contrast_no_motion__')) {
+    const killer = document.createElement('style');
+    killer.id = '__contrast_no_motion__';
+    killer.textContent = '*,*::before,*::after{transition:none !important;animation:none !important;}';
+    document.head.appendChild(killer);
+  }
   document.documentElement.setAttribute('data-color-mode', colorMode);
+  // 差し替えを確定させてから読む（強制リフロー）。
+  void document.documentElement.offsetHeight;
 
   const canvas = document.createElement('canvas');
   canvas.width = 1;
