@@ -4325,8 +4325,10 @@ mark.search-hit {
 .magi-name-room {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  /* 氏名と居室は「対」として隣り合わせる。列幅いっぱいに引き離すと
+     関係が切れて見える（2026-07-28 実画面比較で確認）。 */
+  justify-content: flex-start;
+  gap: 10px;
   min-width: 0;
 }
 
