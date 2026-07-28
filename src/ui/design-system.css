@@ -4183,22 +4183,29 @@ mark.search-hit {
   border-left-color: var(--color-info);
   background: color-mix(in srgb, var(--color-info) 6%, var(--bg-surface));
 }
-.magi-notification-info .magi-notification-tone { color: var(--color-info); }
-
 .magi-notification-success {
   border-left-color: var(--color-success);
   background: color-mix(in srgb, var(--color-success) 7%, var(--bg-surface));
 }
-.magi-notification-success .magi-notification-tone { color: var(--color-success); }
-
 .magi-notification-warning {
   border-left-color: var(--color-warning);
   background: color-mix(in srgb, var(--color-warning) 8%, var(--bg-surface));
 }
-.magi-notification-warning .magi-notification-tone { color: var(--color-warning); }
-
 .magi-notification-error {
   border-left-color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 8%, var(--bg-surface));
 }
-.magi-notification-error .magi-notification-tone { color: var(--color-danger); }
+
+/* 種別ラベルの文字色。
+ * White（既定）は淡い色地の上に載るため、原色のままだと 4.5:1 を割る
+ * （実測: warning 3.97:1 = 不合格）。20%黒を混ぜて基準を満たす。
+ * Dark は暗い地の上なので、暗くすると逆に読めなくなる＝原色のまま使う。 */
+.magi-notification-info .magi-notification-tone { color: color-mix(in srgb, var(--color-info) 80%, #000); }
+.magi-notification-success .magi-notification-tone { color: color-mix(in srgb, var(--color-success) 80%, #000); }
+.magi-notification-warning .magi-notification-tone { color: color-mix(in srgb, var(--color-warning) 80%, #000); }
+.magi-notification-error .magi-notification-tone { color: color-mix(in srgb, var(--color-danger) 80%, #000); }
+
+:root[data-color-mode='dark'] .magi-notification-info .magi-notification-tone { color: var(--color-info); }
+:root[data-color-mode='dark'] .magi-notification-success .magi-notification-tone { color: var(--color-success); }
+:root[data-color-mode='dark'] .magi-notification-warning .magi-notification-tone { color: var(--color-warning); }
+:root[data-color-mode='dark'] .magi-notification-error .magi-notification-tone { color: var(--color-danger); }
