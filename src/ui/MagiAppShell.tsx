@@ -54,6 +54,9 @@ export function MagiAppShell({
             <h1 className="magi-appshell-title">{appName}</h1>
           </div>
         </div>
+        {/* 状態・版はアプリ名と同じ行の右端に置く（2026-07-28 社長裁定）。
+            ここに置いてよいのは「環境」と「版」だけ。名簿・保存先などの詳細は
+            版チップを開いた時に見せる＝ヘッダーに情報を積み上げない。 */}
         {(headerStatus || headerVersion) ? (
           <div className="magi-appshell-header-right">
             {headerStatus}

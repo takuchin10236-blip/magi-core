@@ -137,3 +137,7 @@ export type { BusyGuard } from './useBusyGuard';
 // 告知・警告・エラー帯
 export { NotificationBanner } from './NotificationBanner';
 export type { NotificationBannerProps, NotificationTone } from './NotificationBanner';
+
+// 更新履歴モーダル（メニュー最下段から開く・2026-07-28裁定）
+export { VersionHistoryModal } from './VersionHistoryModal';
+export type { VersionHistoryModalProps, VersionHistoryEntry } from './VersionHistoryModal';

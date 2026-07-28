@@ -33,9 +33,19 @@ export interface BusinessNavProps {
     menuItems?: BusinessNavMenuItem[];
     /** メニュー内に差し込む追加要素（例 ColorModeSwitch / DisplaySwitch）。 */
     menuChildren?: ReactNode;
+    /**
+     * メニュー内の最下段に置く要素（更新履歴など、開く頻度が最も低いもの）。
+     * menuChildren より後ろに描画する（2026-07-28 社長裁定の並び順）。
+     */
+    menuFooter?: ReactNode;
+    /**
+     * メニューボタンの「左」に並べる常設操作（例: 操作者チップ）。
+     * ヘッダーではなくナビ行に置くことで、ヘッダーを環境・版だけに保つ。
+     */
+    navActions?: ReactNode;
     /** メニュー開閉ボタンのラベル。既定 'メニュー'。 */
     menuLabel?: string;
     className?: string;
 }
-export declare function BusinessNav({ tabs, activeTab, onNavigate, role, roleTitle, menuItems, menuChildren, menuLabel, className, }: BusinessNavProps): import("react").JSX.Element;
+export declare function BusinessNav({ tabs, activeTab, onNavigate, role, roleTitle, menuItems, menuChildren, menuFooter, navActions, menuLabel, className, }: BusinessNavProps): import("react").JSX.Element;
 //# sourceMappingURL=BusinessNav.d.ts.map

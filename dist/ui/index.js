@@ -68,4 +68,6 @@ export { LoadingState } from './LoadingState';
 export { useBusyGuard } from './useBusyGuard';
 // 告知・警告・エラー帯
 export { NotificationBanner } from './NotificationBanner';
+// 更新履歴モーダル（メニュー最下段から開く・2026-07-28裁定）
+export { VersionHistoryModal } from './VersionHistoryModal';
 //# sourceMappingURL=index.js.map

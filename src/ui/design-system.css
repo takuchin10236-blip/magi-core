@@ -3170,7 +3170,9 @@ mark.search-hit {
 
 .magi-appshell-header {
   display: flex;
-  flex-wrap: wrap;
+  /* 2026-07-28 社長裁定: 状態・版はアプリ名と同じ行の右端に置く。
+     wrap を許すと2段目へ落ちてヘッダーが分厚くなるため nowrap で固定する。 */
+  flex-wrap: nowrap;
   gap: 12px;
   align-items: center;
   justify-content: space-between;
@@ -3511,7 +3513,11 @@ mark.search-hit {
   right: 0;
   z-index: 60;
   display: flex;
-  width: min(300px, calc(100vw - 32px));
+  /* 幅は最長項目に合わせる（固定300pxだと短い項目の右に無駄な余白が残る
+     ＝2026-07-28 社長指摘）。はみ出しは画面幅で頭打ちにする。 */
+  width: max-content;
+  min-width: 200px;
+  max-width: calc(100vw - 32px);
   flex-direction: column;
   gap: 12px;
   padding: 12px;
@@ -4210,3 +4216,72 @@ mark.search-hit {
 :root[data-color-mode='dark'] .magi-notification-success .magi-notification-tone { color: var(--color-success); }
 :root[data-color-mode='dark'] .magi-notification-warning .magi-notification-tone { color: var(--color-warning); }
 :root[data-color-mode='dark'] .magi-notification-error .magi-notification-tone { color: var(--color-danger); }
+
+/* ── メニュー項目: パネル幅いっぱいに揃える（右の余白を作らない） ── */
+.magi-appshell-menu-panel > .magi-appshell-menu-item,
+.magi-appshell-menu-panel > a.magi-appshell-menu-item {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  white-space: nowrap;
+}
+
+/* ── 更新履歴（VersionHistoryModal） ── */
+.magi-version-history {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.magi-version-history-item {
+  padding: 11px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--bg-surface-alt);
+}
+
+.magi-version-history-item.is-latest {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--border-default));
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--bg-surface));
+}
+
+.magi-version-history-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+
+.magi-version-history-version {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.magi-version-history-date {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.magi-version-history-latest {
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--color-primary) 55%, #000);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+:root[data-color-mode='dark'] .magi-version-history-latest {
+  color: var(--color-primary);
+}
+
+.magi-version-history-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}

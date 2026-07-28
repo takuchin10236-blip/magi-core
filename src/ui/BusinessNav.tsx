@@ -37,6 +37,16 @@ export interface BusinessNavProps {
   menuItems?: BusinessNavMenuItem[];
   /** メニュー内に差し込む追加要素（例 ColorModeSwitch / DisplaySwitch）。 */
   menuChildren?: ReactNode;
+  /**
+   * メニュー内の最下段に置く要素（更新履歴など、開く頻度が最も低いもの）。
+   * menuChildren より後ろに描画する（2026-07-28 社長裁定の並び順）。
+   */
+  menuFooter?: ReactNode;
+  /**
+   * メニューボタンの「左」に並べる常設操作（例: 操作者チップ）。
+   * ヘッダーではなくナビ行に置くことで、ヘッダーを環境・版だけに保つ。
+   */
+  navActions?: ReactNode;
   /** メニュー開閉ボタンのラベル。既定 'メニュー'。 */
   menuLabel?: string;
   className?: string;
@@ -50,12 +60,14 @@ export function BusinessNav({
   roleTitle,
   menuItems,
   menuChildren,
+  menuFooter,
+  navActions,
   menuLabel = 'メニュー',
   className,
 }: BusinessNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const hasMenu = (menuItems && menuItems.length > 0) || Boolean(menuChildren);
+  const hasMenu = (menuItems && menuItems.length > 0) || Boolean(menuChildren) || Boolean(menuFooter);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -96,6 +108,8 @@ export function BusinessNav({
       </div>
 
       <div className="magi-appshell-nav-right">
+        {navActions}
+
         {role ? (
           <span className="magi-appshell-role-chip" title={roleTitle ?? `権限: ${role}`}>
             <ShieldCheck size={16} aria-hidden />
@@ -149,6 +163,7 @@ export function BusinessNav({
                   ),
                 )}
                 {menuChildren}
+                {menuFooter}
               </div>
             ) : null}
           </div>

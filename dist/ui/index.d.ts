@@ -74,4 +74,6 @@ export { useBusyGuard } from './useBusyGuard';
 export type { BusyGuard } from './useBusyGuard';
 export { NotificationBanner } from './NotificationBanner';
 export type { NotificationBannerProps, NotificationTone } from './NotificationBanner';
+export { VersionHistoryModal } from './VersionHistoryModal';
+export type { VersionHistoryModalProps, VersionHistoryEntry } from './VersionHistoryModal';
 //# sourceMappingURL=index.d.ts.map
