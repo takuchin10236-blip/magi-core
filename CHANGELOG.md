@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.6.0 (2026-07-28)
+
+### デジタル庁DS整合レイヤ — 型を「文章」から「動くコード」へ
+
+2026-07-28 社長裁定「**デジタル庁のデザインシステムに合わせて、今あるMAGIのUIの各パーツを入れ込む。
+足りない部分はMAGIのデザインを踏襲しながら新たに作る。コード化して他のMAGIにも流用する**」。
+
+**採ったもの / 採らなかったもの**（デジタル庁DS v2.16.0）:
+- 採る = 作法。文字4.5:1 / UI・focus 3:1 / 色だけで伝えない / ラベル必須 /
+  エラーは文字と role で伝える / 当たり判定44px / フォームの aria 配線。
+- 採らない = 色値・ロゴ・ブランド。Standard Lumen をそのまま維持する（写さない）。
+
+**追加した部品**（DADS 44部品との突合で、業務アプリの土台として欠けていた層）:
+
+| 部品 | 対応するDADS | 何を物理的に保証するか |
+|---|---|---|
+| `FormField` / `RequirementBadge` | Label / RequirementBadge / SupportText / ErrorText | id と aria-describedby / aria-invalid を自動配線。手配線の付け忘れが起きない |
+| `TextField` / `TextArea` / `SelectField` | Input / Textarea / Select | ラベル必須。16px（iOS自動ズーム回避）・44px |
+| `CheckboxField` / `RadioGroup` | Checkbox / Radio / Legend | fieldset+legend で束ね、エラーは group に1回 |
+| `Button` | Button | `busy` で自動 disabled ＝連打の物理防止。busy中も文言を出す |
+| `LoadingState` | ProgressIndicator | **`label` を必須 prop にした**＝無言のスピナーを型で書けなくする |
+| `useBusyGuard` | （作法） | await 中の多重送信を ref で殺す。例外時も必ず戻す |
+| `NotificationBanner` | NotificationBanner | 種別を色でなく文字で示す。error/warning は role=alert |
+
+**モーション基盤**（業務5段・2026-07-28裁定）:
+`--duration-0/1/2/3/4` = 0/100/150/250/400ms、easing 3種、semantic alias（`--motion-*`）。
+`prefers-reduced-motion` で 1ms へ落とす（0でなく1ms＝transitionend を壊さない）。
+待ちスピナーは回転を止めても点滅で「待っている」ことを伝え続ける（情報を消さない）。
+
+**非破壊**: 既存3段（200/300/500ms）は互換 alias として残置。既存部品・既存CSSクラスの
+見た目は1pxも変えていない。旧版へは v0.5.5 以前のタグでいつでも戻せる。
+
+**試験**: 新レイヤ17件を追加（配線・読み上げ・連打・失敗時の復帰）。全79件green。
+
 ## v0.5.5 (2026-07-26)
 
 ### AppShell を基準実体（利用者マスタ）へ揃え、業務状況パネルを Core 化

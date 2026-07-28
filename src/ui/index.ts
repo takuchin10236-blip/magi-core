@@ -102,3 +102,38 @@ export type {
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
 export { MagiBusinessSummary } from './MagiBusinessSummary';
 export type { MagiBusinessSummaryProps, MagiSummaryItem } from './MagiBusinessSummary';
+
+// ─────────────────────────────────────────────────────────────────────
+// v0.6 — デジタル庁DS整合レイヤ（2026-07-28 社長裁定）
+//   色・ロゴ・ブランドは Standard Lumen を維持し、DADS v2.16.0 からは
+//   「作法」だけを採る＝ラベル必須・aria配線・エラーの文字伝達・
+//   待ち状態の文言強制・連打耐性・44px・focus 3:1。
+// ─────────────────────────────────────────────────────────────────────
+
+// フォームの器（ラベル・必須・補足・エラーの自動配線）
+export { FormField, RequirementBadge } from './FormField';
+export type { FormFieldProps, FormFieldControlProps } from './FormField';
+
+// 文字入力系フィールド
+export { TextField, TextArea, SelectField } from './fields';
+export type { TextFieldProps, TextAreaProps, SelectFieldProps, SelectOption } from './fields';
+
+// 選択系フィールド
+export { CheckboxField, RadioGroup } from './choice';
+export type { CheckboxFieldProps, RadioGroupProps, RadioOption } from './choice';
+
+// ボタン（待ち状態・連打耐性を内蔵）
+export { Button } from './Button';
+export type { ButtonProps, ButtonVariant } from './Button';
+
+// 待ち状態（label必須＝無言のスピナーを型で禁じる）
+export { LoadingState } from './LoadingState';
+export type { LoadingStateProps, LoadingStateVariant } from './LoadingState';
+
+// 連打・二重送信の物理防止
+export { useBusyGuard } from './useBusyGuard';
+export type { BusyGuard } from './useBusyGuard';
+
+// 告知・警告・エラー帯
+export { NotificationBanner } from './NotificationBanner';
+export type { NotificationBannerProps, NotificationTone } from './NotificationBanner';

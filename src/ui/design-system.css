@@ -3752,3 +3752,453 @@ mark.search-hit {
     grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+ * v0.6 — デジタル庁DS整合レイヤ（2026-07-28 社長裁定）
+ * ──────────────────────────────────────────────────────────────────────
+ * 方針: 色・ロゴ・ブランドは Standard Lumen を維持する（写さない）。
+ *       デジタル庁DS v2.16.0 からは「作法」だけを採る——
+ *       文字4.5:1 / UI・focus 3:1 / 色だけで伝えない / ラベル必須 /
+ *       エラーは文字と role で伝える / 当たり判定44px。
+ * ════════════════════════════════════════════════════════════════════ */
+
+/* ── モーション基盤（業務5段） ──────────────────────────────────── */
+:root {
+  --duration-0: 0ms;
+  --duration-1: 100ms;
+  --duration-2: 150ms;
+  --duration-3: 250ms;
+  --duration-4: 400ms;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
+  --ease-enter: cubic-bezier(0, 0, 0.38, 0.9);
+  --ease-exit: cubic-bezier(0.2, 0, 1, 0.9);
+
+  --motion-feedback-instant: var(--duration-0);
+  --motion-interaction-hover: var(--duration-1);
+  --motion-interaction-press: var(--duration-0);
+  --motion-selection: var(--duration-1);
+  --motion-panel: var(--duration-2);
+  --motion-notification-enter: var(--duration-2);
+  --motion-notification-exit: var(--duration-2);
+  --motion-overlay-enter: var(--duration-3);
+  --motion-overlay-exit: var(--duration-2);
+  --motion-page: var(--duration-4);
+
+  /* 互換alias（現行3段・既存アプリの挙動を変えない戻り先） */
+  --transition-fast: 200ms;
+  --transition-base: 300ms;
+  --transition-slow: 500ms;
+
+  /* focus リング（非テキスト3:1をブランド色で満たす） */
+  --focus-ring: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--color-primary);
+  /* 当たり判定の下限（共有端末・手袋・高齢者） */
+  --tap-min: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-1: 1ms;
+    --duration-2: 1ms;
+    --duration-3: 1ms;
+    --duration-4: 1ms;
+    --transition-fast: 1ms;
+    --transition-base: 1ms;
+    --transition-slow: 1ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── フォーム: 器・ラベル・必須・補足・エラー ───────────────────── */
+.magi-form-field {
+  display: grid;
+  gap: 6px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.magi-form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 0;
+}
+
+.magi-requirement-badge {
+  flex-shrink: 0;
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+  border: 1px solid transparent;
+}
+/* 必須・任意は「色」ではなく「文字」で伝える（色覚に依存しない） */
+.magi-requirement-badge.is-required {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--bg-surface));
+  border-color: color-mix(in srgb, var(--color-danger) 34%, transparent);
+}
+.magi-requirement-badge.is-optional {
+  color: var(--text-muted);
+  background: var(--bg-surface-alt);
+  border-color: var(--border-default);
+}
+
+.magi-form-support {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.magi-form-error {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 700;
+  color: var(--color-danger);
+  display: flex;
+  gap: 5px;
+}
+/* エラーを色だけで伝えない。記号を文字として添える */
+.magi-form-error::before {
+  content: '✕';
+  flex-shrink: 0;
+}
+
+/* ── フォーム: 入力欄 ──────────────────────────────────────────── */
+.magi-input {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 10px 12px;
+  font-size: 16px; /* 16px未満は iOS で自動ズームが起きる */
+  line-height: 1.5;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong, var(--border-default));
+  border-radius: var(--button-radius, 8px);
+  transition: border-color var(--motion-interaction-hover) var(--ease-standard),
+              box-shadow var(--motion-interaction-hover) var(--ease-standard);
+}
+
+.magi-input::placeholder {
+  color: var(--text-muted);
+}
+
+.magi-input:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--border-default));
+}
+
+.magi-input:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.magi-input:disabled {
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.magi-form-field.is-invalid .magi-input,
+.magi-input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+  box-shadow: inset 0 0 0 1px var(--color-danger);
+}
+
+.magi-textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.magi-select {
+  appearance: none;
+  padding-right: 36px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+                    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% + 2px), calc(100% - 13px) calc(50% + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* ── フォーム: チェック・ラジオ ─────────────────────────────────── */
+.magi-choice {
+  display: grid;
+  gap: 4px;
+}
+.magi-choice.is-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.magi-choice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: var(--tap-min);
+  padding: 8px 10px;
+  margin-left: -10px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--motion-selection) var(--ease-standard);
+}
+
+.magi-choice-item:hover {
+  background: var(--bg-surface-alt);
+}
+
+.magi-choice-item input {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.magi-choice-item input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: 4px;
+}
+
+.magi-choice-item input:disabled,
+.magi-choice-item:has(input:disabled) {
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+.magi-choice-support {
+  display: block;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.magi-radio-group > .magi-form-label {
+  padding: 0;
+}
+
+/* ── ボタン（既存2種＋追加2種・待ち状態内蔵） ───────────────────── */
+.magi-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: var(--tap-min);
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background var(--motion-interaction-hover) var(--ease-standard),
+              border-color var(--motion-interaction-hover) var(--ease-standard);
+}
+
+.magi-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.magi-button:disabled {
+  cursor: not-allowed;
+}
+
+/* 処理中は押せない見た目にする。ただし文言は読める濃さを保つ */
+.magi-button.is-busy {
+  cursor: progress;
+  opacity: 0.85;
+}
+
+.themed-btn-danger {
+  background: var(--color-danger);
+  color: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 86%, #000 14%);
+  border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+}
+.themed-btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger) 88%, #000 12%);
+}
+.themed-btn-danger:disabled {
+  opacity: 0.5;
+}
+
+.themed-btn-ghost {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1px solid transparent;
+  border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
+}
+.themed-btn-ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+.themed-btn-ghost:disabled {
+  opacity: 0.5;
+}
+
+/* ── 待ち状態（文言必須・社長指示2026-07-28の物理化） ─────────────── */
+.magi-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.magi-loading-block {
+  justify-content: center;
+  padding: 28px 20px;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--bg-surface);
+}
+
+.magi-loading-inline {
+  gap: 8px;
+  font-size: 14px;
+}
+
+.magi-loading-spinner {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+  border-top-color: var(--color-primary);
+  animation: magi-spin 700ms linear infinite;
+}
+
+.magi-button-spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  border-color: color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: currentColor;
+}
+
+@keyframes magi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 動きを止めても「待っている」ことは伝え続ける（情報を消さない） */
+@media (prefers-reduced-motion: reduce) {
+  .magi-loading-spinner {
+    animation: magi-pulse 1.2s ease-in-out infinite !important;
+  }
+  @keyframes magi-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+}
+
+.magi-loading-text {
+  display: grid;
+  gap: 2px;
+}
+
+.magi-loading-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.magi-loading-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ── 告知・警告・エラー帯 ──────────────────────────────────────── */
+.magi-notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-default);
+  border-left-width: 4px;
+  border-radius: 10px;
+  background: var(--bg-surface);
+}
+
+.magi-notification-body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.magi-notification-title {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+/* 種別を「色」ではなく「文字」で伝える（WCAG 1.4.1） */
+.magi-notification-tone {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+
+.magi-notification-detail {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.magi-notification-action {
+  flex-shrink: 0;
+}
+
+.magi-notification-info {
+  border-left-color: var(--color-info);
+  background: color-mix(in srgb, var(--color-info) 6%, var(--bg-surface));
+}
+.magi-notification-info .magi-notification-tone { color: var(--color-info); }
+
+.magi-notification-success {
+  border-left-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 7%, var(--bg-surface));
+}
+.magi-notification-success .magi-notification-tone { color: var(--color-success); }
+
+.magi-notification-warning {
+  border-left-color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--bg-surface));
+}
+.magi-notification-warning .magi-notification-tone { color: var(--color-warning); }
+
+.magi-notification-error {
+  border-left-color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--bg-surface));
+}
+.magi-notification-error .magi-notification-tone { color: var(--color-danger); }
