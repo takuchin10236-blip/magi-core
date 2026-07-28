@@ -76,4 +76,8 @@ export { NotificationBanner } from './NotificationBanner';
 export type { NotificationBannerProps, NotificationTone } from './NotificationBanner';
 export { VersionHistoryModal } from './VersionHistoryModal';
 export type { VersionHistoryModalProps, VersionHistoryEntry } from './VersionHistoryModal';
+export { EmptyState } from './EmptyState';
+export type { EmptyStateProps } from './EmptyState';
+export { NameWithRoom, compactPersonName } from './NameWithRoom';
+export type { NameWithRoomProps } from './NameWithRoom';
 //# sourceMappingURL=index.d.ts.map

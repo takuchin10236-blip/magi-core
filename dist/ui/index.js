@@ -70,4 +70,8 @@ export { useBusyGuard } from './useBusyGuard';
 export { NotificationBanner } from './NotificationBanner';
 // 更新履歴モーダル（メニュー最下段から開く・2026-07-28裁定）
 export { VersionHistoryModal } from './VersionHistoryModal';
+// 0件表示（視覚検収5状態の1つ・2026-07-28 新設）
+export { EmptyState } from './EmptyState';
+// 氏名＋居室の並び（介護アプリ共通・2026-07-28 新設）
+export { NameWithRoom, compactPersonName } from './NameWithRoom';
 //# sourceMappingURL=index.js.map

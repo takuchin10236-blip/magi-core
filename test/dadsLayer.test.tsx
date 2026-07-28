@@ -10,6 +10,8 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { Button } from '../src/ui/Button';
+import { EmptyState } from '../src/ui/EmptyState';
+import { NameWithRoom, compactPersonName } from '../src/ui/NameWithRoom';
 import { RadioGroup } from '../src/ui/choice';
 import { TextField } from '../src/ui/fields';
 import { LoadingState } from '../src/ui/LoadingState';
@@ -189,5 +191,31 @@ describe('NotificationBanner（色だけで伝えない）', () => {
   it('info / success は穏やかな読み上げ（status）', () => {
     render(<NotificationBanner title="保存しました" tone="success" />);
     expect(screen.getByRole('status')).toBeDefined();
+  });
+});
+
+describe('EmptyState（0件表示）', () => {
+  it('何が無いのかを言い切り、次の手を書ける', () => {
+    render(<EmptyState hint="フロアと検索条件を見直してください" label="条件に合うクッションがありません" />);
+    expect(screen.getByText('条件に合うクッションがありません')).toBeDefined();
+    expect(screen.getByText('フロアと検索条件を見直してください')).toBeDefined();
+  });
+});
+
+describe('NameWithRoom（氏名＋居室）', () => {
+  it('名簿由来の全角スペースを詰めて表示する', () => {
+    expect(compactPersonName('山田　太郎')).toBe('山田 太郎');
+    expect(compactPersonName('  佐藤   花子 ')).toBe('佐藤 花子');
+  });
+
+  it('氏名と居室を別要素に分ける（括弧で連結しない）', () => {
+    const { container } = render(<NameWithRoom name="山田　太郎" room="204-4" />);
+    expect(container.querySelector('.magi-name-room-name')?.textContent).toBe('山田 太郎');
+    expect(container.querySelector('.magi-name-room-badge')?.textContent).toBe('204-4');
+  });
+
+  it('居室が無ければバッジを出さない', () => {
+    const { container } = render(<NameWithRoom name="山田 太郎" />);
+    expect(container.querySelector('.magi-name-room-badge')).toBeNull();
   });
 });

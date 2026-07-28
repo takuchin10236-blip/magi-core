@@ -4285,3 +4285,66 @@ mark.search-hit {
   line-height: 1.65;
   color: var(--text-secondary);
 }
+
+/* ── 0件表示（EmptyState・視覚検収5状態の1つ） ── */
+.magi-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  /* 器の内側に必ず余白を持つ。呼び出し側の padding 有無に依存しない
+     （素の div に文字を置いて枠に貼り付く事故の再発防止・2026-07-28）。 */
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.magi-empty-state-icon {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.magi-empty-state-label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.magi-empty-state-hint {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.magi-empty-state-action {
+  margin-top: 6px;
+}
+
+/* ── 氏名＋居室の並び（NameWithRoom） ── */
+.magi-name-room {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.magi-name-room-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.magi-name-room-badge {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border: 1px solid var(--border-default);
+  border-radius: 5px;
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 700;
+  /* 桁が違っても縦に揃うようにする（204-4 と 209 の混在） */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
