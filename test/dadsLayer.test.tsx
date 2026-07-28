@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Button } from '../src/ui/Button';
 import { EmptyState } from '../src/ui/EmptyState';
+import { OperatorChip, OperatorSelectModal } from '../src/ui/Operator';
 import { NameWithRoom, compactPersonName } from '../src/ui/NameWithRoom';
 import { RadioGroup } from '../src/ui/choice';
 import { TextField } from '../src/ui/fields';
@@ -217,5 +218,61 @@ describe('NameWithRoom（氏名＋居室）', () => {
   it('居室が無ければバッジを出さない', () => {
     const { container } = render(<NameWithRoom name="山田 太郎" />);
     expect(container.querySelector('.magi-name-room-badge')).toBeNull();
+  });
+});
+
+describe('Operator（型v1.6・8アプリ共通の必須型）', () => {
+  const staff = [
+    { id: 's1', name: '山田 太郎' },
+    { id: 's2', name: '佐藤 花子' },
+  ];
+
+  it('未選択のときは「未選択」の文字で示す（色だけに頼らない）', () => {
+    render(<OperatorChip onClick={() => {}} operatorName={null} />);
+    expect(screen.getByRole('button').textContent).toContain('未選択');
+  });
+
+  it('選択済みのときは名前を出す', () => {
+    render(<OperatorChip onClick={() => {}} operatorName="山田 太郎" />);
+    expect(screen.getByRole('button').textContent).toContain('山田 太郎');
+  });
+
+  it('本人認証ではないことを必ず画面に出す（限界を隠さない）', () => {
+    render(
+      <OperatorSelectModal onClose={() => {}} onSelect={() => {}} open selectedOperatorId="" staff={staff} />,
+    );
+    expect(screen.getByRole('note').textContent).toContain('本人認証ではありません');
+  });
+
+  it('select要素を使わず、一覧から押して選ぶ（型v1.6）', () => {
+    const { container } = render(
+      <OperatorSelectModal onClose={() => {}} onSelect={() => {}} open selectedOperatorId="" staff={staff} />,
+    );
+    expect(container.querySelector('select')).toBeNull();
+    expect(screen.getAllByRole('option')).toHaveLength(2);
+  });
+
+  it('選ぶとIDを返して閉じる', () => {
+    const picked: string[] = [];
+    let closed = false;
+    render(
+      <OperatorSelectModal
+        onClose={() => {
+          closed = true;
+        }}
+        onSelect={(id) => picked.push(id)}
+        open
+        selectedOperatorId=""
+        staff={staff}
+      />,
+    );
+    fireEvent.click(screen.getByText('佐藤 花子'));
+    expect(picked).toEqual(['s2']);
+    expect(closed).toBe(true);
+  });
+
+  it('名簿が空でも画面を壊さず、次の手を案内する', () => {
+    render(<OperatorSelectModal onClose={() => {}} onSelect={() => {}} open selectedOperatorId="" staff={[]} />);
+    expect(screen.getByText(/名簿を確認できません/)).toBeDefined();
   });
 });

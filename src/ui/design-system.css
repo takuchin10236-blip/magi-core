@@ -4350,3 +4350,109 @@ mark.search-hit {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* ── 操作者（チップ＋選択モーダル・型v1.6の実体） ──
+ * 2026-07-28: 同じCSSが8アプリへ手写しされていたため core へ集約。 */
+.operator-chip {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--button-radius, 10px);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--motion-interaction-hover) var(--ease-standard),
+              background var(--motion-interaction-hover) var(--ease-standard);
+}
+
+.operator-chip:hover {
+  background: color-mix(in srgb, var(--bg-surface-alt) 72%, transparent);
+}
+
+.operator-chip:focus-visible {
+  outline: 0;
+  box-shadow: var(--focus-ring);
+}
+
+/* 選択済み／未選択は色だけでなく「未選択」の文字でも分かる（部品側で担保）。 */
+.operator-chip.is-set {
+  border-color: color-mix(in srgb, var(--color-success) 48%, var(--border-default));
+}
+
+.operator-chip.is-unset {
+  border-color: color-mix(in srgb, var(--color-warning) 46%, var(--border-default));
+  color: color-mix(in srgb, var(--color-warning) 62%, #000);
+}
+
+:root[data-color-mode='dark'] .operator-chip.is-unset {
+  color: var(--color-warning);
+}
+
+.operator-select-body {
+  display: grid;
+  gap: 12px;
+}
+
+.operator-select-disclaimer {
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-warning) 40%, var(--border-default));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-warning) 10%, var(--bg-surface));
+  color: var(--text-primary);
+}
+
+.operator-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.operator-select-item {
+  display: flex;
+  min-height: 52px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--motion-interaction-hover) var(--ease-standard);
+}
+
+.operator-select-item:hover,
+.operator-select-item.is-current {
+  border-color: var(--color-primary);
+}
+
+.operator-select-item.is-current {
+  box-shadow: 0 0 0 1px var(--color-primary) inset;
+}
+
+.operator-select-item:focus-visible {
+  outline: 0;
+  box-shadow: var(--focus-ring);
+}
+
+.operator-select-name {
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.operator-select-note {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}

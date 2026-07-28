@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.7.0 (2026-07-28)
+
+### 操作者（型v1.6）を core 化 — 8アプリの手写しを1か所へ
+
+2026-07-28 実測: 同じ `OperatorSelectModal.tsx` が **8アプリ**（adl / seat-chart /
+staff-master / floor-calendar / staff-tasks / survey / 2f-inventory / cushion）に
+手写しで存在した。`01_UI標準` の型v1.6では既に「必須型」と決まっているのに core 実装が
+無く、文言と見た目が枝分かれし始めていた。
+
+- `OperatorChip`: ヘッダーの常設チップ。未選択は色だけでなく「未選択」の文字でも示す
+- `OperatorSelectModal`: 一覧から押して選ぶ（select要素は型違反）
+- **本人認証ではない旨を必ず画面に出す**——共通ログイン＋自己申告の限界を隠さない
+- 未選択でも閲覧・印刷は可。止めるのは保存・取消だけ
+
+試験6件を追加（限界表示・select不使用・選択の返り値・空名簿）。全89件green。
+移行: 各アプリは自前の `OperatorSelectModal.tsx` と operator系CSS を削除し、
+`@magi/core/ui` から import へ差し替える。次に触るときで良い（一斉置換はしない）。
+
 ## v0.6.0 (2026-07-28)
 
 ### デジタル庁DS整合レイヤ — 型を「文章」から「動くコード」へ

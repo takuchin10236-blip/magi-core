@@ -74,4 +74,6 @@ export { VersionHistoryModal } from './VersionHistoryModal';
 export { EmptyState } from './EmptyState';
 // 氏名＋居室の並び（介護アプリ共通・2026-07-28 新設）
 export { NameWithRoom, compactPersonName } from './NameWithRoom';
+// 操作者（チップ＋選択モーダル・型v1.6の実体・2026-07-28 core化）
+export { OperatorChip, OperatorSelectModal } from './Operator';
 //# sourceMappingURL=index.js.map

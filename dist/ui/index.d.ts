@@ -80,4 +80,6 @@ export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
 export { NameWithRoom, compactPersonName } from './NameWithRoom';
 export type { NameWithRoomProps } from './NameWithRoom';
+export { OperatorChip, OperatorSelectModal } from './Operator';
+export type { OperatorChipProps, OperatorSelectModalProps, OperatorStaff } from './Operator';
 //# sourceMappingURL=index.d.ts.map
