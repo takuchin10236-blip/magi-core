@@ -69,14 +69,44 @@ function auditInPage(colorMode) {
 
   const isTransparent = (value) => !value || /rgba\(0, 0, 0, 0\)|transparent/.test(value);
 
+  /**
+   * 実際に目に見える背景色を求める。
+   * MAGIの配色は `color-mix(... 8%, ...)` 等で**半透明の層**を重ねるため、
+   * 一番手前の背景色をそのまま使うと誤判定する（半透明の淡い緑を
+   * 不透明の鮮やかな緑として読み、1.09:1 のような有り得ない値が出た＝2026-07-28）。
+   * ブラウザと同じく、外側から内側へ順に重ねて合成した結果を返す。
+   */
   const backgroundOf = (element) => {
+    const layers = [];
     let node = element;
     while (node && node !== document.documentElement) {
       const bg = getComputedStyle(node).backgroundColor;
-      if (!isTransparent(bg)) return bg;
+      if (!isTransparent(bg)) layers.push(bg);
       node = node.parentElement;
     }
-    return getComputedStyle(document.body).backgroundColor || 'rgb(255,255,255)';
+    const rootBg = getComputedStyle(document.documentElement).backgroundColor;
+    if (!isTransparent(rootBg)) layers.push(rootBg);
+
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.fillStyle = '#ffffff'; // 最背面（ブラウザの既定）
+    ctx.fillRect(0, 0, 1, 1);
+    for (const layer of layers.reverse()) {
+      ctx.fillStyle = layer;
+      ctx.fillRect(0, 0, 1, 1);
+    }
+    const data = ctx.getImageData(0, 0, 1, 1).data;
+    return `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
+  };
+
+  /** 文字色も半透明のことがある（rgba(...,0.6) 等）。背景の上に重ねて実際の見え方にする。 */
+  const foregroundOn = (color, background) => {
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, 1, 1);
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 1, 1);
+    const data = ctx.getImageData(0, 0, 1, 1).data;
+    return `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
   };
 
   const describe = (element) => {
@@ -118,7 +148,8 @@ function auditInPage(colorMode) {
     const isLarge = size >= 24 || (weight >= 700 && size >= 18.66);
     const required = isLarge ? 3 : 4.5;
 
-    const value = ratio(style.color, backgroundOf(element));
+    const background = backgroundOf(element);
+    const value = ratio(foregroundOn(style.color, background), background);
     if (value >= required) continue;
 
     const key = `${describe(element)}|${ownText.slice(0, 20)}`;
