@@ -4198,12 +4198,13 @@ mark.search-hit {
 
 /* 種別ラベルの文字色。
  * White（既定）は淡い色地の上に載るため、原色のままだと 4.5:1 を割る
- * （実測: warning 3.97:1 = 不合格）。20%黒を混ぜて基準を満たす。
+ * （実測: warning 3.97:1 = 不合格）。45%黒を混ぜて基準を満たす（薄い色のtone＝infoが最も厳しく、
+ * 実測で55%が全4色に共通で通る境目だった。数値は実測で決めており推測ではない）。
  * Dark は暗い地の上なので、暗くすると逆に読めなくなる＝原色のまま使う。 */
-.magi-notification-info .magi-notification-tone { color: color-mix(in srgb, var(--color-info) 80%, #000); }
-.magi-notification-success .magi-notification-tone { color: color-mix(in srgb, var(--color-success) 80%, #000); }
-.magi-notification-warning .magi-notification-tone { color: color-mix(in srgb, var(--color-warning) 80%, #000); }
-.magi-notification-error .magi-notification-tone { color: color-mix(in srgb, var(--color-danger) 80%, #000); }
+.magi-notification-info .magi-notification-tone { color: color-mix(in srgb, var(--color-info) 55%, #000); }
+.magi-notification-success .magi-notification-tone { color: color-mix(in srgb, var(--color-success) 55%, #000); }
+.magi-notification-warning .magi-notification-tone { color: color-mix(in srgb, var(--color-warning) 55%, #000); }
+.magi-notification-error .magi-notification-tone { color: color-mix(in srgb, var(--color-danger) 55%, #000); }
 
 :root[data-color-mode='dark'] .magi-notification-info .magi-notification-tone { color: var(--color-info); }
 :root[data-color-mode='dark'] .magi-notification-success .magi-notification-tone { color: var(--color-success); }
