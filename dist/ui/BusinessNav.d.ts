@@ -43,9 +43,19 @@ export interface BusinessNavProps {
      * ヘッダーではなくナビ行に置くことで、ヘッダーを環境・版だけに保つ。
      */
     navActions?: ReactNode;
+    /**
+     * 業務タブの「直後（左寄せ側）」に並べる、その画面の主操作（例: 「追加」）。
+     *
+     * なぜ navActions と別に要るか（2026-07-29 社長指摘・利用者マスタ管理アプリ）:
+     *   navActions は右端（メニュー・権限チップの並び）で、「今この画面で何をするか」
+     *   という主操作を置くと、視線がタブから画面の反対側へ飛ぶ。主操作はタブの隣、
+     *   つまり**見ている場所のすぐ横**にあるべきである。
+     * 省略時は何も描画しないため、既存アプリの見た目は変わらない。
+     */
+    navLeadingActions?: ReactNode;
     /** メニュー開閉ボタンのラベル。既定 'メニュー'。 */
     menuLabel?: string;
     className?: string;
 }
-export declare function BusinessNav({ tabs, activeTab, onNavigate, role, roleTitle, menuItems, menuChildren, menuFooter, navActions, menuLabel, className, }: BusinessNavProps): import("react").JSX.Element;
+export declare function BusinessNav({ tabs, activeTab, onNavigate, role, roleTitle, menuItems, menuChildren, menuFooter, navActions, navLeadingActions, menuLabel, className, }: BusinessNavProps): import("react").JSX.Element;
 //# sourceMappingURL=BusinessNav.d.ts.map

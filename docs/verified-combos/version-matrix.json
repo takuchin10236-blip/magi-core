@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-24T16:30:00.000Z",
+  "generated_at": "2026-07-29T07:08:25.369Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
-    "version": "0.5.4",
-    "version_tag": "v0.5.4",
-    "version_has_tag": true,
-    "version_tag_commit": "ccf2738f25404120baae28efb8de7425b16b62de",
-    "label": "v0.5.4",
+    "version": "0.7.4",
+    "version_tag": "v0.7.4",
+    "version_has_tag": false,
+    "version_tag_commit": null,
+    "label": "v0.7.4（作業中・タグ未作成）",
     "tags": [
       "v0.1.0",
       "v0.2.0",
@@ -24,7 +24,18 @@
       "v0.5.1",
       "v0.5.2",
       "v0.5.3",
-      "v0.5.4"
+      "v0.5.4",
+      "v0.5.5",
+      "v0.6.0",
+      "v0.6.1",
+      "v0.6.2",
+      "v0.6.3",
+      "v0.6.4",
+      "v0.6.5",
+      "v0.7.0",
+      "v0.7.1",
+      "v0.7.2",
+      "v0.7.3"
     ]
   },
   "template_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
@@ -44,36 +55,15 @@
       "app_commit": "329a2f70b92156238ea80ca95d85e51273ecd158"
     }
   ],
-  "verified": [
-    {
-      "app": "@magi/core",
-      "core_tag": "v0.5.4",
-      "template_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
-      "app_commit": "ccf2738f25404120baae28efb8de7425b16b62de",
-      "verified_at": "2026-07-24T11:00:00Z",
-      "verified_by": "tachikoma",
-      "evidence": "magi-goal-work/GOAL-20260724-002/evidence/core_fix5_test.log",
-      "evidence_sha256": "ed6319aad209a013b717f0a47456cde6f4ebcc31f5d9ab6c1767a5e25dd72aa6"
-    },
-    {
-      "app": "magi-webapp-template",
-      "core_tag": "v0.5.3",
-      "template_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
-      "app_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
-      "verified_at": "2026-07-24T09:00:00Z",
-      "verified_by": "tachikoma",
-      "evidence": "magi-goal-work/GOAL-20260724-002/evidence/template_v053_test.log",
-      "evidence_sha256": "49105a451bb1dff33c4425642c376d95c78cf31161713d032f151def84efdfbc"
-    }
-  ],
+  "verified": [],
   "source_hashes": {
-    "core:package.json": "c2c50e96b1416c7e694deaa29bb61df12dbab32a6aeef9a1862d11f85cc4612a",
+    "core:package.json": "ba6ce4c4e387aea1d58cb174cdfa657e7a578daa275d91d6f94d6a59cb633e8e",
     "magi-webapp-template:origin-main:package.json": "f6d73cc3c86e668f512dae353d1a03570b2ab2475e94421c1c1a0a72d853b289",
     "magi-resident-spine:origin-main:package.json": "82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550"
   },
   "freshness_targets": {
-    "core:version-tag-commit": "ccf2738f25404120baae28efb8de7425b16b62de",
-    "core:origin-main-head": "d93403926ad6beb35cd6e4e6633c4b397a579e25",
+    "core:version-tag-commit": null,
+    "core:origin-main-head": "30b099e0fe3ea861a0fab1d65c5c165d654c6889",
     "magi-webapp-template:origin-main-head": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158"
   }

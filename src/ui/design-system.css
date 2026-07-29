@@ -3458,11 +3458,21 @@ mark.search-hit {
 }
 
 .magi-appshell-nav-tabs,
+.magi-appshell-nav-leading,
 .magi-appshell-nav-right {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+}
+
+/*
+ * 主操作（navLeadingActions）はタブの直後に置く。子が3つになっても
+ * メニュー側は右端に留める（space-between だけだと真ん中へ寄ってしまう）。
+ * 子が2つ（従来）のときの見え方は変わらない。
+ */
+.magi-appshell-nav-right {
+  margin-left: auto;
 }
 
 .magi-appshell-nav-tab {
