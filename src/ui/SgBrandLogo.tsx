@@ -17,12 +17,14 @@
  *   useThemeState が書き込んでいる属性そのもの（core 既存の作法）で、prefers-color-scheme の
  *   独自検知はしない＝職員が ColorModeSwitch で選んだ結果とロゴが必ず一致する。
  *
- * 夜版の白い外周について:
+ * 寸法と夜版の白い外周について（v0.9.2・基準実体＝最新の職員マスタ）:
+ *   大きさは magi-staff-directory origin/main 267a671（2026-07-30 本番反映）に合わせた。
+ *     基準 148×74（2:1）／ ≤820px: 112×56 ／ ≤640px: 104×52
+ *     幅は --magi-brand-logo-width（および -md / -sm）で上書きできる。
  *   原画像は「外側に白余白のある不透明PNG」で、暗い画面では白い額縁が浮いて見える。
- *   原画像は改変せず、CSS の表示範囲（overflow: hidden ＋ 位置合わせ）で余白だけを
- *   切り取る（design-system.css の .magi-brand-logo）。切り取り量は実測に基づく:
- *   480×240 のうち四辺 20px が余白で、絵柄の実体は 440×200（＝2.2:1）。
- *   trim={false} で原画（2:1・白余白つき）のまま出せる。
+ *   原画像は改変せず、**夜版だけ** CSS の表示範囲を切り抜いて消す
+ *   （clip-path: inset(9% 5% round 6px)＝職員マスタと同じ値。昼版は白地に馴染むので原画のまま）。
+ *   trim={false} で切り抜きをやめられる。
  */
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_THEME_MODE, normalizeThemeMode, type ThemeMode } from './uiPresets';
@@ -82,7 +84,7 @@ export interface SgBrandLogoProps {
    * MagiAppShell の中で使うときは alt="" を推奨（施設名は kicker が読み上げるので二重になる）。
    */
   alt?: string;
-  /** 外周の白余白を表示範囲から切り取る（既定 true）。false で原画のまま出す。 */
+  /** 夜版の外周の白余白を表示範囲から切り取る（既定 true）。false で原画のまま出す。 */
   trim?: boolean;
   /** アプリ固有の微調整用（幅は --magi-brand-logo-width でも変えられる）。 */
   className?: string;

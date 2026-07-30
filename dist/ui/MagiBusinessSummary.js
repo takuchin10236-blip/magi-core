@@ -13,6 +13,10 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  *   これにより「見た目は全アプリで揃い、業務ごとの中身は自由」を両立する。
  *   各アプリが自前でパネルを作ると必ず drift する（職員マスタのUI検査459行コピーが実例）。
  *
+ * 重なり順の規約（v0.9.2）: 帯は `--magi-z-business-band`、開いたダッシュボードは
+ *   `--magi-z-popover`。**アプリの sticky 帯は `--magi-z-app-sticky-max`（100）未満にすること。**
+ *   帯ごと下に潜るとダッシュボードが分断されて見える（2026-07-30 社長の実機指摘）。
+ *
  * 使い方:
  *   <MagiBusinessSummary
  *     ariaLabel="職員マスタの状況"

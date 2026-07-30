@@ -64,8 +64,17 @@ for (const pair of ["white: 'day'", "dark: 'night'"]) {
 
 // (5) 白余白の切り抜きが CSS に残っているか
 const css = read('src/ui/design-system.css');
-for (const needle of ['.magi-brand-logo', "[data-trim='on']", 'overflow: hidden', 'aspect-ratio: 440 / 200']) {
-  if (!css.includes(needle)) errors.push(`design-system.css に ${needle} が無い（白余白の切り抜きが消えている）`);
+// 寸法と切り抜きは職員マスタ（magi-staff-directory origin/main 267a671）から写した値。
+// 消える・書き換わると「アプリごとにバラバラ」へ逆戻りするので機械で固定する。
+for (const needle of [
+  '.magi-brand-logo',
+  "[data-trim='on'][data-variant='night']",
+  'clip-path: inset(9% 5% round 6px)',
+  'var(--magi-brand-logo-width, 148px)',
+  'var(--magi-brand-logo-width-md, 112px)',
+  'var(--magi-brand-logo-width-sm, 104px)',
+]) {
+  if (!css.includes(needle)) errors.push(`design-system.css に ${needle} が無い（ロゴ寸法・白余白の切り抜きが崩れている）`);
 }
 
 // (6) 公開API

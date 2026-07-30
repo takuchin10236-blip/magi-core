@@ -5,6 +5,10 @@
  *   利用者マスタ固有の NAV_ITEMS / マニュアル / DisplaySwitch 直結を外し、
  *   タブ・ロール・メニュー項目・メニュー内スロットを props で受ける汎用ナビにした。
  *   アイコンは ReactNode で受ける（アプリが lucide 等を注入）＝icon 依存を型に固定しない。
+ *
+ * 重なり順の規約（v0.9.2）: ナビ帯は `--magi-z-nav`、メニューパネルは `--magi-z-popover`。
+ *   **アプリの sticky 帯・独自ポップアップは `--magi-z-app-sticky-max`（100）未満にすること。**
+ *   帯は z-index で積み重ねの文脈を作るため、これを超えるとメニューが帯ごと下に潜る。
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, Settings2, ShieldCheck } from 'lucide-react';

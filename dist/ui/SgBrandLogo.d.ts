@@ -20,7 +20,7 @@ export interface SgBrandLogoProps {
      * MagiAppShell の中で使うときは alt="" を推奨（施設名は kicker が読み上げるので二重になる）。
      */
     alt?: string;
-    /** 外周の白余白を表示範囲から切り取る（既定 true）。false で原画のまま出す。 */
+    /** 夜版の外周の白余白を表示範囲から切り取る（既定 true）。false で原画のまま出す。 */
     trim?: boolean;
     /** アプリ固有の微調整用（幅は --magi-brand-logo-width でも変えられる）。 */
     className?: string;
