@@ -188,33 +188,41 @@ export function createEnvWriteDetector(read: () => unknown): WriteDetector {
 /** Core が固定する health エンドポイントのパス（採用アプリは差し替えできない）。 */
 const HEALTH_PATH = '/api/health';
 
+// 唯一の実体（v0.9.4 でシングルトン化）。生成のたびに別関数を作る意味が無いため1つに固定する。
+const healthWriteDetector: TrustedWriteDetector = markTrusted(async () => {
+  const url = resolveSameOrigin(HEALTH_PATH);
+  const res = await fetch(url, {
+    method: 'GET',
+    redirect: 'error',
+    credentials: 'same-origin',
+    headers: { accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error(`health endpoint responded ${res.status}`);
+  assertSameOriginResponse(res);
+  const payload = (await res.json()) as unknown;
+  const writable = readStorageWritable(payload);
+  if (typeof writable !== 'boolean') {
+    throw new Error('health endpoint payload has no boolean storage.writable');
+  }
+  return writable;
+});
+
 /**
  * 同一オリジンの固定 health エンドポイント（/api/health）を GET 実観測して書込可否を読む
- *   **信頼済み**検出器を作る（**引数なし**＝観測先を差し替える手段を公開 API から無くす）。
+ *   **信頼済み**検出器を返す（**引数なし**＝観測先を差し替える手段を公開 API から無くす）。
  *   R1-C2 最終硬化（v0.5.3）:
  *     - 固定パス /api/health のみ（別エンドポイント指定・クロスオリジンは不可能）
  *     - GET 固定・`redirect: 'error'`（リダイレクト追従を拒否）＋最終 response.url の origin 検証
  *     - 固定フィールド storage.writable が boolean の時だけ採用
  *   fetch 失敗・非OK・リダイレクト・スキーマ不一致・非boolean はすべて throw＝検出失敗（fail-closed）。
+ *
+ * v0.9.4: **毎回同じオブジェクトを返す**（シングルトン）。引数なし・観測先固定・
+ *   インスタンス固有の状態ゼロなので意味論は変わらない。狙いは事故の封じ込めで、
+ *   JSX の中で呼んでも参照が変わらない＝MagiStatusSummary の effect（依存 [writeDetector]）が
+ *   毎レンダー回って /api/health を叩き続ける事故が起きない。
  */
 export function createHealthWriteDetector(): TrustedWriteDetector {
-  return markTrusted(async () => {
-    const url = resolveSameOrigin(HEALTH_PATH);
-    const res = await fetch(url, {
-      method: 'GET',
-      redirect: 'error',
-      credentials: 'same-origin',
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) throw new Error(`health endpoint responded ${res.status}`);
-    assertSameOriginResponse(res);
-    const payload = (await res.json()) as unknown;
-    const writable = readStorageWritable(payload);
-    if (typeof writable !== 'boolean') {
-      throw new Error('health endpoint payload has no boolean storage.writable');
-    }
-    return writable;
-  });
+  return healthWriteDetector;
 }
 
 /**

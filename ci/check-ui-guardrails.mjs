@@ -138,6 +138,16 @@ const FORBIDDEN = [
   { name: 'window.confirm', pattern: /(?:window\.confirm|(?<![.\w])confirm)\s*\(/ },
   { name: 'window.alert', pattern: /(?:window\.alert|(?<![.\w])alert)\s*\(/ },
   { name: 'window.prompt', pattern: /(?:window\.prompt|(?<![.\w])prompt)\s*\(/ },
+  // v0.9.4: 検出器を JSX の中で作ると毎レンダー別参照になり、MagiStatusSummary の
+  //   検出 effect（依存 [writeDetector]）が回り続けて観測要求を出し続ける。
+  //   createHealthWriteDetector は Core 側でシングルトン化して無害化したが、
+  //   createEnvWriteDetector など「呼ぶたび新しい関数を返す」ものは依然この形が事故になる。
+  //   module 定数か useMemo へ退避させる。
+  {
+    name: 'writeDetector のJSX内生成',
+    pattern: /writeDetector\s*=\s*\{\s*create\w*WriteDetector\s*\(/,
+    hint: '（module定数か useMemo へ退避。毎レンダー新しい参照になり検出が回り続けます）',
+  },
 ];
 
 // 検査項目 → TYPE_DEVIATIONS の逸脱ID（承認されていれば欠落を許す）
@@ -259,7 +269,8 @@ for (const file of srcFiles) {
   lines.forEach((code, i) => {
     for (const rule of FORBIDDEN) {
       if (rule.pattern.test(code)) {
-        failures.push(`(c) 禁止パターン: ${rule.name} を使用 — ${rel(file)}:${i + 1}（専用モーダル/Toastに置換）`);
+        const hint = rule.hint ?? '（専用モーダル/Toastに置換）';
+        failures.push(`(c) 禁止パターン: ${rule.name} を使用 — ${rel(file)}:${i + 1}${hint}`);
       }
     }
   });

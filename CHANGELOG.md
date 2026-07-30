@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.9.4 (2026-07-30)
+
+### 書込検出が回り続ける事故を、参照の同一性で止める（社長承認）
+
+`writeDetector={createHealthWriteDetector()}` と JSX の中で書くと、**毎レンダー別の関数**に
+なる。`MagiStatusSummary` の検出 effect は `[writeDetector]` に依存しているため、
+親が再レンダーするたびに検出が走り直し、`/api/health` を叩き続けていた。
+
+- **`createHealthWriteDetector()` をモジュール内シングルトン化**。引数なし・観測先固定・
+  インスタンス固有の状態ゼロなので、同じオブジェクトを返しても**意味論は変わらない**
+  （信頼済み判定＝WeakSet メンバーシップも従来どおり）。
+  `createEndpointWriteDetector`（@deprecated 別名）は委譲なので自動的に追従する
+- **CIガード原本に禁止パターンを1行追加**: `writeDetector={create…WriteDetector(` の
+  JSX 内生成を検出して exit 1（既存の文字列・コメント除去機構の上で行単位検出）。
+  Core 側のシングルトン化で health 系は無害になったが、`createEnvWriteDetector` のように
+  **呼ぶたび新しい関数を返す**ものは依然この形が事故になるため、作法として止める
+- **開発時だけの助言**: 同一マウントで検出 effect が短時間に5回を超えて再実行されたら
+  `console.warn` を1回だけ出す（「参照が毎レンダー変わっています。module 定数や useMemo へ」）。
+  本番ビルドでは鳴らない（`process.env.NODE_ENV` で判定し、判定不能な環境では黙る）
+- 試験11本: 「親を10回再レンダー → `/api/health` の fetch は1回」／シングルトン同一参照／
+  禁止パターンの負例。**シングルトンを外すと当該4本が落ちる**ことを反証確認済み
+- 実測: shift-v4・職員マスタ・利用者マスタ・webapp-template の4本とも新ルールで違反0
+  （shift-v4 は退避済みの書き方だったため素通り）
+
 ## v0.9.3 (2026-07-30)
 
 ### 潜り込み表示を「型」で止める — CIガードに重なり順検査 (g) を新設（社長裁定）

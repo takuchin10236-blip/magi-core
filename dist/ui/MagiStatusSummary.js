@@ -20,8 +20,30 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  */
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ShieldCheck } from 'lucide-react';
+import { isDevBuild } from './devWarn';
 import { StatusBadge } from './StatusBadge';
 import { deriveStatusDisplay, detectRuntime, isTrustedWriteDetector, validateDeclaredState, } from './statusDetection';
+// ── writeDetector の参照が毎レンダー変わる事故を、開発中に気づけるようにする（v0.9.4） ──
+//   検出 effect の依存は [writeDetector]。JSX の中で検出器を作ると毎レンダー別参照になり、
+//   effect が回り続けて観測要求を出し続ける。同一マウントで短時間に何度も再実行されたら助言する。
+const DETECTOR_CHURN_LIMIT = 5;
+const DETECTOR_CHURN_WINDOW_MS = 2000;
+function noteDetectorRun(churn) {
+    if (!isDevBuild() || churn.warned)
+        return;
+    const now = Date.now();
+    if (churn.since === 0 || now - churn.since > DETECTOR_CHURN_WINDOW_MS) {
+        churn.since = now;
+        churn.count = 0;
+    }
+    churn.count += 1;
+    if (churn.count <= DETECTOR_CHURN_LIMIT)
+        return;
+    churn.warned = true;
+    console.warn('[MagiStatusSummary] writeDetector の参照が毎レンダー変わっています。'
+        + ' 検出が繰り返し走り、/api/health を叩き続けます。'
+        + ' createHealthWriteDetector() の呼び出しを JSX の外（module 定数や useMemo）へ退避してください。');
+}
 function runtimeSurfaceLabel(surface) {
     if (surface === 'local')
         return 'このPC内';
@@ -33,6 +55,8 @@ function runtimeSurfaceLabel(surface) {
 }
 export function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStates, unsafeDeclaredStates, detailRows, className, }) {
     const detailsRef = useRef(null);
+    // 検出 effect が同一マウントで何回走ったか（開発時の助言用・本番では読まれない）。
+    const churnRef = useRef({ count: 0, since: 0, warned: false });
     // 型経路（declaredStates）は許可リスト型で縛られ済み＝そのまま信頼。
     // JS/外部境界経路（unsafeDeclaredStates）だけ実行時に許可リスト照合する。
     const declared = [...(declaredStates ?? [])];
@@ -53,6 +77,8 @@ export function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStat
         ready: writeDetector === undefined ? true : false,
     });
     useEffect(() => {
+        // 開発中だけ、参照が変わり続けていないかを見張る（本番では何もしない）。
+        noteDetectorRun(churnRef.current);
         if (!writeDetector) {
             // 検出手段が無い＝書込状態は不明。安全に見せず「書込確認中」を出す。
             setWriteState({ writable: null, failed: false, ready: true });
