@@ -21,6 +21,7 @@
  */
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { FocusToggle } from './FocusToggle';
+import { hasOpenModal } from './modalGuards';
 import { SgLumenLogo } from './SgLumenLogo';
 
 export interface MagiAppShellProps {
@@ -93,8 +94,8 @@ export function MagiAppShell({
     if (!focusActive) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
-      // モーダルが開いている間は、その Esc（閉じる操作）を横取りしない。
-      if (document.querySelector('[role="dialog"][aria-modal="true"], dialog[open]')) return;
+      // モーダルが開いている間は、その Esc（閉じる操作）を横取りしない（判定は modalGuards に集約）。
+      if (hasOpenModal()) return;
       changeFocus(false);
     };
     document.addEventListener('keydown', onKeyDown);

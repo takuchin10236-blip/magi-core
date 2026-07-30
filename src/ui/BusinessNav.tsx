@@ -8,6 +8,7 @@
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, Settings2, ShieldCheck } from 'lucide-react';
+import { hasOpenModal, isInsideOpenModal } from './modalGuards';
 
 export type BusinessNavTab = {
   value: string;
@@ -83,10 +84,20 @@ export function BusinessNav({
   useEffect(() => {
     if (!menuOpen) return;
     const onPointerDown = (event: PointerEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setMenuOpen(false);
+      if (!menuRef.current || menuRef.current.contains(event.target as Node)) return;
+      // メニューから開いたモーダルは portal で body 直下へ出るため、DOM上は「外側」に見える。
+      // そこを外側扱いで閉じると menuChildren（例: ManualEntry）ごと unmount され、
+      // 開いていたマニュアルが消える（2026-07-30 shift-v4 実機で再現）。
+      if (isInsideOpenModal(event.target)) return;
+      setMenuOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false);
+      if (event.key !== 'Escape') return;
+      // モーダルが開いている間の Esc は、そのモーダルを閉じる操作。ここで奪わない
+      // （奪うとメニューごと畳まれ、閉じた先の部品まで消える）。
+      // キー操作は焦点が body にあることもあるので、target ではなく画面全体で見る。
+      if (hasOpenModal()) return;
+      setMenuOpen(false);
     };
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);

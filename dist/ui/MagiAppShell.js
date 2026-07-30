@@ -22,6 +22,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  */
 import { useCallback, useEffect, useState } from 'react';
 import { FocusToggle } from './FocusToggle';
+import { hasOpenModal } from './modalGuards';
 import { SgLumenLogo } from './SgLumenLogo';
 export function MagiAppShell({ facilityName, floorName, appName, logo, logoLabel, logoDark, headerStatus, headerVersion, nav, focusMode, onFocusModeChange, children, className, }) {
     // props を初期値として持ちつつ、内部でも状態を持つ（Esc を確実に効かせるため）。
@@ -39,8 +40,8 @@ export function MagiAppShell({ facilityName, floorName, appName, logo, logoLabel
         const onKeyDown = (event) => {
             if (event.key !== 'Escape')
                 return;
-            // モーダルが開いている間は、その Esc（閉じる操作）を横取りしない。
-            if (document.querySelector('[role="dialog"][aria-modal="true"], dialog[open]'))
+            // モーダルが開いている間は、その Esc（閉じる操作）を横取りしない（判定は modalGuards に集約）。
+            if (hasOpenModal())
                 return;
             changeFocus(false);
         };
