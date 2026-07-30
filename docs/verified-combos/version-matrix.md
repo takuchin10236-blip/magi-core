@@ -3,8 +3,8 @@
 > `scripts/collect-version-matrix.mts` の自動生成物。手で版番号を書かない。
 > 固定版は origin/main 確定commitから収集（dirty ローカルは使わない）。
 
-- 生成時刻: 2026-07-29T07:08:25.369Z
-- Core: **v0.7.4（作業中・タグ未作成）**（tag数: 28）
+- 生成時刻: 2026-07-30T07:44:22.163Z
+- Core: **v0.8.0（作業中・タグ未作成）**（tag数: 29）
 - template_commit（雛形 origin/main）: b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce
 
 ## 採用repo（origin/main 確定commit）
@@ -20,7 +20,7 @@
 
 ## source_hashes（版pin実体の SHA-256・`npm run verify:matrix` が鮮度検査）
 
-- `core:package.json`: ba6ce4c4e387aea1d58cb174cdfa657e7a578daa275d91d6f94d6a59cb633e8e
+- `core:package.json`: 6345faeac4af466e2f05033cb0b3c62b6a95fc8ea7dd3e7aa0c52ea0066f268b
 - `magi-webapp-template:origin-main:package.json`: f6d73cc3c86e668f512dae353d1a03570b2ab2475e94421c1c1a0a72d853b289
 - `magi-resident-spine:origin-main:package.json`: 82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550
 
