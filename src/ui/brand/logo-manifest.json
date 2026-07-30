@@ -1,0 +1,32 @@
+{
+  "_magi_core_note": "Drive正本（施設運営/職員マスタアプリ/assets/brand-final-20260730/logo-manifest.json）の写しに、@magi/core での同梱範囲を注記したもの。原本の記載（variants の file/width/height/sha256 等）は一切変えていない。",
+  "_magi_core_bundled": {
+    "files": ["sg-logo-day.png", "sg-logo-night.png"],
+    "policy": "同梱は day/night の standard（480×240）のみ。retina（@2x）・sunset・master は同梱せず Drive 正本に残置する（パッケージ肥大の防止）。同梱物の SHA-256 突合は scripts/verify-brand-assets.mjs が毎回の check で行う。"
+  },
+  "brand": "Shonan Green",
+  "mark": "SG intertwined monogram",
+  "status": "adopted",
+  "adopted_at": "2026-07-30",
+  "aspect_ratio": "2:1",
+  "background": "white outer margin, opaque",
+  "variants": {
+    "day": {
+      "master": { "file": "sg-logo-day-master.png", "width": 1774, "height": 887, "sha256": "21543534dd5415da6a97fde0cc96a5251c69b2e267d2769b9d789db037b6a145" },
+      "standard": { "file": "sg-logo-day.png", "width": 480, "height": 240, "sha256": "f8b031f7cb98fd7d70736bf9d3aff7913ea8889fb44b0c9834121323c3cb85c7" },
+      "retina": { "file": "sg-logo-day@2x.png", "width": 960, "height": 480, "sha256": "9be287f6b2622de22ceeb968c31b128dafca183192bc8e9eee012b2289510558" }
+    },
+    "sunset": {
+      "master": { "file": "sg-logo-sunset-master.png", "width": 1774, "height": 887, "sha256": "c5d7a3c56d2e3f673cf4304fd0c725ba1d6271a6c9c8bce7e1deb0b1bad07dd5" },
+      "standard": { "file": "sg-logo-sunset.png", "width": 480, "height": 240, "sha256": "6a70c5afe3a615b62061c62faa19132fb5c45c74a57f8432bbdd009d488dcba2" },
+      "retina": { "file": "sg-logo-sunset@2x.png", "width": 960, "height": 480, "sha256": "f6e60cc23e4c58b9829ed80cb9730f7cb51ca0eab9fab94d1a691cb0b9150b48" }
+    },
+    "night": {
+      "master": { "file": "sg-logo-night-master.png", "width": 1774, "height": 887, "sha256": "32c4ca3f3e5925df20eb71f1bd7f1df4ebc613d877027cc4b4d102854e33b697" },
+      "standard": { "file": "sg-logo-night.png", "width": 480, "height": 240, "sha256": "76290368ea5ba37e2f033f305e2bac6c1bdac0c2680d82bca7f6368d0598af67" },
+      "retina": { "file": "sg-logo-night@2x.png", "width": 960, "height": 480, "sha256": "8f8885c1761752a264032970cf330498496cd073fd79c02c21bb7991e78cece0" }
+    }
+  },
+  "production_reflected": false
+}
+

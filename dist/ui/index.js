@@ -40,6 +40,9 @@ export { ManualEntry } from './ManualEntry';
 export { StatusBadge } from './StatusBadge';
 // AppShell 部品群（v0.5）
 export { SgLumenLogo } from './SgLumenLogo';
+// 正式ブランドロゴ（絵画調SG・PNG・テーマ連動／v0.8 追加）。
+//   SgLumenLogo（SVG）は据え置き＝MagiAppShell の既定は従来のまま。
+export { SgBrandLogo, SG_BRAND_LOGO_SOURCES } from './SgBrandLogo';
 export { ColorModeSwitch } from './ColorModeSwitch';
 export { MagiStatusSummary } from './MagiStatusSummary';
 export { MagiVersionChip } from './MagiVersionChip';

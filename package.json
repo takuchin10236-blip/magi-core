@@ -1,10 +1,13 @@
 {
   "name": "@magi/core",
-  "version": "0.7.4",
+  "version": "0.8.0",
   "description": "MAGI 2階老健システム群の共有コア。データ契約（Sheets/書込ゲート/D4署名検証アクセス制御）・CIガード原本・完全なデザインシステム（8テーマ＋テーマ切替UI）・統一マニュアルビューア（v0.3）を1パッケージに集約する。",
   "type": "module",
   "license": "UNLICENSED",
   "private": true,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "main": "./dist/data/index.js",
   "module": "./dist/data/index.js",
   "types": "./dist/data/index.d.ts",
@@ -17,6 +20,7 @@
       "types": "./dist/ui/index.d.ts",
       "import": "./dist/ui/index.js"
     },
+    "./ui/brand/*": "./dist/ui/brand/*",
     "./ui/design-system.css": "./src/ui/design-system.css",
     "./ui/core.css": "./src/ui/core.css",
     "./ci/check-ui-guardrails.mjs": "./ci/check-ui-guardrails.mjs",
@@ -32,14 +36,15 @@
     "ci/check-contrast.mjs"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-brand-assets.mjs",
+    "verify:brand": "node scripts/verify-brand-assets.mjs",
     "verify:modal": "node scripts/verify-modal-standard.mjs",
     "verify:shell": "node scripts/verify-appshell-shell.mjs",
     "verify:types": "tsc -p tsconfig.typecheck.json",
     "verify:matrix": "node scripts/verify-version-matrix.mjs",
     "test": "vitest run",
     "version-matrix": "node scripts/collect-version-matrix.mts",
-    "check": "npm run build && npm run verify:modal && npm run verify:shell && npm run verify:types && npm run verify:matrix",
+    "check": "npm run build && npm run verify:brand && npm run verify:modal && npm run verify:shell && npm run verify:types && npm run verify:matrix",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {

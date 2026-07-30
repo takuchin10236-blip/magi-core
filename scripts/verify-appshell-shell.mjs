@@ -27,6 +27,7 @@ const statusSrc = await read('src/ui/statusDetection.ts');
 const shellFiles = await Promise.all(
   [
     'src/ui/SgLumenLogo.tsx',
+    'src/ui/SgBrandLogo.tsx',
     'src/ui/ColorModeSwitch.tsx',
     'src/ui/MagiStatusSummary.tsx',
     'src/ui/MagiVersionChip.tsx',
@@ -38,6 +39,7 @@ const shellFiles = await Promise.all(
 // (1) export 存在
 for (const name of [
   'SgLumenLogo',
+  'SgBrandLogo',
   'ColorModeSwitch',
   'MagiStatusSummary',
   'MagiVersionChip',

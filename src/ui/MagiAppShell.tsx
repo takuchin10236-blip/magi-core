@@ -13,7 +13,17 @@ export interface MagiAppShellProps {
   facilityName: string;
   floorName?: string;
   appName: string;
-  /** ロゴの aria-label（施設名）。既定は SgLumenLogo の既定値。 */
+  /**
+   * ロゴスロット。未指定なら従来どおり SgLumenLogo（SVG）を出す＝既存アプリは無改修のまま。
+   * 正式ブランドロゴ（絵）へ差し替えるアプリは <SgBrandLogo /> を渡す。
+   *
+   * 注意2点:
+   *   - logo を指定すると logoLabel / logoDark は**効かない**（渡したノード側の責務になる）。
+   *   - シェルの中で使うときは <SgBrandLogo alt="" /> を推奨。すぐ隣の kicker が施設名を
+   *     読み上げるため、ロゴにも施設名を入れると読み上げが二重になる。
+   */
+  logo?: ReactNode;
+  /** ロゴの aria-label（施設名）。既定は SgLumenLogo の既定値。logo 指定時は無効。 */
   logoLabel?: string;
   logoDark?: boolean;
   /** ヘッダー右の状態要約スロット（<MagiStatusSummary/> を想定）。 */
@@ -30,6 +40,7 @@ export function MagiAppShell({
   facilityName,
   floorName,
   appName,
+  logo,
   logoLabel,
   logoDark,
   headerStatus,
@@ -42,7 +53,7 @@ export function MagiAppShell({
     <div className={`magi-appshell${className ? ` ${className}` : ''}`}>
       <header className="magi-appshell-header">
         <div className="magi-appshell-brand">
-          <SgLumenLogo className="magi-appshell-logo" dark={logoDark} label={logoLabel} />
+          {logo ?? <SgLumenLogo className="magi-appshell-logo" dark={logoDark} label={logoLabel} />}
           <div className="magi-appshell-titles">
             <p className="magi-appshell-kicker">
               {facilityName}

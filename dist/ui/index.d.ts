@@ -45,6 +45,8 @@ export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusTone } from './StatusBadge';
 export { SgLumenLogo } from './SgLumenLogo';
 export type { SgLumenLogoProps } from './SgLumenLogo';
+export { SgBrandLogo, SG_BRAND_LOGO_SOURCES } from './SgBrandLogo';
+export type { SgBrandLogoProps, SgBrandLogoVariant, SgBrandLogoSource } from './SgBrandLogo';
 export { ColorModeSwitch } from './ColorModeSwitch';
 export type { ColorModeSwitchProps } from './ColorModeSwitch';
 export { MagiStatusSummary } from './MagiStatusSummary';

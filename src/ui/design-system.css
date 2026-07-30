@@ -4483,3 +4483,49 @@ mark.search-hit {
   font-size: 14px;
   line-height: 1.6;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * SgBrandLogo — 正式ブランドロゴ（絵画調SG・2:1の不透明PNG・v0.8）
+ *   原画像は改変しない。暗い画面で白い額縁が浮く問題は「表示範囲の切り抜き」で消す。
+ *   実測（480×240）: 四辺 20px が白余白／絵柄の実体は 440×200（＝2.2:1）。
+ *     枠   … aspect-ratio 440/200 で絵柄そのものの比にする
+ *     画像 … 幅 480/440 = 109.0909% に広げ、左へ 20/440 = 4.5455%、上へ 20/200 = 10% ずらす
+ *            （top/left の % は枠の幅・高さ基準。結果、余白ちょうど20pxが枠の外へ出る）
+ *   trim="off" のときは原画のまま（2:1・白余白つき）出す。
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.magi-brand-logo {
+  /* 大きさは幅だけで決める。height を直接指定すると切り抜きの計算（aspect-ratio と
+     画像の %オフセット）が噛み合わなくなるので、変えるのは --magi-brand-logo-width。 */
+  position: relative;
+  display: block;
+  width: var(--magi-brand-logo-width, 112px);
+  overflow: hidden;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.magi-brand-logo[data-trim='on'] {
+  aspect-ratio: 440 / 200;
+}
+
+.magi-brand-logo[data-trim='off'] {
+  aspect-ratio: 2 / 1;
+}
+
+.magi-brand-logo-img {
+  display: block;
+}
+
+.magi-brand-logo[data-trim='on'] .magi-brand-logo-img {
+  position: absolute;
+  top: -10%;
+  left: -4.5455%;
+  width: 109.0909%;
+  height: auto;
+}
+
+.magi-brand-logo[data-trim='off'] .magi-brand-logo-img {
+  width: 100%;
+  height: auto;
+}
