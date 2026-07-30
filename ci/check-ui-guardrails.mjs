@@ -31,6 +31,9 @@
  *   (d) 逸脱の承認     … 上記が欠けるなら TYPE_DEVIATIONS.md に status=承認済 で記載されているか
  *   (e) 承認ゲート     … 【派生のみ】TYPE_DEVIATIONS.md に status=要承認 の逸脱が残っていないか
  *   (f) プレースホルダ … 【派生のみ】__SYSTEM_*__ の置換漏れが残っていないか
+ *   (g) 重なり順       … アプリ側 CSS の z-index が上限 100（--magi-z-app-sticky-max）以下か
+ *                        （超えると Core のメニュー・業務ダッシュボードが帯ごと下に潜る。
+ *                         v0.9.3 追加・社長裁定「潜り込み表示を型で止める」）
  *
  * 逸脱の承認の考え方:
  *   検査項目に対応する逸脱ID（下の CHECK_TO_DEVIATION）が TYPE_DEVIATIONS.md に
@@ -149,6 +152,18 @@ const CHECK_TO_DEVIATION = {
   'side-peek-toggle': 'SHELL-SIDEPANEL',
 };
 
+// ── (g) 重なり順の上限（v0.9.3・社長裁定「潜り込み表示を型で止める」） ──
+//   Core の帯・ポップアップは --magi-z-* トークン（業務帯200 / ナビ300 / ポップアップ400 …）に
+//   載っている。アプリの sticky 帯や独自ポップアップがこれを超えると、Core のメニューや
+//   業務ダッシュボードが**帯ごと**下に潜り、中身が分断されて見える（2026-07-30 社長の実機指摘）。
+//   そこで「アプリ側 CSS の z-index は --magi-z-app-sticky-max（100）以下」を機械で守る。
+//   ・@media print 内・負値・auto 等のキーワードは対象外
+//   ・var(--magi-z-*) の参照は合法（序列は Core が保証する）
+//   ・どうしても超えたい場合は TYPE_DEVIATIONS.md に ID=UI-ZINDEX を status=承認済 で記載する
+const Z_INDEX_CEILING = 100;
+const Z_INDEX_DEVIATION_ID = 'UI-ZINDEX';
+const Z_INDEX_KEYWORDS = new Set(['auto', 'inherit', 'initial', 'unset', 'revert', 'revert-layer']);
+
 // seed-baseline 逸脱の ID 接頭辞（seed 本体だけの基準逸脱。派生では消す） ──
 const SEED_BASELINE_PREFIX = 'SEED-';
 // 記入見本の逸脱 ID 接頭辞（TYPE_DEVIATIONS の「記入見本」行。承認ゲートの対象外） ──
@@ -255,6 +270,9 @@ if (failures.filter((f) => f.startsWith('(c)')).length === 0) {
 
 checkStatusBadgeGuardrails();
 
+// ── (g) 重なり順: アプリ側 z-index の上限（Core のポップアップを潜らせない） ──
+checkZIndexCeiling();
+
 // ── (e) 承認ゲート（派生のみ）: status=要承認 の逸脱が残っていたら失格 ──
 // seed モードでは SEED-*（seed-baseline）を CI 対象外として skip する。
 checkApprovalGate();
@@ -330,6 +348,96 @@ function checkStatusBadgeGuardrails() {
   } else {
     passes.push('(d) SB-4: StatusBadge import / 手実装なし');
   }
+}
+
+// ── (g) 重なり順: アプリ側 z-index が上限（--magi-z-app-sticky-max）を超えていないか ──
+function checkZIndexCeiling() {
+  const over = [];
+  const unresolved = [];
+
+  for (const file of cssFiles) {
+    // コメント（説明文に z-index の話が書かれている）と、画面の重なりと無関係な
+    // @media print の中身は見ない。どちらも改行を残して潰すので行番号は保たれる。
+    const text = maskPrintMedia(maskCssComments(readFileSync(file, 'utf8')));
+    const re = /z-index\s*:\s*([^;}\n]+)/g;
+    let match;
+    while ((match = re.exec(text)) !== null) {
+      const raw = match[1].replace(/!important/i, '').trim();
+      const line = text.slice(0, match.index).split('\n').length;
+      // Core トークンの参照は合法（序列は Core が保証する）。
+      if (/var\(\s*--magi-z-/.test(raw)) continue;
+      const value = readZIndexNumber(raw);
+      if (value === null) {
+        unresolved.push(`${rel(file)}:${line} (z-index: ${raw})`);
+        continue;
+      }
+      if (value > Z_INDEX_CEILING) over.push(`${rel(file)}:${line} (z-index: ${raw})`);
+    }
+  }
+
+  if (unresolved.length > 0) {
+    warnings.push(
+      `(g) 重なり順: 値を静的に判定できない z-index が ${unresolved.length} 件（calc や独自変数）。`
+      + ` 目視で ${Z_INDEX_CEILING} 以下か確認してください → ${unresolved.join(' / ')}`,
+    );
+  }
+
+  if (over.length === 0) {
+    passes.push(`(g) 重なり順: アプリ側 z-index は上限 ${Z_INDEX_CEILING}（--magi-z-app-sticky-max）以内`);
+    return;
+  }
+
+  const message =
+    `(g) 重なり順: z-index が上限 ${Z_INDEX_CEILING}（--magi-z-app-sticky-max）を超える箇所が ${over.length} 件`
+    + ` → ${over.join(' / ')}`;
+  if (approvedDeviations.has(Z_INDEX_DEVIATION_ID)) {
+    warnings.push(`${message}（TYPE_DEVIATIONS で承認済＝${Z_INDEX_DEVIATION_ID}）→ 許可`);
+    return;
+  }
+  failures.push(
+    `${message}。Core のメニュー・業務ダッシュボード・状態の説明が帯ごと下に潜ります。`
+    + ` sticky 帯は ${Z_INDEX_CEILING} 未満にするか var(--magi-z-*) を使ってください`
+    + `（どうしても必要なら TYPE_DEVIATIONS.md に ID=${Z_INDEX_DEVIATION_ID} を status=承認済 で記載）`,
+  );
+}
+
+// CSS コメント（/* ... */）を空白で潰す（改行は残す）。説明文中の z-index を拾わないため。
+function maskCssComments(text) {
+  return text.replace(/\/\*[^]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+}
+
+// @media print { ... } の中身を空白で潰す（改行は残すので行番号は保たれる）。
+function maskPrintMedia(text) {
+  const ranges = [];
+  const re = /@media([^{]*)\{/g;
+  let match;
+  while ((match = re.exec(text)) !== null) {
+    if (!/\bprint\b/.test(match[1])) continue;
+    let depth = 1;
+    let i = re.lastIndex;
+    while (i < text.length && depth > 0) {
+      if (text[i] === '{') depth += 1;
+      else if (text[i] === '}') depth -= 1;
+      i += 1;
+    }
+    ranges.push([match.index, i]);
+  }
+  let out = text;
+  for (const [start, end] of ranges) {
+    out = out.slice(0, start) + out.slice(start, end).replace(/[^\n]/g, ' ') + out.slice(end);
+  }
+  return out;
+}
+
+// z-index の値を数値化する。判定不能なら null（キーワードは重なりを作らないので 0 扱い）。
+function readZIndexNumber(raw) {
+  const value = raw.trim();
+  if (Z_INDEX_KEYWORDS.has(value.toLowerCase())) return 0;
+  if (/^-?\d+$/.test(value)) return Number(value);
+  // var(--x, fallback) は fallback で判定する（--magi-z-* は呼び出し側で合法判定済み）。
+  const varMatch = value.match(/^var\(\s*--[\w-]+\s*,([^]*)\)$/);
+  if (varMatch) return readZIndexNumber(varMatch[1]);
+  return null;
 }
 
 function collectCssBlocks() {
