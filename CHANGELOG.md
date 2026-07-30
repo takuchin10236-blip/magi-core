@@ -1,5 +1,64 @@
 # Changelog
 
+## v0.10.0 (2026-07-30)
+
+### フロントページ5層標準の寸法体系を「型」に昇格（基準実体＝職員マスタ）
+
+社長裁定「余白・パネル配置を MAGI の型に昇格させろ」。実測の出所は
+`magi-staff-directory` origin/main **267a671**（基準実体）と、本日それに寄せた
+`magi-shift-v4` main **7164f79**。
+
+> **採用アプリが v0.10.0 へ上げても見た目は変わらない。** 追加したのは「寸法の共通語彙」
+> （トークン定義）であって、Core 部品の現行値は一切動かしていない。Core の規則のうち
+> **既にトークンと同じ値だったもの**（`.magi-appshell` の `gap: 10px`）だけをトークン参照へ
+> 置き換えた。ボタン・入力欄などは現行値がトークンと異なるため**あえて置換していない**
+> （置換すると見た目が動くため。寄せるかは別途の裁定事項）。
+
+**1. レイアウトトークンを `:root` に新設**（8テーマ共通・色ではなく寸法なのでテーマ別に分けない）
+
+シェル `--magi-shell-padding: 18px` / `--magi-shell-padding-sm: 10px` / `--magi-panel-gap: 10px`、
+ヘッダー `--magi-header-min-height: 88px` / `--magi-header-padding: 14px 18px`、
+パネル `--magi-panel-padding: 18px 20px`、カード `--magi-card-padding: 15px` / `--magi-card-gap: 12px`、
+ボタン `--magi-button-min-height: 44px` / `--magi-button-padding: 8px 14px` / `--magi-button-radius: 9px` /
+`--magi-action-gap: 8px` / `--magi-button-icon-gap: 8px`、
+入力欄 `--magi-field-min-height: 44px` / `--magi-field-padding: 9px 11px` / `--magi-field-radius: 9px` /
+`--magi-field-label-gap: 7px`、セグメント `--magi-segment-padding|gap: 4px` / `--magi-segment-radius: 12px`、
+`--magi-empty-padding: 42px 20px` / `--magi-list-item-padding: 12px`。
+既存の `--app-shell-max` / `--card-radius` とは名前が衝突しない（すべて `--magi-` 接頭辞）。
+
+**2. 横あふれ防止を `.magi-appshell-main` に標準装備（本日の指摘の根治）**
+
+真因は「幅の広い業務コンテンツ（勤務表等）が親を押し広げ、ページ全体に横スクロールが出て
+**パネル外の左右余白が食われる**」こと。`min-width: 0` に加えて `max-width: 100%` を持たせ、
+さらに**直下の子にも `min-width: 0; max-width: 100%`** を効かせた（grid/flex の子は既定の
+最小幅が中身の幅＝ここを 0 にしないと `overflow-x: auto` を付けても器が伸びる）。
+
+> **規約: 横スクロールは業務コンテンツの内側（`overflow-x: auto` の器）に閉じ込める。
+> シェルを押し広げない。**
+
+**3. `MagiBusinessSummary` が列数を自分で決める**
+
+`--magi-summary-columns` の設定漏れで5個目が溢れる事故（本日の実害）を構造的に潰した。
+既定は**項目数から自動**、`columns` プロパティを明示した時だけそちらを優先（0項目でも1列以上）。
+
+**4. CIガード原本に (h) シェルの枠検査を追加**
+
+`.magi-appshell` / `-header` / `-main` を主語にした `padding` / `max-width` / `min-height` の
+上書きを検出する。二段構え:
+
+- **失格（exit 1）**: 枠を**壊す**値 — `max-width: none | 100vw | unset | initial`、
+  シェル本体の `padding: 0`。`.v4-work-view { max-width: none; padding: 10px }` の再発を止める
+- **警告**: それ以外の寸法上書き（トークンへ寄せる導線）。`var(--magi-*)` で書けば無警告
+- `@media print` は対象外（印刷は枠を外すのが正しい）。シェルの「中身」への指定は自由
+- 例外は既存の承認機構（`TYPE_DEVIATIONS.md` に ID=`UI-SHELL-FRAME` を `status=承認済`）
+- **なぜ二段構えか**: 「上書きは一律失格」にすると、Core がシェルの枠（余白・最大幅）を
+  自分では持たない現状では、**基準実体である職員マスタ自身が落ちる**（実測: 職員マスタ6件・
+  勤務表8件が該当）。枠を壊す形だけを止め、寸法の指定は警告に留めた
+
+**実測（4アプリ）**: 職員マスタ・勤務表・利用者マスタ・webapp-template とも (h) 失格 0。
+職員マスタ6件・勤務表8件は「トークンへ寄せると揃う」警告として出る
+（両repoは読むだけで変更していない）。
+
 ## v0.9.4 (2026-07-30)
 
 ### 書込検出が回り続ける事故を、参照の同一性で止める（社長承認）

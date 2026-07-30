@@ -174,6 +174,19 @@ const Z_INDEX_CEILING = 100;
 const Z_INDEX_DEVIATION_ID = 'UI-ZINDEX';
 const Z_INDEX_KEYWORDS = new Set(['auto', 'inherit', 'initial', 'unset', 'revert', 'revert-layer']);
 
+// ── (h) シェルの枠を壊す上書きの禁止（v0.10.0・社長裁定「余白・パネル配置を型に昇格」） ──
+//   事故: 幅の広い業務コンテンツを収めるために、アプリがシェルの枠を外す
+//   （例 `max-width: none; padding: 10px`）と、ページ全体に横スクロールが出て
+//   **パネル外の左右余白が食われる**（2026-07-30 社長指摘）。
+//   枠を「壊す」値だけを失格にし、寸法の微調整（18px→10px 等）は警告に留める
+//   ＝基準実体（職員マスタ）の書き方をそのまま通しつつ、事故の形だけを止める。
+const SHELL_FRAME_CLASSES = ['magi-appshell', 'magi-appshell-header', 'magi-appshell-main'];
+const SHELL_FRAME_PROPS = ['padding', 'max-width', 'min-height'];
+// 枠を外す値（これが失格。値の微調整は対象外）
+const FRAME_BREAKING_MAX_WIDTH = /^(none|100vw|unset|initial|revert)$/i;
+const FRAME_BREAKING_PADDING = /^0(px)?(\s+0(px)?){0,3}$/i;
+const SHELL_FRAME_DEVIATION_ID = 'UI-SHELL-FRAME';
+
 // seed-baseline 逸脱の ID 接頭辞（seed 本体だけの基準逸脱。派生では消す） ──
 const SEED_BASELINE_PREFIX = 'SEED-';
 // 記入見本の逸脱 ID 接頭辞（TYPE_DEVIATIONS の「記入見本」行。承認ゲートの対象外） ──
@@ -283,6 +296,9 @@ checkStatusBadgeGuardrails();
 
 // ── (g) 重なり順: アプリ側 z-index の上限（Core のポップアップを潜らせない） ──
 checkZIndexCeiling();
+
+// ── (h) シェルの枠（余白・最大幅）を壊す上書きの禁止 ──
+checkShellFrameOverrides();
 
 // ── (e) 承認ゲート（派生のみ）: status=要承認 の逸脱が残っていたら失格 ──
 // seed モードでは SEED-*（seed-baseline）を CI 対象外として skip する。
@@ -415,6 +431,74 @@ function checkZIndexCeiling() {
 // CSS コメント（/* ... */）を空白で潰す（改行は残す）。説明文中の z-index を拾わないため。
 function maskCssComments(text) {
   return text.replace(/\/\*[^]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+}
+
+// ── (h) シェルの枠を壊す上書き（padding/max-width/min-height）を止める ──
+function checkShellFrameOverrides() {
+  const breaking = [];
+  const adjustments = [];
+
+  for (const file of cssFiles) {
+    // コメントと @media print は対象外（印刷は枠を外すのが正しい）。
+    const text = maskPrintMedia(maskCssComments(readFileSync(file, 'utf8')));
+    const re = /([^{}]+)\{([^{}]*)\}/g;
+    let match;
+    while ((match = re.exec(text)) !== null) {
+      const selector = match[1].trim().replace(/\s+/g, ' ');
+      const body = match[2];
+      const line = text.slice(0, match.index).split('\n').length;
+      if (!selectorTargetsShellFrame(selector)) continue;
+
+      for (const prop of SHELL_FRAME_PROPS) {
+        const decl = new RegExp(`(?:^|;)\\s*${prop}\\s*:\\s*([^;}]+)`, 'i').exec(body);
+        if (!decl) continue;
+        const value = decl[1].replace(/!important/i, '').trim();
+        // Core のトークンで書いてあるなら、それは型に沿った指定＝素通し。
+        if (/var\(\s*--magi-/.test(value)) continue;
+        const where = `${rel(file)}:${line} (${selector} { ${prop}: ${value} })`;
+        const breaks =
+          (prop === 'max-width' && FRAME_BREAKING_MAX_WIDTH.test(value))
+          || (prop === 'padding' && FRAME_BREAKING_PADDING.test(value) && selector.includes('magi-appshell') && !selector.includes('magi-appshell-main'));
+        if (breaks) breaking.push(where);
+        else adjustments.push(where);
+      }
+    }
+  }
+
+  if (adjustments.length > 0) {
+    warnings.push(
+      `(h) シェルの枠: 寸法の上書きが ${adjustments.length} 件（枠は壊していない）。`
+      + ` --magi-shell-padding / --magi-header-padding 等のトークンへ寄せると全アプリで揃います`
+      + ` → ${adjustments.join(' / ')}`,
+    );
+  }
+
+  if (breaking.length === 0) {
+    passes.push('(h) シェルの枠: max-width/padding を外す上書きなし');
+    return;
+  }
+
+  const message =
+    `(h) シェルの枠を外す上書きが ${breaking.length} 件 → ${breaking.join(' / ')}`;
+  if (approvedDeviations.has(SHELL_FRAME_DEVIATION_ID)) {
+    warnings.push(`${message}（TYPE_DEVIATIONS で承認済＝${SHELL_FRAME_DEVIATION_ID}）→ 許可`);
+    return;
+  }
+  failures.push(
+    `${message}。シェルの左右余白が消え、ページ全体に横スクロールが出ます。`
+    + ' 広い表は業務コンテンツの内側（overflow-x: auto の器）に閉じ込めてください'
+    + `（どうしても必要なら TYPE_DEVIATIONS.md に ID=${SHELL_FRAME_DEVIATION_ID} を status=承認済 で記載）`,
+  );
+}
+
+// セレクタの「主語」（最後の複合セレクタ）がシェルの枠クラスかを見る。
+//   `.app .magi-appshell-main` は主語＝magi-appshell-main（対象）、
+//   `.magi-appshell-main .table` は主語＝table（対象外＝中身の指定は自由）。
+function selectorTargetsShellFrame(selectorList) {
+  return selectorList.split(',').some((one) => {
+    const subject = one.trim().split(/[\s>+~]+/).filter(Boolean).pop() ?? '';
+    return SHELL_FRAME_CLASSES.some((cls) => new RegExp(`\\.${cls}(?![\\w-])`).test(subject));
+  });
 }
 
 // @media print { ... } の中身を空白で潰す（改行は残すので行番号は保たれる）。

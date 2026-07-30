@@ -62,7 +62,13 @@ export interface MagiBusinessSummaryProps {
     ariaLabel?: string;
     /** 開閉状態を覚える localStorage キー。省略すると覚えない。 */
     storageKey?: string;
+    /**
+     * チップの列数。**省略時は項目数から自動**（v0.10.0）。
+     *   アプリが CSS 変数 --magi-summary-columns を設定し忘れると5個目が溢れる事故が
+     *   あったため、部品が自分で決めるのを既定にした。明示指定した時だけそれを優先する。
+     */
+    columns?: number;
     className?: string;
 }
-export declare function MagiBusinessSummary({ items, label, detailsLabel, ariaLabel, storageKey, className, }: MagiBusinessSummaryProps): import("react").JSX.Element;
+export declare function MagiBusinessSummary({ items, label, detailsLabel, ariaLabel, storageKey, columns, className, }: MagiBusinessSummaryProps): import("react").JSX.Element;
 //# sourceMappingURL=MagiBusinessSummary.d.ts.map

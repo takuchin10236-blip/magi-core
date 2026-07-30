@@ -37,7 +37,9 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  */
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-export function MagiBusinessSummary({ items, label = '現在の状況', detailsLabel = 'ダッシュボード', ariaLabel, storageKey, className, }) {
+export function MagiBusinessSummary({ items, label = '現在の状況', detailsLabel = 'ダッシュボード', ariaLabel, storageKey, columns, className, }) {
+    // 列数: 明示指定 > 項目数（最低1）。
+    const summaryColumns = Math.max(1, Math.floor(columns ?? items.length));
     const detailsRef = useRef(null);
     const [open, setOpen] = useState(() => {
         if (!storageKey)
@@ -81,7 +83,9 @@ export function MagiBusinessSummary({ items, label = '現在の状況', detailsL
     const describedItems = items.filter((item) => item.description !== undefined);
     return (_jsxs("section", { "aria-label": ariaLabel, className: `magi-business-summary themed-card no-print${className ? ` ${className}` : ''}`, children: [_jsx("span", { className: "magi-business-summary-label", children: label }), _jsx("div", { className: "magi-business-summary-chips", 
                 // 列数は項目数に追随させる（4項目固定にしない＝アプリごとに項目数を変えられる）。
-                style: { ['--magi-summary-columns']: String(Math.max(items.length, 1)) }, children: items.map((item) => item.onSelect ? (_jsxs("button", { disabled: item.disabled, onClick: item.onSelect, title: item.title, type: "button", children: [_jsx("span", { children: item.label }), _jsx("strong", { children: item.value })] }, item.key)) : (_jsxs("div", { className: "magi-business-summary-item", title: item.title, children: [_jsx("span", { children: item.label }), _jsx("strong", { children: item.value })] }, item.key))) }), describedItems.length > 0 ? (_jsxs("details", { className: "magi-business-summary-details", onToggle: (event) => {
+                // v0.10.0: 既定は「項目数」。columns を明示した時だけそちらを使う
+                //   ＝アプリの設定漏れで5個目が溢れる事故（2026-07-30）が構造的に起きない。
+                style: { ['--magi-summary-columns']: String(summaryColumns) }, children: items.map((item) => item.onSelect ? (_jsxs("button", { disabled: item.disabled, onClick: item.onSelect, title: item.title, type: "button", children: [_jsx("span", { children: item.label }), _jsx("strong", { children: item.value })] }, item.key)) : (_jsxs("div", { className: "magi-business-summary-item", title: item.title, children: [_jsx("span", { children: item.label }), _jsx("strong", { children: item.value })] }, item.key))) }), describedItems.length > 0 ? (_jsxs("details", { className: "magi-business-summary-details", onToggle: (event) => {
                     const next = event.currentTarget.open;
                     setOpen(next);
                     if (!storageKey)

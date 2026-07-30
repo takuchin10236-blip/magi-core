@@ -3184,7 +3184,8 @@ mark.search-hit {
 .magi-appshell {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  /* v0.10.0: 値は据え置き（10px）でトークン参照へ。 */
+  gap: var(--magi-panel-gap, 10px);
 }
 
 .magi-appshell-header {
@@ -3250,8 +3251,21 @@ mark.search-hit {
   gap: 8px;
 }
 
+/* 作業面（業務コンテンツの器）。
+   v0.10.0 の規約: **横スクロールは業務コンテンツの内側（overflow-x: auto の器）に
+   閉じ込める。シェルを押し広げない。** 幅の広い表（勤務表など）が親を押し広げると、
+   ページ全体に横スクロールが出て**パネル外の左右余白が食われる**（2026-07-30 社長指摘）。
+   min-width: 0 ＋ max-width: 100% で、子がどれだけ広くてもシェルの幅を超えさせない。 */
 .magi-appshell-main {
   min-width: 0;
+  max-width: 100%;
+}
+
+/* grid/flex の子は既定の最小幅が auto＝中身の幅まで伸びる。ここを 0 にしておかないと
+   広い表が器を押し広げる（overflow-x: auto を付けても効かない典型）。 */
+.magi-appshell-main > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* -- MagiStatusSummary（状態要約） -- */
@@ -4532,6 +4546,60 @@ mark.search-hit {
   .magi-brand-logo {
     width: var(--magi-brand-logo-width-sm, 104px);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * レイアウトトークン（v0.10.0・フロントページ5層標準の寸法体系）
+ *   社長裁定「余白・パネル配置を MAGI の型に昇格させろ」。
+ *   基準実体＝職員マスタ（magi-staff-directory origin/main 267a671）と、それに寄せた
+ *   勤務表（magi-shift-v4 main 7164f79）の実装から**実測値を写した**共通語彙。
+ *
+ *   位置づけ: ここは「寸法の物差し」。Core の各部品が今持っている値は**変えない**
+ *   （v0.10.0 へ上げても採用アプリの見た目は動かない）。Core の規則のうち、既に
+ *   トークンと同じ値だったものだけをトークン参照へ置き換えてある。
+ *   アプリはシェルの枠・パネル・ボタン・入力欄の寸法をこのトークンで書くこと。
+ *   8テーマ共通（色ではなく寸法なのでテーマ別に分けない）。
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* シェルの外枠（ページの左右余白）。狭幅は -sm へ落とす。 */
+  --magi-shell-padding: 18px;
+  --magi-shell-padding-sm: 10px;
+  /* シェル直下の帯（ヘッダー・ナビ・本文）の縦間隔。 */
+  --magi-panel-gap: 10px;
+
+  /* ヘッダー（施設名・アプリ名・状態/版の帯）。 */
+  --magi-header-min-height: 88px;
+  --magi-header-padding: 14px 18px;
+
+  /* 操作列・ツールバー級のパネル。 */
+  --magi-panel-padding: 18px 20px;
+
+  /* カード（一覧の1枚・小パネル）。 */
+  --magi-card-padding: 15px;
+  --magi-card-gap: 12px;
+
+  /* ボタンと操作列。min-height は当たり判定44px（--tap-min と同値）。 */
+  --magi-button-min-height: 44px;
+  --magi-button-padding: 8px 14px;
+  --magi-button-radius: 9px;
+  --magi-action-gap: 8px;
+  --magi-button-icon-gap: 8px;
+
+  /* 入力欄（ラベル＋コントロール）。 */
+  --magi-field-min-height: 44px;
+  --magi-field-padding: 9px 11px;
+  --magi-field-radius: 9px;
+  --magi-field-label-gap: 7px;
+
+  /* セグメント（トグル群の器）。 */
+  --magi-segment-padding: 4px;
+  --magi-segment-gap: 4px;
+  --magi-segment-radius: 12px;
+
+  /* 0件表示・一覧行。 */
+  --magi-empty-padding: 42px 20px;
+  --magi-list-item-padding: 12px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

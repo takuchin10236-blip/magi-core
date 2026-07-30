@@ -65,6 +65,12 @@ export interface MagiBusinessSummaryProps {
   ariaLabel?: string;
   /** 開閉状態を覚える localStorage キー。省略すると覚えない。 */
   storageKey?: string;
+  /**
+   * チップの列数。**省略時は項目数から自動**（v0.10.0）。
+   *   アプリが CSS 変数 --magi-summary-columns を設定し忘れると5個目が溢れる事故が
+   *   あったため、部品が自分で決めるのを既定にした。明示指定した時だけそれを優先する。
+   */
+  columns?: number;
   className?: string;
 }
 
@@ -74,8 +80,12 @@ export function MagiBusinessSummary({
   detailsLabel = 'ダッシュボード',
   ariaLabel,
   storageKey,
+  columns,
   className,
 }: MagiBusinessSummaryProps) {
+  // 列数: 明示指定 > 項目数（最低1）。
+  const summaryColumns = Math.max(1, Math.floor(columns ?? items.length));
+
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [open, setOpen] = useState(() => {
     if (!storageKey) return false;
@@ -124,7 +134,9 @@ export function MagiBusinessSummary({
       <div
         className="magi-business-summary-chips"
         // 列数は項目数に追随させる（4項目固定にしない＝アプリごとに項目数を変えられる）。
-        style={{ ['--magi-summary-columns' as string]: String(Math.max(items.length, 1)) }}
+        // v0.10.0: 既定は「項目数」。columns を明示した時だけそちらを使う
+        //   ＝アプリの設定漏れで5個目が溢れる事故（2026-07-30）が構造的に起きない。
+        style={{ ['--magi-summary-columns' as string]: String(summaryColumns) }}
       >
         {items.map((item) =>
           item.onSelect ? (
