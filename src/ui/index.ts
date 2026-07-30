@@ -83,6 +83,9 @@ export { BusinessNav } from './BusinessNav';
 export type { BusinessNavProps, BusinessNavTab, BusinessNavMenuItem } from './BusinessNav';
 export { MagiAppShell } from './MagiAppShell';
 export type { MagiAppShellProps } from './MagiAppShell';
+// 作業面の全画面表示（v0.9）。MagiAppShell の focusMode と対で使う。
+export { FocusToggle } from './FocusToggle';
+export type { FocusToggleProps } from './FocusToggle';
 export {
   detectRuntime,
   validateDeclaredState,

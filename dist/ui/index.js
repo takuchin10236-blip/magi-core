@@ -48,6 +48,8 @@ export { MagiStatusSummary } from './MagiStatusSummary';
 export { MagiVersionChip } from './MagiVersionChip';
 export { BusinessNav } from './BusinessNav';
 export { MagiAppShell } from './MagiAppShell';
+// 作業面の全画面表示（v0.9）。MagiAppShell の focusMode と対で使う。
+export { FocusToggle } from './FocusToggle';
 export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createHealthWriteDetector, createEndpointWriteDetector, } from './statusDetection';
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
 export { MagiBusinessSummary } from './MagiBusinessSummary';

@@ -4529,3 +4529,112 @@ mark.search-hit {
   width: 100%;
   height: auto;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * ヘッダーのバッジ行 ＋ 作業面の全画面表示（v0.9）
+ *   社長裁定「フロントページ5層標準」（基準実体＝職員マスタ）のCore側実装。
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* -- バッジ行: 右端寄せ・1列・大きさ統一 --
+ *  視覚順序は右端から ①状態の説明 ②版 ③その他バッジ（全体で3〜4個以内）。
+ *  MagiStatusSummary は「バッジ群＋状態の説明」を1部品で持つため、そのままでは
+ *  間に版チップを挟めない。そこでクラスタを display: contents で親フレックスへ
+ *  溶かし込み、order で並べ替える（DOM順・各部品のAPI・ポップアップの位置基準は不変。
+ *  ポップアップは元々 .magi-appshell-header-right が位置基準＝クラスタは static）。 */
+.magi-appshell-status-cluster {
+  display: contents;
+}
+
+.magi-appshell-header-right {
+  /* 原則1列。折り返して2段になるとヘッダーが分厚くなる。 */
+  flex-wrap: nowrap;
+}
+
+/* order 未指定（＝アプリが差した「その他バッジ」）は 0 で最も左に来る。 */
+.magi-appshell-header-right .magi-appshell-status-badges {
+  order: 1;
+  flex-wrap: nowrap;
+}
+
+.magi-appshell-header-right .magi-appshell-version {
+  order: 2;
+}
+
+.magi-appshell-header-right .magi-appshell-status-details {
+  order: 3;
+}
+
+/* 高さ・padding の統一（状態の説明ボタン／版チップの 36px・6px 10px に合わせる）。
+   ヘッダー内に限定し、一覧や表で使う StatusBadge 本体の寸法は変えない。 */
+.magi-appshell-header-right .magi-status-badge {
+  min-height: 36px;
+  padding: 6px 10px;
+}
+
+@media (max-width: 640px) {
+  /* 狭い画面では横スクロールを作らない方を優先し、バッジ群だけ折り返しを許す。 */
+  .magi-appshell-header-right .magi-appshell-status-badges {
+    flex-wrap: wrap;
+  }
+}
+
+/* -- FocusToggle（全画面切替ボタン） -- */
+.magi-focus-toggle {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 850;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.magi-focus-toggle:hover,
+.magi-focus-toggle:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  outline: none;
+}
+
+.magi-focus-toggle:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* -- 作業面の全画面表示 --
+ *  印刷には持ち込まない（@media screen 内に閉じる）。印刷は従来の print CSS が正。 */
+@media screen {
+  /* 直下の帯（ヘッダー・ナビ等）を隠す。本文と戻るボタンだけ残す。 */
+  .magi-appshell-focus-mode > *:not(.magi-appshell-main):not(.magi-appshell-focus-exit) {
+    display: none;
+  }
+
+  /* アプリ側が「focus では隠したい」帯に付ける印（本文の中にあっても効く）。 */
+  .magi-appshell-focus-mode .magi-appshell-focus-hidden {
+    display: none !important;
+  }
+
+  .magi-appshell-focus-mode {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .magi-appshell-focus-mode > .magi-appshell-main {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .magi-appshell-focus-exit {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 120;
+    box-shadow: var(--floating-shadow);
+  }
+}

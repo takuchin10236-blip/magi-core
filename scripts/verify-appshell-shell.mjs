@@ -33,6 +33,7 @@ const shellFiles = await Promise.all(
     'src/ui/MagiVersionChip.tsx',
     'src/ui/BusinessNav.tsx',
     'src/ui/MagiAppShell.tsx',
+    'src/ui/FocusToggle.tsx',
   ].map(read),
 );
 
@@ -45,6 +46,7 @@ for (const name of [
   'MagiVersionChip',
   'BusinessNav',
   'MagiAppShell',
+  'FocusToggle',
   'detectRuntime',
   'validateDeclaredState',
   'deriveStatusDisplay',

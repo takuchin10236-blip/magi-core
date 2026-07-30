@@ -57,6 +57,8 @@ export { BusinessNav } from './BusinessNav';
 export type { BusinessNavProps, BusinessNavTab, BusinessNavMenuItem } from './BusinessNav';
 export { MagiAppShell } from './MagiAppShell';
 export type { MagiAppShellProps } from './MagiAppShell';
+export { FocusToggle } from './FocusToggle';
+export type { FocusToggleProps } from './FocusToggle';
 export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createHealthWriteDetector, createEndpointWriteDetector, } from './statusDetection';
 export type { RuntimeSurface, DeclarableState, DeclaredStateValidation, RuntimeDetectorConfig, StatusDisplayItem, StatusDisplayResult, StatusResolution, WriteDetector, TrustedWriteDetector, } from './statusDetection';
 export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
