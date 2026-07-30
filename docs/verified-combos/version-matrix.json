@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-30T10:49:59.353Z",
+  "generated_at": "2026-07-30T11:15:15.716Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
-    "version": "0.9.3",
-    "version_tag": "v0.9.3",
+    "version": "0.9.4",
+    "version_tag": "v0.9.4",
     "version_has_tag": false,
     "version_tag_commit": null,
-    "label": "v0.9.3（作業中・タグ未作成）",
+    "label": "v0.9.4（作業中・タグ未作成）",
     "tags": [
       "v0.1.0",
       "v0.2.0",
@@ -40,7 +40,8 @@
       "v0.8.0",
       "v0.9.0",
       "v0.9.1",
-      "v0.9.2"
+      "v0.9.2",
+      "v0.9.3"
     ]
   },
   "template_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
@@ -62,13 +63,13 @@
   ],
   "verified": [],
   "source_hashes": {
-    "core:package.json": "94b7874d14746c350995017002bc4083e8d355ab90d3f55033866d258d1c1024",
+    "core:package.json": "5354324cb906444a88dda1a01572fd0d651c72832a3c4de0b79643f42c9a01c9",
     "magi-webapp-template:origin-main:package.json": "f6d73cc3c86e668f512dae353d1a03570b2ab2475e94421c1c1a0a72d853b289",
     "magi-resident-spine:origin-main:package.json": "82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550"
   },
   "freshness_targets": {
     "core:version-tag-commit": null,
-    "core:origin-main-head": "66db2d063c19a12e54385652a1b842eec747b13a",
+    "core:origin-main-head": "d2be5a88e2c9722d0734ce4ecab118671434b1aa",
     "magi-webapp-template:origin-main-head": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158"
   }
