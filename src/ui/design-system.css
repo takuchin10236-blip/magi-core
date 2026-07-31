@@ -3202,14 +3202,29 @@ mark.search-hit {
   padding: var(--magi-shell-padding, 18px);
 }
 
+/* v0.12.0: ヘッダーの**パネル化**（枠・面・影）も Core が実体として配る。
+   2026-07-31 16:27 社長裁定「ヘッダーのパネル（枠）もシフトv4と同じにして正とする」。
+   経緯: v0.10.0 で --magi-header-min-height / --magi-header-padding を定義しながら、
+   ヘッダー本体は骨格（flex/gap/整列）しか持たず、パネルの実体はアプリ側の写し
+   （`.v2-app-shell .magi-appshell-header { min-height; padding; border; border-radius;
+   background; box-shadow }`）が担っていた。「コアにあるものはアプリから消す」掃除をした
+   瞬間にヘッダーが素の背景へ直置きになる（利用者マスタ実機・外周余白に続く同型事故の3例目）。
+   トークンの定義だけでは配れないので、ここで実体を持つのが根治。 */
 .magi-appshell-header {
   display: flex;
+  min-height: var(--magi-header-min-height, 88px);
   /* 2026-07-28 社長裁定: 状態・版はアプリ名と同じ行の右端に置く。
      wrap を許すと2段目へ落ちてヘッダーが分厚くなるため nowrap で固定する。 */
   flex-wrap: nowrap;
   gap: 12px;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
+  padding: var(--magi-header-padding, 14px 18px);
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, 14px);
+  background: var(--bg-surface);
+  box-shadow: var(--surface-shadow);
 }
 
 .magi-appshell-brand {
@@ -3485,6 +3500,10 @@ mark.search-hit {
   border: 1px solid var(--border-default);
   border-radius: var(--card-radius, var(--mode-radius));
   background: var(--bg-surface);
+  /* v0.12.0: ヘッダーと同じ「浮いたパネル」に揃える（2026-07-31 16:27 社長裁定）。
+     影の実体もアプリ側の写し（`.v2-app-shell .magi-appshell-nav { box-shadow }`）が
+     担っていたため、掃除するとナビだけ紙のように平らになっていた。 */
+  box-shadow: var(--surface-shadow);
   overflow: visible;
 }
 

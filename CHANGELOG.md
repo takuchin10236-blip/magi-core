@@ -1,5 +1,71 @@
 # Changelog
 
+## v0.12.0 (2026-07-31)
+
+### シェル実体の一斉棚卸し — ヘッダーのパネル化を Core が配る＋「語彙だけ定義」を機械で禁じる
+
+2026-07-31 16:27 社長裁定「ヘッダーのパネル（枠）もシフト v4 と同じにして正とする」
+「同構造の欠けを個別でなく一斉に塞ぐ」。
+
+**事故（同型3例目）**: Core のシェル系は「トークン（語彙）だけ定義して、適用規則（実体）は
+各アプリの写しが担う」構造だった。① 外周余白（v0.11.1 で修理済み）に続き、
+② `.magi-appshell-header` の**パネル化**（`min-height` / `padding` / 枠線 / 角丸 / 面 / 影）も
+Core 本体に無く、利用者マスタが (i) ガードに沿って写しを撤去した瞬間に、
+**ヘッダーが素の背景へ直置き**になった（社長が実機で発見）。個別修理を繰り返さないため、
+`.magi-appshell*` 系を3ソース（シフト v4 ＝見え方の正／職員マスタ／利用者マスタの掃除前実装）で
+突合し、欠けている実体を今回で全部塞ぐ。
+
+**1. 移植した実体**（`src/ui/design-system.css`）
+
+- `.magi-appshell-header` をパネルにする:
+  `min-height: var(--magi-header-min-height, 88px)` /
+  `padding: var(--magi-header-padding, 14px 18px)` / `box-sizing: border-box` /
+  `border: 1px solid var(--border-default)` / `border-radius: var(--card-radius, 14px)` /
+  `background: var(--bg-surface)` / `box-shadow: var(--surface-shadow)`。
+  値はシフト v4 の実装から写し、寸法は v0.10.0 で既に定義済みのトークンを消費させた
+  （新しい寸法は発明していない）
+- `.magi-appshell-nav` に `box-shadow: var(--surface-shadow)` を追加（帯だけ平らにならない）
+
+**2. 移植しなかったもの（コア値が正・棚卸しの判断）**
+
+- タップ標的の `min-height: 44px` 群（`.magi-appshell-nav-tab` / `-role-chip` / `-menu-item` /
+  `-colormode button` / `-version-chip` / `-status-details > summary`）＝利用者マスタの掃除前
+  実装だけが持っていた写し。Core は各要素に意図した値（34/34/38/32/36/36px）を持ち、
+  見え方の正であるシフト v4 もこの 44px 群を持たない
+- シフト v4 の狭幅（`@media (max-width: 560px)`）でのヘッダー圧縮・ナビ縦積み・タブ 48px、
+  および `.v4-work-view` の作業面 `padding: 0` ＝勤務表の密度要求に紐づくアプリ固有の出し分け
+- `--app-shell-max` の 1480px（利用者マスタの fallback）＝テーマ既定 1400px が正
+
+**3. トークン消費者検査を新設**（`scripts/verify-token-consumers.mjs`・`npm run verify:tokens`）
+
+同じ穴に3回落ちた原因＝「語彙を定義しただけで実体を配っていない」ことに気づけない構造。
+design-system.css で定義される全 `--magi-*` トークン（30件）に、Core CSS 内の消費箇所
+（`var(--…)`）が最低1つあることを機械で要求する。無いものは「意図的に語彙先行」の
+例外リスト（`VOCABULARY_ONLY`・理由コメント必須）へ明記させ、例外の陳腐化
+（消費され始めた／定義が消えた）も失格にする。`npm run check` に組み込み。
+
+- 検査前の消費者ゼロ: 18件 → 今回の移植で `--magi-header-min-height` /
+  `--magi-header-padding` が解消、残り16件は例外リストへ理由付きで登録
+  （アプリが自分の器を書くための物差し ＝ panel/card/button/field/empty/list-item 系14件、
+  `--magi-z-app-sticky-max`＝アプリ側の上限の約束、`--magi-z-fullscreen`＝既存名の別名）
+
+**4. 版マトリクスの先行不良を解消**
+
+`docs/verified-combos/` の `verified` が0件のまま `test/verifyMatrix.test.ts` の7本が
+落ち続けていた（先頭エントリを改竄する負例が対象不在で TypeError）。実在する検証済み
+組合せ（`magi-resident-master` × `v0.12.0`）を `--verified-entry` で登録し、7本を緑に戻した。
+
+**副作用の検算（採用アプリの見た目は動かない）**
+
+- 写しを残しているアプリは詳細度で勝つ: シフト v4 の `.v2-app-shell .magi-appshell-header`
+  ＝ (0,2,0) ／ Core の `.magi-appshell-header` ＝ (0,1,0)。同名プロパティはアプリ側の値が
+  そのまま適用され、見え方は不変（写しを消したときだけ Core の実体が現れる）
+- 職員マスタはトップメニュー型（`.magi-appshell*` を使っていない）ため対象外
+- アプリは Core を**タグ参照**で固定しているため、稼働中アプリへの即時影響も無い
+
+**試験**: `test/layoutTokens.test.tsx` に (a3) 8本を追加（`min-height`・`padding`・枠線・
+角丸・面・影のトークン参照／ナビの影／描画後の実体）。
+
 ## v0.11.1 (2026-07-31)
 
 ### シェルの外周配置を Core が「実体として」配る（欠陥修理・社長裁定）

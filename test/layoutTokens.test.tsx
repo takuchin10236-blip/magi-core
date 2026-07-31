@@ -134,6 +134,56 @@ describe('(a2) シェルの外周配置は Core が配る（v0.11.1）', () => {
   });
 });
 
+/**
+ * v0.12.0: ヘッダーのパネル（枠・面・影）も Core が配る（2026-07-31 16:27 社長裁定）。
+ * 外周余白（v0.11.1）と同型の事故＝「トークンだけ定義し実体はアプリの写しが担う」を
+ * 機械で固定する。写しを掃除した瞬間にヘッダーが素の背景へ直置きになった実機事故の再発防止。
+ */
+describe('(a3) ヘッダーのパネル化は Core が配る（v0.12.0）', () => {
+  const cssWithoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  /** `.magi-appshell-header` そのもの（`-right` 等の派生ではない）の宣言ブロックを取る。 */
+  function headerBlock(): string {
+    const matched = cssWithoutComments.match(/\.magi-appshell-header\s*\{([^}]*)\}/);
+    expect(matched, '.magi-appshell-header の定義が見つからない').toBeTruthy();
+    return matched![1];
+  }
+
+  const expectedDecls: Array<[string, string]> = [
+    ['高さ', 'min-height: var(--magi-header-min-height'],
+    ['内余白', 'padding: var(--magi-header-padding'],
+    ['枠線', 'border: 1px solid var(--border-default)'],
+    ['角丸', 'border-radius: var(--card-radius'],
+    ['面の色', 'background: var(--bg-surface)'],
+    ['影', 'box-shadow: var(--surface-shadow)'],
+  ];
+
+  for (const [label, decl] of expectedDecls) {
+    it(`${label}（${decl.split(':')[0]}）を Core が持つ`, () => {
+      expect(headerBlock()).toContain(decl);
+    });
+  }
+
+  it('ナビもヘッダーと同じ影を持つ（帯だけ平らにならない）', () => {
+    const navBlock = cssWithoutComments.match(/\.magi-appshell-nav\s*\{([^}]*)\}/);
+    expect(navBlock, '.magi-appshell-nav の定義が見つからない').toBeTruthy();
+    expect(navBlock![1]).toContain('box-shadow: var(--surface-shadow)');
+  });
+
+  it('描画されたヘッダーにパネルの実体が乗る', () => {
+    const { container } = render(
+      <MagiAppShell appName="x" facilityName="y">
+        <p>本文</p>
+      </MagiAppShell>,
+    );
+    const style = getComputedStyle(container.querySelector('.magi-appshell-header') as Element);
+    expect(style.boxSizing).toBe('border-box');
+    // jsdom は var() を解決せず shorthand も畳むので、トークン参照が乗ること自体を見る
+    // （枠・面・影・内余白の宣言そのものは上の CSS 断片検査が押さえている）。
+    expect(style.minHeight).toContain('--magi-header-min-height');
+  });
+});
+
 describe('(b) 作業面は横に押し広げられない', () => {
   it('.magi-appshell-main は min-width:0 と max-width:100%', () => {
     const { container } = render(
