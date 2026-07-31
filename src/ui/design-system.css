@@ -4592,10 +4592,11 @@ mark.search-hit {
   --magi-field-radius: 9px;
   --magi-field-label-gap: 7px;
 
-  /* セグメント（トグル群の器）。 */
+  /* セグメント（トグル群の器）。
+     radius は 2026-07-31 社長裁定「選択状態の形＝ピル」で 12px → 999px（v0.11.0）。 */
   --magi-segment-padding: 4px;
   --magi-segment-gap: 4px;
-  --magi-segment-radius: 12px;
+  --magi-segment-radius: 999px;
 
   /* 0件表示・一覧行。 */
   --magi-empty-padding: 42px 20px;
@@ -4742,4 +4743,63 @@ mark.search-hit {
     z-index: var(--magi-z-floating, 700);
     box-shadow: var(--floating-shadow);
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * セグメントコントロール（絞り込み・切替の標準部品・v0.11.0）
+ *   2026-07-31 社長裁定「選択状態の標準形＝ピル」（添付3の形を正式採用）。
+ *   角丸を 999px に固定するのは、選択中の項目が「押されている面」として
+ *   一目で分かる形を全アプリで揃えるため（12px 角丸だとカードや入力欄と
+ *   見分けがつかず、どれが選択状態なのか毎回読み取り直しになる）。
+ *
+ *   手本の実測は利用者マスタ（magi-resident-master）の .scope-tabs 一式と、
+ *   Core 既存の .magi-appshell-nav-tab / .magi-appshell-colormode の作法。
+ *   アプリはこの3クラスを**そのまま使う**こと（自前の .xxx-tabs を作らない）。
+ *   色は 8テーマ共通の CSS 変数だけで書く＝ダークでも破綻しない（生色は禁止）。
+ *   文字サイズは指定しない（器から継承）。手本の .scope-tabs も未指定で、
+ *   置かれた場所の文字と揃うのが正しい振る舞いだから。
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.magi-segment {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--magi-segment-gap, 4px);
+  padding: var(--magi-segment-padding, 4px);
+  border: 1px solid var(--border-default);
+  border-radius: var(--magi-segment-radius, 999px);
+  background: var(--bg-surface-alt);
+}
+
+.magi-segment button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--magi-segment-radius, 999px);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-weight: 750;
+  line-height: 1.1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.magi-segment button:hover,
+.magi-segment button:focus-visible {
+  color: var(--text-primary);
+  outline: none;
+}
+
+.magi-segment button:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* 選択状態。色だけに頼らず地の面ごと反転させる（背骨: 状態色は補助）。 */
+.magi-segment button.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--primary-button-text);
 }

@@ -53,7 +53,8 @@ describe('(a) レイアウトトークン（基準実体＝職員マスタ 267a6
     ['magi-field-label-gap', '7px'],
     ['magi-segment-padding', '4px'],
     ['magi-segment-gap', '4px'],
-    ['magi-segment-radius', '12px'],
+    // v0.11.0: 選択状態の標準形＝ピル（2026-07-31 社長裁定）で 12px → 999px。
+    ['magi-segment-radius', '999px'],
     ['magi-empty-padding', '42px 20px'],
     ['magi-list-item-padding', '12px'],
   ];

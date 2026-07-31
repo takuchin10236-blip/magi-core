@@ -1,5 +1,60 @@
 # Changelog
 
+## v0.11.0 (2026-07-31)
+
+### 選択状態の標準形＝ピル（社長裁定）＋ シェル再定義を止める CIガード (i)
+
+2026-07-31 社長裁定（承認記録 USER-20260731-02）「（選択パネルの形は）添付4の形よりも
+添付3の形に統一する方向でお願いしたい。これも、正式採用したい」。絞り込み・切替の
+セグメントを Core の標準部品に昇格させ、同時に「アプリ側に Core の写しが残る」構図を
+機械で止める。
+
+**1. セグメント標準部品 `.magi-segment` を新設**（`design-system.css`）
+
+契約は3クラス固定 — 容器 `.magi-segment` ／ 項目 `.magi-segment button` ／
+選択中 `.magi-segment button.is-active`（下流アプリと条文がこの名前を参照する）。
+
+- **形はピル**: 容器・項目とも `border-radius: var(--magi-segment-radius, 999px)`。
+  角丸12pxだとカードや入力欄と見分けがつかず「どれが選択中か」を毎回読み直すことになる
+- **`--magi-segment-radius` を 12px → 999px へ変更**（v0.10.0 で写した値を裁定で更新）。
+  `--magi-segment-padding` / `--magi-segment-gap`（各 4px）は据え置き
+- 配色は 8テーマ共通の CSS 変数のみ（生色コードなし）:
+  容器＝`--bg-surface-alt` + `--border-default`、選択＝`--color-primary` の地に
+  `--primary-button-text` の文字、非選択の文字＝`--text-secondary`。
+  項目の当たり判定 `min-height: 36px`・`font-weight: 750`
+- **文字サイズは指定しない**（器から継承）。手本の `.scope-tabs` も未指定で、
+  置かれた場所の文字と揃うのが正しい振る舞いだから
+- 実測の出所: 利用者マスタ（`magi-resident-master`）の `.scope-tabs` 一式と、
+  Core 既存の `.magi-appshell-nav-tab` / `.magi-appshell-colormode` の作法
+
+**2. CIガード原本に (i) シェル再定義の検査**（`ci/check-ui-guardrails.mjs`）
+
+事故の形: 型を採用したのに、アプリ側 CSS に **Core と同じ寸法を書き直した「写しの層」**が
+残る。すると Core を上げても見た目が動かず、直したはずの不揃いが現場に出ない
+（利用者マスタで実際に起きて撤去した）。
+
+- **アプリ側 CSS が `.magi-appshell*` を主語に寸法・文字系
+  （`max-width` / `width` / `padding` / `margin` / `min-height` / `height` /
+  `font-size` / `border-radius` / `gap`）を再定義していたら exit 1**
+- (h) との違い: (h) はシェル3クラスの「枠を壊す**値**」を見る。(i) は
+  `.magi-appshell*` 全クラスの「**再定義そのもの**」を見る（値が Core と同じでも写しは写し）。
+  そのため (h) が素通しする `var(--magi-*)` 記法も (i) では対象
+- 対象外: `@media print` の中（印刷の出し分けはアプリの領域）／CSS変数の指定
+  （`--app-shell-max` 等＝Core が用意したつまみを回す正規の手段）／
+  主語がアプリ自身の要素（`.magi-appshell-focus-mode .app-palette` 等）
+- 寸法・文字**以外**（`display: none` 等の出し分け）は WARN に留める
+- 逃がし道: `TYPE_DEVIATIONS.md` に**当該セレクタ（クラス名）を書けば** WARN へ落ちる。
+  ID=`UI-SHELL-CLASS` を `status=承認済` で載せれば全件まとめて逃がせる（(g)(h) と同じ作法）
+- 負例試験11本（寸法・文字の再定義／print 除外／display は WARN／CSS変数は対象外／
+  セレクタ記載での逃がし／前方一致の取り違え防止）
+
+**採用アプリへの影響（実測）**: 利用者マスタ（再定義撤去済み）は **(i) 失格 0**。
+一方 **職員マスタ 16件・勤務表 14件**が新たに (i) の失格に当たる（`.magi-appshell` の
+`padding: 18px`、`.magi-appshell-nav-tab` の `min-height: 44px` 等の写し）。
+この2本を v0.11.0 へ上げるときは **CSS 規則ごと削って Core の既定に任せる**か、
+`TYPE_DEVIATIONS.md` に当該セレクタを記載すること。v0.10.0 の (h) は同じ記述を
+WARN で通していたため、**(i) は方針の引き締め**にあたる。
+
 ## v0.10.0 (2026-07-30)
 
 ### フロントページ5層標準の寸法体系を「型」に昇格（基準実体＝職員マスタ）

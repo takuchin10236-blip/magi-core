@@ -34,6 +34,13 @@
  *   (g) 重なり順       … アプリ側 CSS の z-index が上限 100（--magi-z-app-sticky-max）以下か
  *                        （超えると Core のメニュー・業務ダッシュボードが帯ごと下に潜る。
  *                         v0.9.3 追加・社長裁定「潜り込み表示を型で止める」）
+ *   (h) シェルの枠     … シェル（.magi-appshell 系）の枠を壊す上書きが無いか
+ *                        （max-width: none / シェル本体の padding: 0 は失格。v0.10.0 追加）
+ *   (i) シェル再定義   … アプリ側 CSS が .magi-appshell* の寸法・文字を再定義していないか
+ *                        （コア管轄クラスの写しが残ると、Core を上げても見た目が動かない。
+ *                         v0.11.0 追加・社長裁定「選択状態の標準形＝ピル」と同日の是正）
+ *
+ *   ※ 検査の符号 (a)〜(i) と、下の seed 判定の説明で使う (i)(ii) は別物（後者は箇条書き番号）。
  *
  * 逸脱の承認の考え方:
  *   検査項目に対応する逸脱ID（下の CHECK_TO_DEVIATION）が TYPE_DEVIATIONS.md に
@@ -187,6 +194,26 @@ const FRAME_BREAKING_MAX_WIDTH = /^(none|100vw|unset|initial|revert)$/i;
 const FRAME_BREAKING_PADDING = /^0(px)?(\s+0(px)?){0,3}$/i;
 const SHELL_FRAME_DEVIATION_ID = 'UI-SHELL-FRAME';
 
+// ── (i) コア管轄クラス（.magi-appshell*）のアプリ側再定義の禁止（v0.11.0・2026-07-31 社長裁定） ──
+//   事故: 型を採用したのに、アプリ側 CSS に「写しの層」（Core と同じ寸法を書き直した規則）が
+//   残り続ける。すると Core を上げても見た目が動かず、直したはずの不揃いが現場に出ない
+//   ＝どこが正なのか誰にも分からなくなる（利用者マスタで実際に起きて撤去した）。
+//   そこで .magi-appshell* を主語にした**寸法・文字系の再定義**を失格にする。
+//   ・(h) がシェル3クラスの「枠を壊す値」を見るのに対し、(i) は .magi-appshell* 全クラスの
+//     「再定義そのもの」を見る（値が Core と同じでも写しは写し）。両方に当たる行は両方に出る。
+//   ・トークン var(--magi-*) で書いてあっても対象（(h) は素通しだが、(i) は再定義自体が問題）。
+//   ・寸法・文字以外（display: none 等の出し分け）は警告に留める＝印刷や画面別の
+//     出し分けはアプリ固有の正当な領域だから。
+//   ・@media print の中は対象外（印刷は枠を外すのが正しい＝(h) と同じ扱い）。
+//   ・逃がし道: TYPE_DEVIATIONS.md に当該セレクタ（クラス名）が書かれていれば警告へ落とす。
+//     ID=UI-SHELL-CLASS を status=承認済 で載せれば全件をまとめて逃がせる（(g)(h) と同じ作法）。
+const SHELL_CLASS_PREFIX = 'magi-appshell';
+// 寸法・文字系（ここを書き換えると Core の版上げが効かなくなる＝失格）
+const SHELL_CLASS_SIZE_PROPS = new Set([
+  'max-width', 'width', 'padding', 'margin', 'min-height', 'height', 'font-size', 'border-radius', 'gap',
+]);
+const SHELL_CLASS_DEVIATION_ID = 'UI-SHELL-CLASS';
+
 // seed-baseline 逸脱の ID 接頭辞（seed 本体だけの基準逸脱。派生では消す） ──
 const SEED_BASELINE_PREFIX = 'SEED-';
 // 記入見本の逸脱 ID 接頭辞（TYPE_DEVIATIONS の「記入見本」行。承認ゲートの対象外） ──
@@ -299,6 +326,9 @@ checkZIndexCeiling();
 
 // ── (h) シェルの枠（余白・最大幅）を壊す上書きの禁止 ──
 checkShellFrameOverrides();
+
+// ── (i) コア管轄クラス（.magi-appshell*）の寸法・文字をアプリ側で再定義していないか ──
+checkShellClassRedefinition();
 
 // ── (e) 承認ゲート（派生のみ）: status=要承認 の逸脱が残っていたら失格 ──
 // seed モードでは SEED-*（seed-baseline）を CI 対象外として skip する。
@@ -499,6 +529,107 @@ function selectorTargetsShellFrame(selectorList) {
     const subject = one.trim().split(/[\s>+~]+/).filter(Boolean).pop() ?? '';
     return SHELL_FRAME_CLASSES.some((cls) => new RegExp(`\\.${cls}(?![\\w-])`).test(subject));
   });
+}
+
+// ── (i) コア管轄クラス（.magi-appshell*）の寸法・文字の再定義を止める ──
+function checkShellClassRedefinition() {
+  const redefined = [];  // 寸法・文字の再定義（失格候補）
+  const listed = [];     // TYPE_DEVIATIONS.md に記載のあるセレクタ（警告へ落とす）
+  const others = [];     // 寸法・文字以外（display の出し分け等・警告のみ）
+  const deviationText = readDeviationsText();
+
+  for (const file of cssFiles) {
+    // コメントと @media print は対象外（印刷の出し分けはアプリの正当な領域）。
+    const text = maskPrintMedia(maskCssComments(readFileSync(file, 'utf8')));
+    const re = /([^{}]+)\{([^{}]*)\}/g;
+    let match;
+    while ((match = re.exec(text)) !== null) {
+      const selector = match[1].trim().replace(/\s+/g, ' ');
+      const body = match[2];
+      const line = text.slice(0, match.index).split('\n').length;
+      const classes = shellClassesInSubject(selector);
+      if (classes.length === 0) continue;
+
+      for (const declaration of body.split(';')) {
+        const decl = /^\s*([-\w]+)\s*:([^]*)$/.exec(declaration);
+        if (!decl) continue;
+        const prop = decl[1].toLowerCase();
+        const value = decl[2].replace(/!important/i, '').trim();
+        if (!value) continue;
+        // CSS 変数（--app-shell-max 等）の指定は「Core が用意したつまみ」を回す正規の手段。
+        // 再定義ではないので対象外にする。
+        if (prop.startsWith('--')) continue;
+        const where = `${rel(file)}:${line} (${selector} { ${prop}: ${value} })`;
+        if (!SHELL_CLASS_SIZE_PROPS.has(prop)) {
+          others.push(where);
+        } else if (classes.some((cls) => isListedInDeviations(deviationText, cls))) {
+          listed.push(where);
+        } else {
+          redefined.push(where);
+        }
+      }
+    }
+  }
+
+  if (others.length > 0) {
+    warnings.push(
+      `(i) シェル再定義: コア管轄クラスへの寸法・文字以外の指定が ${others.length} 件`
+      + `（出し分け等は許容。ただし Core 側の作法で足りないか一度見直してください）`
+      + ` → ${others.join(' / ')}`,
+    );
+  }
+
+  if (listed.length > 0) {
+    warnings.push(
+      `(i) シェル再定義: ${listed.length} 件は TYPE_DEVIATIONS.md に当該セレクタの記載あり → 許可`
+      + `（記載を消したら失格に戻ります）→ ${listed.join(' / ')}`,
+    );
+  }
+
+  if (redefined.length === 0) {
+    passes.push(`(i) シェル再定義: .${SHELL_CLASS_PREFIX}* の寸法・文字をアプリ側で再定義していない`);
+    return;
+  }
+
+  const message =
+    `(i) シェル再定義: コア管轄クラス（.${SHELL_CLASS_PREFIX}*）の寸法・文字の再定義が ${redefined.length} 件`
+    + ` → ${redefined.join(' / ')}`;
+  if (approvedDeviations.has(SHELL_CLASS_DEVIATION_ID)) {
+    warnings.push(`${message}（TYPE_DEVIATIONS で承認済＝${SHELL_CLASS_DEVIATION_ID}）→ 許可`);
+    return;
+  }
+  failures.push(
+    `${message}。アプリ側の写しが残ると Core を上げても見た目が動きません。`
+    + ' 規則ごと削って Core の既定に任せるか、寸法トークン（--magi-*）を :root で調整してください'
+    + `（どうしても必要なら TYPE_DEVIATIONS.md に当該セレクタを書く、または ID=${SHELL_CLASS_DEVIATION_ID} を status=承認済 で記載）`,
+  );
+}
+
+// セレクタの「主語」（最後の複合セレクタ）に含まれる .magi-appshell* のクラス名を返す。
+//   `.v2-app-shell.magi-appshell` は主語に magi-appshell を含む（対象）、
+//   `.magi-appshell-focus-mode .v4-palette-main` は主語＝v4-palette-main（対象外＝アプリの持ち物）。
+function shellClassesInSubject(selectorList) {
+  const found = new Set();
+  for (const one of selectorList.split(',')) {
+    const subject = one.trim().split(/[\s>+~]+/).filter(Boolean).pop() ?? '';
+    for (const hit of subject.matchAll(new RegExp(`\\.(${SHELL_CLASS_PREFIX}[\\w-]*)`, 'g'))) {
+      found.add(hit[1]);
+    }
+  }
+  return [...found];
+}
+
+// TYPE_DEVIATIONS.md の全文（セレクタ単位の逃がし道の照合に使う）。無ければ空文字。
+function readDeviationsText() {
+  const p = join(ROOT, 'TYPE_DEVIATIONS.md');
+  return existsSync(p) ? readFileSync(p, 'utf8') : '';
+}
+
+// 逸脱文書に当該クラスが「.magi-appshell-nav-tab」の形で書かれているか。
+//   前方一致で誤判定しないよう、クラス名の直後が英数・- でないことを見る。
+function isListedInDeviations(text, cls) {
+  if (!text) return false;
+  return new RegExp(`\\.${cls}(?![\\w-])`).test(text);
 }
 
 // @media print { ... } の中身を空白で潰す（改行は残すので行番号は保たれる）。
