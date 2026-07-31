@@ -1,14 +1,15 @@
 {
-  "generated_at": "2026-07-30T12:35:53.930Z",
+  "generated_at": "2026-07-31T06:28:32.777Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
-    "version": "0.10.0",
-    "version_tag": "v0.10.0",
+    "version": "0.11.0",
+    "version_tag": "v0.11.0",
     "version_has_tag": false,
     "version_tag_commit": null,
-    "label": "v0.10.0（作業中・タグ未作成）",
+    "label": "v0.11.0（作業中・タグ未作成）",
     "tags": [
       "v0.1.0",
+      "v0.10.0",
       "v0.2.0",
       "v0.3.0",
       "v0.3.1",
@@ -45,14 +46,14 @@
       "v0.9.4"
     ]
   },
-  "template_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
+  "template_commit": "f480b3ebe4d493be5b89bbc01cf4a780f8b929c5",
   "adopters": [
     {
       "name": "magi-webapp-template",
       "available": true,
       "app_version": "0.0.0-template",
-      "core_pinned_tag": "v0.5.3",
-      "app_commit": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce"
+      "core_pinned_tag": "v0.10.0",
+      "app_commit": "f480b3ebe4d493be5b89bbc01cf4a780f8b929c5"
     },
     {
       "name": "magi-resident-spine",
@@ -64,14 +65,14 @@
   ],
   "verified": [],
   "source_hashes": {
-    "core:package.json": "6fc5a25b51aefc385794a118704eeead9d2ddc34a7f7e2d831c31a469de3ed30",
-    "magi-webapp-template:origin-main:package.json": "f6d73cc3c86e668f512dae353d1a03570b2ab2475e94421c1c1a0a72d853b289",
+    "core:package.json": "8cf1de60d36fd87f83083a38538f96dd986bf90b9892ebf31ba43ef5cca5cf67",
+    "magi-webapp-template:origin-main:package.json": "5134bbca1b61224cf164a5fd79e9dc4ef5f391ee66125e444e05b5f597e481a3",
     "magi-resident-spine:origin-main:package.json": "82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550"
   },
   "freshness_targets": {
     "core:version-tag-commit": null,
-    "core:origin-main-head": "490eb5c31c428a2c2dc715ad5c8faeb192c84be1",
-    "magi-webapp-template:origin-main-head": "b04e0b8a26707d2ba7968fedfe0c9f7e196b63ce",
+    "core:origin-main-head": "f78b32b4bef8611c91e820121812e924fcc3768c",
+    "magi-webapp-template:origin-main-head": "f480b3ebe4d493be5b89bbc01cf4a780f8b929c5",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158"
   }
 }
