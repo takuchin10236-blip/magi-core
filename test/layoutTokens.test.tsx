@@ -85,6 +85,55 @@ describe('(a) レイアウトトークン（基準実体＝職員マスタ 267a6
   });
 });
 
+/**
+ * v0.11.1: 外周配置の実体を Core が配る（2026-07-31 社長裁定「シフト作成アプリの全体配置を正とする」）。
+ * トークンを定義しただけで実体を配っていなかったため、アプリ側の写しを掃除した瞬間に
+ * 外周余白が消えた（利用者マスタ実機）。実体が Core にあることを機械で固定する。
+ */
+describe('(a2) シェルの外周配置は Core が配る（v0.11.1）', () => {
+  /** 由来コメントにも CSS 断片が引用されているため、コメントを落としてから探す。 */
+  const cssWithoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  /** `.magi-appshell` そのもの（`-header` 等の派生ではない）の宣言ブロックを取る。 */
+  function shellBlock(): string {
+    const matched = cssWithoutComments.match(/\.magi-appshell\s*\{([^}]*)\}/);
+    expect(matched, '.magi-appshell の定義が見つからない').toBeTruthy();
+    return matched![1];
+  }
+
+  it('最大幅は --app-shell-max（テーマごとの値に追従）', () => {
+    expect(shellBlock()).toContain('max-width: var(--app-shell-max');
+  });
+
+  it('中央寄せ（margin: 0 auto）', () => {
+    expect(shellBlock()).toContain('margin: 0 auto');
+  });
+
+  it('外周余白は --magi-shell-padding（実体を配る）', () => {
+    expect(shellBlock()).toContain('padding: var(--magi-shell-padding');
+  });
+
+  it('padding が幅に足されない（box-sizing: border-box）', () => {
+    expect(shellBlock()).toContain('box-sizing: border-box');
+  });
+
+  it('狭幅（640px 以下）では --magi-shell-padding-sm へ落ちる', () => {
+    const narrow = cssWithoutComments.slice(cssWithoutComments.indexOf('@media (max-width: 640px)'));
+    expect(narrow).toContain('padding: var(--magi-shell-padding-sm');
+  });
+
+  it('描画された shell に外周配置が乗る', () => {
+    const { container } = render(
+      <MagiAppShell appName="x" facilityName="y">
+        <p>本文</p>
+      </MagiAppShell>,
+    );
+    const style = getComputedStyle(container.querySelector('.magi-appshell') as Element);
+    expect(style.margin).toBe('0px auto');
+    expect(style.boxSizing).toBe('border-box');
+  });
+});
+
 describe('(b) 作業面は横に押し広げられない', () => {
   it('.magi-appshell-main は min-width:0 と max-width:100%', () => {
     const { container } = render(

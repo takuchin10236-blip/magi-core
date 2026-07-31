@@ -3181,11 +3181,25 @@ mark.search-hit {
  */
 
 /* -- shell 骨格 -- */
+/* v0.11.1: 外周配置（最大幅・中央寄せ・外周余白）を Core が**実体として配る**。
+   2026-07-31 社長裁定「シフト作成アプリ（magi-shift-v4）の全体配置を正とする・正式採用」。
+   経緯: v0.10.0 で --magi-shell-padding / --app-shell-max を定義しながら、シェル本体は
+   それを消費していなかった（display/flex-direction/gap のみ）。外周余白の実体は各アプリの
+   写し（`.v2-app-shell.magi-appshell { max-width; margin: 0 auto; padding: 18px }`）が
+   担っていたため、「コアにあるものはアプリから消す」掃除をした瞬間に余白が消える
+   （利用者マスタ実機で外周0px・最大幅なし・左上貼り付き）。トークンの定義だけでは
+   配れないので、ここで実体を持つのが根治。 */
 .magi-appshell {
   display: flex;
+  width: 100%;
+  max-width: var(--app-shell-max, 1400px);
+  min-height: 100vh;
+  box-sizing: border-box;
   flex-direction: column;
   /* v0.10.0: 値は据え置き（10px）でトークン参照へ。 */
   gap: var(--magi-panel-gap, 10px);
+  margin: 0 auto;
+  padding: var(--magi-shell-padding, 18px);
 }
 
 .magi-appshell-header {
@@ -3634,6 +3648,11 @@ mark.search-hit {
 }
 
 @media (max-width: 640px) {
+  /* v0.11.1: 狭幅では外周余白を -sm へ落とす（シェル系が既に使っている 640px に揃える）。 */
+  .magi-appshell {
+    padding: var(--magi-shell-padding-sm, 10px);
+  }
+
   .magi-appshell-header {
     align-items: flex-start;
   }

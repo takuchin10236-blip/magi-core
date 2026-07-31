@@ -1,5 +1,41 @@
 # Changelog
 
+## v0.11.1 (2026-07-31)
+
+### シェルの外周配置を Core が「実体として」配る（欠陥修理・社長裁定）
+
+2026-07-31 社長裁定「シフト作成アプリ（`magi-shift-v4`）の全体配置を正とする・正式採用」。
+
+**事故**: v0.10.0 で `--magi-shell-padding: 18px` / `--magi-shell-padding-sm: 10px` と
+各テーマの `--app-shell-max` を**定義しただけ**で、シェル本体 `.magi-appshell` は
+それを**消費していなかった**（`display: flex` / `flex-direction: column` / `gap` のみ）。
+外周余白の実体は各アプリの写し
+（`.v2-app-shell.magi-appshell { max-width: var(--app-shell-max, 1400px); margin: 0 auto; padding: 18px; }`）
+が担っていた。v0.11.0 の (i) ガードに沿って利用者マスタがこの写しを撤去したところ、
+**外周余白 0px・最大幅なし・左上貼り付き**になった（社長が実機で発見）。
+「コアにあるものはアプリから消す」を成立させるには、Core が実体を配る必要がある。
+
+**修理**（`src/ui/design-system.css`）
+
+- `.magi-appshell` に外周配置を追加:
+  `width: 100%` / `max-width: var(--app-shell-max, 1400px)` / `min-height: 100vh` /
+  `box-sizing: border-box` / `margin: 0 auto` / `padding: var(--magi-shell-padding, 18px)`。
+  値はすべてシフト v4 の実装から写した（新しい寸法は発明していない）
+- 狭幅は既にシェル系が使っている `@media (max-width: 640px)` に相乗りし、
+  `padding: var(--magi-shell-padding-sm, 10px)` へ落とす
+
+**副作用の検算（見た目は動かない）**
+
+- 写しを残しているアプリ（シフト v4 等）は `.v2-app-shell.magi-appshell`＝詳細度 (0,2,0) で、
+  Core の `.magi-appshell`＝(0,1,0) に**カスケードで勝つ**。同名プロパティはアプリ側の値が
+  そのまま採用されるため見た目は不変。狭幅の上書きも同じ理由で勝つ
+- アプリは Core を**タグ参照**で固定しているため、稼働中アプリへの即時影響も無い
+- トークンの値・他の部品の寸法は変更していない（v0.10.0 の寸法体系は据え置き）
+
+**試験**: `test/layoutTokens.test.tsx` に (a2) 6本を追加（最大幅・中央寄せ・
+`padding` のトークン参照・`box-sizing`・狭幅の -sm・描画後の実体）。
+反証確認: `.magi-appshell` から `padding` 宣言を外すと当該試験が落ちる（実測）。
+
 ## v0.11.0 (2026-07-31)
 
 ### 選択状態の標準形＝ピル（社長裁定）＋ シェル再定義を止める CIガード (i)
