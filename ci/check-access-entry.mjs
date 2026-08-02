@@ -40,6 +40,7 @@ import {
   evaluateSessionHours,
   humanHours,
   maskEmail,
+  normalizeTeamDomain,
   parseWranglerEntryVars,
 } from './access-entry-lib.mjs';
 
@@ -154,11 +155,19 @@ async function main() {
     record(2, 'OK', 'AUD が一致しています（repo と Cloudflare が同じ入口を指している）');
   }
 
-  // [3] チームドメイン
-  if (expected.teamDomain !== EXPECTED_TEAM_DOMAIN) {
-    record(3, expected.teamDomain == null ? 'WARN' : 'FAIL',
-      `チームドメインが型の正本と${expected.teamDomain == null ? '未記載' : '不一致'}（${expected.teamDomain ?? 'キーなし'}）`,
-      [`正本は ${EXPECTED_TEAM_DOMAIN}（04 §4-5-1 第5箇条）。`]);
+  // [3] チームドメイン（比較は正規化後＝スキームの有無は入口事故ではない）
+  if (expected.teamDomain == null) {
+    record(3, 'WARN', 'チームドメインが未記載（キーなし）', [
+      `正本は ${EXPECTED_TEAM_DOMAIN}（04 §4-5-1 第5箇条）。`,
+    ]);
+  } else if (normalizeTeamDomain(expected.teamDomain) !== EXPECTED_TEAM_DOMAIN) {
+    record(3, 'FAIL', `チームドメインが型の正本と不一致（${expected.teamDomain}）`, [
+      `正本は ${EXPECTED_TEAM_DOMAIN}（04 §4-5-1 第5箇条）。`,
+    ]);
+  } else if (expected.teamDomain !== EXPECTED_TEAM_DOMAIN) {
+    record(3, 'WARN', `チームドメインは実質一致（表記ゆれ: ${expected.teamDomain}）`, [
+      `正本の表記は ${EXPECTED_TEAM_DOMAIN}（https:// を付けない・04 §4-5-1）。次の改修時に揃えてください。`,
+    ]);
   } else {
     record(3, 'OK', `チームドメインが型の正本と一致（${EXPECTED_TEAM_DOMAIN}）`);
   }

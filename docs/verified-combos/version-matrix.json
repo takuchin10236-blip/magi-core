@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-02T05:26:12.773Z",
+  "generated_at": "2026-08-02T05:31:30.491Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
-    "version": "0.13.1",
-    "version_tag": "v0.13.1",
+    "version": "0.13.2",
+    "version_tag": "v0.13.2",
     "version_has_tag": false,
     "version_tag_commit": null,
-    "label": "v0.13.1（作業中・タグ未作成）",
+    "label": "v0.13.2（作業中・タグ未作成）",
     "tags": [
       "v0.1.0",
       "v0.10.0",
@@ -14,6 +14,7 @@
       "v0.11.1",
       "v0.12.0",
       "v0.13.0",
+      "v0.13.1",
       "v0.2.0",
       "v0.3.0",
       "v0.3.1",
@@ -76,9 +77,9 @@
     {
       "name": "magi-staff-directory",
       "available": true,
-      "app_version": "0.1.0",
-      "core_pinned_tag": "v0.12.0",
-      "app_commit": "1155e5524b6e79496778dd486edc71589bb6b9db"
+      "app_version": "0.2.0",
+      "core_pinned_tag": "v0.13.1",
+      "app_commit": "a3c3fc09668903182bf0f7371939d55989e7e83d"
     }
   ],
   "verified": [
@@ -94,18 +95,18 @@
     }
   ],
   "source_hashes": {
-    "core:package.json": "5f5ff2806da40c478b9d993bb452661161bb9843f8eb28dbd470c49e4487957f",
+    "core:package.json": "25ad45d0e5eeba6169c2b740f348d3b186583c51a32e33cf3c1225348d81ad11",
     "magi-webapp-template:origin-main:package.json": "5134bbca1b61224cf164a5fd79e9dc4ef5f391ee66125e444e05b5f597e481a3",
     "magi-resident-spine:origin-main:package.json": "82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550",
     "magi-resident-master:origin-main:package.json": "e35e9ac7a5ecdb886256fa9ddf2e53c45e0e50fc61775aad2691098a91b44ce5",
-    "magi-staff-directory:origin-main:package.json": "c4e03b56d99a1aa5a2cd394c07a453d8e560174b8c80481a03a4b389aa08de92"
+    "magi-staff-directory:origin-main:package.json": "0a5efcc2f844832b260fc9b17e94edb963c6f948274cfcc43d6bf0aa8c15893f"
   },
   "freshness_targets": {
     "core:version-tag-commit": null,
-    "core:origin-main-head": "2e32bbf006a68c4d66fa50162a53a433fb39a5d9",
+    "core:origin-main-head": "db2ba1a14d245333dc51642f977db63e091f6b60",
     "magi-webapp-template:origin-main-head": "f480b3ebe4d493be5b89bbc01cf4a780f8b929c5",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158",
     "magi-resident-master:origin-main-head": "4ead0d922c7a2bb6710873bc10059053bc37b9d5",
-    "magi-staff-directory:origin-main-head": "1155e5524b6e79496778dd486edc71589bb6b9db"
+    "magi-staff-directory:origin-main-head": "a3c3fc09668903182bf0f7371939d55989e7e83d"
   }
 }

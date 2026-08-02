@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   diffAllowlist,
+  normalizeTeamDomain,
   durationToHours,
   evaluateSessionHours,
   maskEmail,
@@ -87,6 +88,16 @@ ACCESS_ALLOWLIST = "a@x.com, B@x.com"
   it('コメント行のキーは拾わない', () => {
     const v = parseWranglerEntryVars('name = "x"\n# ACCESS_ALLOWLIST = "ghost@x.com"\n');
     expect(v.allowlist).toBeNull();
+  });
+});
+
+describe('normalizeTeamDomain: 表記ゆれを事故と区別する（v0.13.2）', () => {
+  it('https:// 前置きと末尾スラッシュを剥がして比較できる', () => {
+    expect(normalizeTeamDomain('https://magi10236.cloudflareaccess.com/')).toBe('magi10236.cloudflareaccess.com');
+    expect(normalizeTeamDomain('magi10236.cloudflareaccess.com')).toBe('magi10236.cloudflareaccess.com');
+  });
+  it('本当に違うドメインは正規化しても一致しない', () => {
+    expect(normalizeTeamDomain('https://evil.cloudflareaccess.com')).not.toBe('magi10236.cloudflareaccess.com');
   });
 });
 

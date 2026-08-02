@@ -31,6 +31,15 @@ export function maskEmail(email) {
 }
 
 /**
+ * チームドメインの正規化（v0.13.2）。既存アプリの実測で `https://` 前置きの表記ゆれが
+ * 5本見つかった。スキームの有無は入口事故ではない（アプリは動いている）ので、
+ * 比較は正規化後に行い、表記ゆれは WARN に格下げする（偽NGは狼少年化＝本物のNGを霞ませる）。
+ */
+export function normalizeTeamDomain(value) {
+  return String(value ?? '').trim().replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+}
+
+/**
  * wrangler.toml のテキストから入口チェックに要る値を読む。
  * PRODUCTION_HOST が無い場合は `name = "..."` から `<name>.pages.dev` を推定する
  * （旧世代アプリへの配布時に、キー不足で検査自体が走らないことを防ぐ。
