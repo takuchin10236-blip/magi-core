@@ -1,5 +1,52 @@
 # Changelog
 
+## Unreleased（未リリース・タグ未発行 / 2026-08-02）
+
+### UI標準の還流 3点（すべて **experimental・opt-in・既定動作不変**）
+
+2026-08-02「UI標準コア還流一括パッケージ v0.2」（レビュー済み設計）の A-CC 型実装。
+現場アプリで型として固まった作法のうち、**Core が配れるもの**だけを還流した。
+3点とも **opt-in（渡さなければ 1px も変わらない）**＝非遡及。版は未確定（タグは切っていない）。
+
+**1. BusinessNav: 全画面ボタンの自動配置 `navFocusToggle`**（`src/ui/BusinessNav.tsx`）
+
+- 新prop 3つ: `navFocusToggle?: boolean`（opt-in・既定 false）／`focusMode?: boolean`／
+  `onFocusModeChange?: (next: boolean) => void`。
+- `navFocusToggle` が true で、かつ `focusMode` と `onFocusModeChange` の**両方**が
+  渡っているときだけ、ナビ右群の**先頭（navActions より前）**に `<FocusToggle/>` を描く。
+  片方でも欠けたら描かない（押しても何も起きない飾りボタンを作らないため）。
+- 並び順は 全画面 → 操作者（navActions）→ 職員（ロールチップ）→ メニュー（右端）で、
+  フロントページ5層標準 §2-A（`01_UI標準` §3-3）に一致する。
+- ⚠️ **手動配置（navActions に自分で `<FocusToggle/>` を入れる従来のやり方）との併用は不可**
+  ＝二重に出る。自動側へ移るときは手動側を外すこと（重複検知はしない・JSDoc に警告を明記）。
+- MagiAppShell は**無改造**（`nav` スロットの JSDoc に案内を1段落足しただけ）。
+  シェルは合成済みノードを受ける slot 方式なので、ナビの中身へは介入しない。
+
+**2. OperatorSelectModal: 注意文の折りたたみ `disclaimerCollapsible`**（`src/ui/Operator.tsx`）
+
+- 新prop `disclaimerCollapsible?: boolean`（既定 false＝従来どおり `<p>` で全文を常時表示）。
+- true のとき `<details>` になり、summary に要旨「これは本人認証ではありません」が**常時**出る。
+  開くと従来の全文（「共有端末で操作した本人が、自分の名前を選んでください。」）が読める。
+- **注意文を消す prop は作らない**。型v1.6 の要件「本人認証ではないと画面に明示する」は不変で、
+  畳んだ形でも要旨が画面から消えないことを試験で縛った。
+- CSS は `.operator-select-disclaimer.is-collapsible`（summary の見た目のみ）を追加。
+  常時表示版の枠・色は一切変えていない。
+
+**3. BusinessNav: メニュー標準スロットの明文化（pilot・型宣言のみ）**（`src/ui/BusinessNav.tsx`）
+
+- `menuItems`（操作項目＝今すぐ更新・マニュアル）／`menuChildren`（テーマ切替）／
+  `menuFooter`（更新履歴・最下部）の使い分けを JSDoc に明文化。
+  設定・全画面はメニューに畳まず**ナビ直置き**である旨も併記。
+- 標準キー定数 `MENU_STANDARD_KEYS = ['refresh', 'manual'] as const`（型 `BusinessNavStandardMenuKey`）
+  を export。**強制ガードは作らない**（pilot 段階＝目安として配るだけ・独自キーも従来どおり通る）。
+
+**試験**（`test/navFocusToggleOptIn.test.tsx` / `test/operatorDisclaimer.test.tsx`・18件追加）
+
+- 最重要は「**opt-in を渡さないアプリの DOM が変わらない**」。inline snapshot で既定 DOM を本文に固定し、
+  さらに「新propを渡さない」と「明示的に false を渡す」の HTML 完全一致でも縛った。
+- 実装時には v0.12.0 の原本コンポーネントを取り出して並べ、既定の DOM が**1文字も違わない**ことを
+  実測で確認している（parity 検証・`artifacts/` の一時検証・commit しない）。
+
 ## v0.12.0 (2026-07-31)
 
 ### シェル実体の一斉棚卸し — ヘッダーのパネル化を Core が配る＋「語彙だけ定義」を機械で禁じる

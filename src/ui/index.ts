@@ -79,8 +79,13 @@ export { MagiStatusSummary } from './MagiStatusSummary';
 export type { MagiStatusSummaryProps } from './MagiStatusSummary';
 export { MagiVersionChip } from './MagiVersionChip';
 export type { MagiVersionChipProps } from './MagiVersionChip';
-export { BusinessNav } from './BusinessNav';
-export type { BusinessNavProps, BusinessNavTab, BusinessNavMenuItem } from './BusinessNav';
+export { BusinessNav, MENU_STANDARD_KEYS } from './BusinessNav';
+export type {
+  BusinessNavProps,
+  BusinessNavTab,
+  BusinessNavMenuItem,
+  BusinessNavStandardMenuKey,
+} from './BusinessNav';
 export { MagiAppShell } from './MagiAppShell';
 export type { MagiAppShellProps } from './MagiAppShell';
 // 作業面の全画面表示（v0.9）。MagiAppShell の focusMode と対で使う。

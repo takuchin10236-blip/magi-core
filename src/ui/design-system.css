@@ -4491,6 +4491,35 @@ mark.search-hit {
   color: var(--text-primary);
 }
 
+/* 折りたたみ版（disclaimerCollapsible・opt-in・2026-08-02）。
+   枠・色は上の常時表示版と同じものを使い、要旨（summary）だけを常に見せる。
+   注意文自体を消す手段は用意しない（型v1.6「本人認証ではないと明示する」は不変）。 */
+.operator-select-disclaimer.is-collapsible > .operator-select-disclaimer-summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+  user-select: none;
+}
+
+.operator-select-disclaimer.is-collapsible > .operator-select-disclaimer-summary::-webkit-details-marker {
+  display: none;
+}
+
+.operator-select-disclaimer.is-collapsible > .operator-select-disclaimer-summary::before {
+  content: '▶ ';
+  display: inline-block;
+  margin-right: 2px;
+}
+
+.operator-select-disclaimer.is-collapsible[open] > .operator-select-disclaimer-summary::before {
+  content: '▼ ';
+}
+
+.operator-select-disclaimer-detail {
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
 .operator-select-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

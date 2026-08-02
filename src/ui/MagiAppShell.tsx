@@ -45,7 +45,13 @@ export interface MagiAppShellProps {
   headerStatus?: ReactNode;
   /** ヘッダー右の版チップスロット（<MagiVersionChip/> を想定）。視覚順は右から2番目。 */
   headerVersion?: ReactNode;
-  /** トップメニュースロット（<BusinessNav/> を想定）。 */
+  /**
+   * トップメニュースロット（<BusinessNav/> を想定）。
+   *
+   * 全画面ボタンをナビへ出したいときは、BusinessNav 側の `navFocusToggle`（opt-in）に
+   *   `focusMode` / `onFocusModeChange` を添えて渡す。ここ（シェル）は合成済みノードを
+   *   受けるだけなので、ナビの中身へは介入しない（slot 方式を崩さないため）。
+   */
   nav?: ReactNode;
   /**
    * 作業面だけを全面表示にする（既定 false）。true でヘッダー・ナビ・
