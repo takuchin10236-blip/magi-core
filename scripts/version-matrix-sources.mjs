@@ -33,6 +33,10 @@ export function defaultAdopters() {
   return [
     { name: 'magi-webapp-template', path: join(base, 'magi-webapp-template') },
     { name: 'magi-resident-spine', path: join(base, 'magi-resident-spine') },
+    // v0.13.0: 現行世代の採用アプリを既定に恒久化（7/31 は位置引数で一時追加していたため、
+    // 引数なし再生成で採用行と verified が落ちる罠があった＝2026-08-02 実測）。
+    { name: 'magi-resident-master', path: join(base, 'magi-resident-master') },
+    { name: 'magi-staff-directory', path: join(base, 'magi-staff-directory') },
   ];
 }
 

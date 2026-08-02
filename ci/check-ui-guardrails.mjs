@@ -330,6 +330,9 @@ checkShellFrameOverrides();
 // ── (i) コア管轄クラス（.magi-appshell*）の寸法・文字をアプリ側で再定義していないか ──
 checkShellClassRedefinition();
 
+// ── (j) ナビ・メニュー標準（01_UI標準 §3-3・v0.13.0 新設・警告のみ＝warn運用） ──
+checkNavMenuStandard();
+
 // ── (e) 承認ゲート（派生のみ）: status=要承認 の逸脱が残っていたら失格 ──
 // seed モードでは SEED-*（seed-baseline）を CI 対象外として skip する。
 checkApprovalGate();
@@ -602,6 +605,40 @@ function checkShellClassRedefinition() {
     `${message}。アプリ側の写しが残ると Core を上げても見た目が動きません。`
     + ' 規則ごと削って Core の既定に任せるか、寸法トークン（--magi-*）を :root で調整してください'
     + `（どうしても必要なら TYPE_DEVIATIONS.md に当該セレクタを書く、または ID=${SHELL_CLASS_DEVIATION_ID} を status=承認済 で記載）`,
+  );
+}
+
+// ── (j) ナビ・メニュー標準（01_UI標準 §3-3・値の正本＝5層標準 §2-A） ──
+//
+// 事故（2026-08-02・職員マスタ）: §3-3「メニュー標準装備4点（今すぐ更新／マニュアル／
+//   テーマ切替／更新履歴・最下部）」は条文化されたが機械検査が無く、コア版同期だけを
+//   済ませた型合わせで履歴と全画面が丸ごと抜けた。**検査なき条文は守られない**。
+// 判定: BusinessNav を使うアプリで、標準装備の識別可能な3部品
+//   （ManualEntry＝マニュアル／ColorModeSwitch＝テーマ切替／VersionHistoryModal＝更新履歴）と
+//   FocusToggle（ナビ直置き「全画面」＝§3-3-1）の参照が src に在るか。
+//   「今すぐ更新」は意味的で機械判定できないため対象外。
+// 段階: 警告のみ（07x 在庫表「メニュー標準スロット型…強制ガードは昇格後」に整合。
+//   誤検知の観察後に failures へ昇格を裁定する）。
+function checkNavMenuStandard() {
+  if (!srcText.includes('BusinessNav')) {
+    passes.push('(j) ナビ・メニュー標準: BusinessNav 未使用（対象外）');
+    return;
+  }
+  const required = [
+    ['ManualEntry', 'アプリ内マニュアル'],
+    ['ColorModeSwitch', 'テーマ切替'],
+    ['VersionHistoryModal', '更新履歴（メニュー最下部）'],
+    ['FocusToggle', '全画面（ナビ直置き）'],
+  ];
+  const missing = required.filter(([ident]) => !srcText.includes(ident));
+  if (missing.length === 0) {
+    passes.push('(j) ナビ・メニュー標準: 標準装備（マニュアル・テーマ・履歴・全画面）が揃っている');
+    return;
+  }
+  warnings.push(
+    `(j) ナビ・メニュー標準: 標準装備の欠けが ${missing.length} 件 — `
+    + missing.map(([ident, label]) => `${label}（${ident} の参照なし）`).join(' / ')
+    + '。01_UI標準 §3-3（値の正本＝5層標準 §2-A）。意図的に持たない場合は TYPE_DEVIATIONS.md へ記録してください',
   );
 }
 
