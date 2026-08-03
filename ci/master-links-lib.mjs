@@ -18,7 +18,14 @@
  */
 export function extractRequiredSheetKeys(sourceText) {
   const found = new Set();
-  for (const m of String(sourceText).matchAll(/\benv\.([A-Z][A-Z0-9_]*_SPREADSHEET_ID)\b/g)) {
+  const text = String(sourceText);
+  // 直接参照: env.XXX_SPREADSHEET_ID
+  for (const m of text.matchAll(/\benv\.([A-Z][A-Z0-9_]*_SPREADSHEET_ID)\b/g)) {
+    found.add(m[1]);
+  }
+  // 定数経由: const KEY = 'XXX_SPREADSHEET_ID'; env[KEY]（実例＝利用者マスタの職員名簿参照。
+  // 2026-08-03 実測でこの形を見落とし「職員名簿の鍵は不要」と誤報した——文字列リテラルも拾う）
+  for (const m of text.matchAll(/['"]([A-Z][A-Z0-9_]*_SPREADSHEET_ID)['"]/g)) {
     found.add(m[1]);
   }
   return [...found].sort();

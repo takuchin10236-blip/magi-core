@@ -22,6 +22,10 @@ describe('extractRequiredSheetKeys: コードが参照する台帳キーの列�
       'STAFF_MASTER_SPREADSHEET_ID',
     ]);
   });
+  it('定数経由（const KEY = \'..._SPREADSHEET_ID\'; env[KEY]）も拾う——利用者マスタの実形', () => {
+    const src = "const STAFF_SPREADSHEET_ID_KEY = 'STAFF_MASTER_SPREADSHEET_ID';\nconst id = env[STAFF_SPREADSHEET_ID_KEY];";
+    expect(extractRequiredSheetKeys(src)).toEqual(['STAFF_MASTER_SPREADSHEET_ID']);
+  });
   it('SPREADSHEET_ID で終わらない env 参照や無関係の語は拾わない', () => {
     const src = 'env.APP_NAME; env.DEV_MODE; const SPREADSHEET_ID = "x"; env.AUDIT_SHEET_NAME;';
     expect(extractRequiredSheetKeys(src)).toEqual([]);
