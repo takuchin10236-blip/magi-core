@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeGuardFixture, runGuard } from './guardFixture';
 
-const FULL_APP = `import { MagiAppShell, BusinessNav, ManualEntry, ColorModeSwitch, VersionHistoryModal, FocusToggle } from '@magi/core/ui';
+const FULL_APP = `import { MagiAppShell, BusinessNav, ManualEntry, ColorModeSwitch, VersionHistoryModal, FocusToggle, SgBrandLogo, MagiBusinessSummary } from '@magi/core/ui';
 export const App = () => <MagiAppShell appName="x" facilityName="y" nav={<BusinessNav activeTab="a" onNavigate={() => {}} tabs={[]} />}>本文</MagiAppShell>;
 `;
 
@@ -22,9 +22,11 @@ describe('(j) ナビ・メニュー標準', () => {
     expect(out).toContain('(j) ナビ・メニュー標準');
     expect(out).toContain('更新履歴');
     expect(out).toContain('全画面');
+    expect(out).toContain('正式ロゴ');
+    expect(out).toContain('サマリー帯');
   });
 
-  it('4部品が揃っていれば合格表示（WARN なし）', () => {
+  it('6部品が揃っていれば合格表示（WARN なし）', () => {
     const { code, out } = runGuard(makeGuardFixture({ appTsx: FULL_APP }));
     expect(code).toBe(0);
     expect(out).toContain('(j) ナビ・メニュー標準: 標準装備');

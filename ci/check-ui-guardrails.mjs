@@ -629,10 +629,14 @@ function checkNavMenuStandard() {
     ['ColorModeSwitch', 'テーマ切替'],
     ['VersionHistoryModal', '更新履歴（メニュー最下部）'],
     ['FocusToggle', '全画面（ナビ直置き）'],
+    // v0.13.3（2026-08-03 社長指示「ロゴ未反映のようなことが各アプリで絶対起きないように」）:
+    // 正式ロゴとサマリー帯も標準装備として検査する。意図的に持たないアプリは TYPE_DEVIATIONS へ。
+    ['SgBrandLogo', '正式ロゴ（ミュシャ風SG・昼夜切替）'],
+    ['MagiBusinessSummary', 'サマリー帯「現在の状況」（01 §3-4）'],
   ];
   const missing = required.filter(([ident]) => !srcText.includes(ident));
   if (missing.length === 0) {
-    passes.push('(j) ナビ・メニュー標準: 標準装備（マニュアル・テーマ・履歴・全画面）が揃っている');
+    passes.push('(j) ナビ・メニュー標準: 標準装備（マニュアル・テーマ・履歴・全画面・ロゴ・サマリー帯）が揃っている');
     return;
   }
   warnings.push(
