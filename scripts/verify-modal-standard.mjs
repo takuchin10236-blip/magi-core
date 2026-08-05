@@ -5,12 +5,16 @@ const files = {
   confirm: readFileSync(new URL('../src/ui/ConfirmModal.tsx', import.meta.url), 'utf8'),
   design: readFileSync(new URL('../src/ui/design-system.css', import.meta.url), 'utf8'),
   core: readFileSync(new URL('../src/ui/core.css', import.meta.url), 'utf8'),
+  scrollLock: readFileSync(new URL('../src/ui/scrollLock.ts', import.meta.url), 'utf8'),
 };
 
 const checks = [
   ['親枠内ドラッグ', files.modal.includes('bounds="parent"')],
   ['Escapeキー', files.modal.includes("event.key === 'Escape'")],
-  ['背景スクロール停止', files.modal.includes("document.body.style.overflow = 'hidden'")],
+  // v0.13.6: 各モーダルが自前で退避・復元すると、入れ子で同時に閉じた時に 'hidden' が書き戻される
+  // （2026-08-05 連絡ノート実機）。参照カウント（scrollLock）へ移した後も「止めていること」は検査し続ける。
+  ['背景スクロール停止', files.modal.includes('lockBodyScroll()') && files.scrollLock.includes("doc.body.style.overflow = 'hidden'")],
+  ['背景スクロールを自前で復元しない', !files.modal.includes('document.body.style.overflow =')],
   ['フォーカス復帰', files.modal.includes('previouslyFocused?.focus()')],
   ['Tabフォーカス循環', files.modal.includes("event.key === 'Tab'") && files.modal.includes('querySelectorAll<HTMLElement>')],
   ['固定フッタprop', files.modal.includes('footer?: ReactNode') && files.modal.includes('magi-modal-footer')],

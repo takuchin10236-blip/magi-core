@@ -30,6 +30,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  *   - 色・余白は design-system.css の manual-* CSS変数経由＝8テーマ自動追従（規約5）
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { lockBodyScroll } from './scrollLock';
 /** 正規表現の特殊文字をエスケープ（検索語をそのまま正規表現に使うため） */
 function escapeRegExp(input) {
     return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -131,14 +132,8 @@ export function ManualViewer({ content, onClose }) {
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [onClose]);
-    // 全画面表示中は背後のページをスクロールさせない
-    useEffect(() => {
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        return () => {
-            document.body.style.overflow = previousOverflow;
-        };
-    }, []);
+    // 全画面表示中は背後のページをスクロールさせない（入れ子で開いた時は最後の1枚が閉じるまで戻さない）
+    useEffect(() => lockBodyScroll(), []);
     // 初期フォーカスを検索欄へ
     useEffect(() => {
         searchInputRef.current?.focus();

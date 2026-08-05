@@ -30,6 +30,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Draggable from 'react-draggable';
+import { lockBodyScroll } from './scrollLock';
 const MAX_WIDTH_CLASS = {
     sm: 'max-w-sm',
     md: 'max-w-md',
@@ -49,8 +50,8 @@ export function DraggableModal({ onClose, title, subtitle, customHeader, maxWidt
     onCloseRef.current = onClose;
     useEffect(() => {
         const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-        const previousOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
+        // 入れ子で開いた時に「最後の1枚」が閉じるまで戻さない（scrollLock.ts に事故の詳細）。
+        const releaseBodyScroll = lockBodyScroll();
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
                 event.preventDefault();
@@ -83,7 +84,7 @@ export function DraggableModal({ onClose, title, subtitle, customHeader, maxWidt
         return () => {
             window.cancelAnimationFrame(focusFrame);
             document.removeEventListener('keydown', handleKeyDown);
-            document.body.style.overflow = previousOverflow;
+            releaseBodyScroll();
             previouslyFocused?.focus();
         };
     }, []);

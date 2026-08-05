@@ -30,6 +30,7 @@
  */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { ManualBlock, ManualContent, ManualSection } from './manual-types';
+import { lockBodyScroll } from './scrollLock';
 
 type Props = {
   content: ManualContent;
@@ -166,14 +167,8 @@ export function ManualViewer({ content, onClose }: Props) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
-  // 全画面表示中は背後のページをスクロールさせない
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
+  // 全画面表示中は背後のページをスクロールさせない（入れ子で開いた時は最後の1枚が閉じるまで戻さない）
+  useEffect(() => lockBodyScroll(), []);
 
   // 初期フォーカスを検索欄へ
   useEffect(() => {
