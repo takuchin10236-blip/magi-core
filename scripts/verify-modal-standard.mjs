@@ -22,6 +22,11 @@ const checks = [
   ['枠内スクロール/design-system', /\.magi-modal-body[\s\S]*?overflow-y:\s*auto;/.test(files.design)],
   ['44px閉じるボタン/core', /\.magi-modal-close[\s\S]*?min-width:\s*44px;[\s\S]*?min-height:\s*44px;/.test(files.core)],
   ['枠内スクロール/core', /\.magi-modal-body[\s\S]*?overflow-y:\s*auto;/.test(files.core)],
+  // 2026-08-05 追加: モーダルが背面に回る事故の再発防止（実機・職員指導記録アプリ）。
+  // 旧実装は portal を使わず既定 zIndex=50 で、ヘッダのメニュー(500)に負けていた。
+  ['body直下へポータル', files.modal.includes('createPortal') && files.modal.includes('document.body')],
+  ['重なりはトークン経由（生数値の既定値を作らない）', /zIndex = 'var\(--magi-z-/.test(files.modal)],
+  ['重なりトークンの階段が定義済み/design-system', /--magi-z-modal:\s*\d+/.test(files.design) && /--magi-z-header-popover:\s*\d+/.test(files.design)],
 ];
 
 const failed = checks.filter(([, passed]) => !passed);

@@ -44,8 +44,15 @@ type Props = {
     children: ReactNode;
     /** 本文とは別に固定表示するフッタ（操作ボタン等） */
     footer?: ReactNode;
-    /** z-index（デフォルト 50。ConfirmPostModal等の重ねモーダルは 60 にする） */
-    zIndex?: number;
+    /**
+     * 重なりの高さ。既定は共通トークン `--magi-z-modal`（800）。
+     * 数字を直接渡せるが、**生の数値は原則書かない**——旧実装の既定値 50 が
+     * ヘッダのメニュー（`--magi-z-header-popover` = 500）に負け、モーダルが
+     * 背面に回る事故を起こした（2026-08-05 実機・職員指導記録アプリ）。
+     * モーダルの上に更に重ねる時だけ `var(--magi-z-fullscreen)` 等の
+     * トークンを渡すこと。
+     */
+    zIndex?: number | string;
     /** タイトルの色クラス（デフォルト 'text-[var(--color-primary)]'） */
     titleColorClass?: string;
 };

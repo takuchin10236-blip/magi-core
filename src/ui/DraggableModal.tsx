@@ -27,6 +27,7 @@
  *   独自ヘッダにしたい場合は title=null + customHeader prop を使う。
  */
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import Draggable from 'react-draggable';
 
 type MaxWidth = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
@@ -57,8 +58,15 @@ type Props = {
   children: ReactNode;
   /** 本文とは別に固定表示するフッタ（操作ボタン等） */
   footer?: ReactNode;
-  /** z-index（デフォルト 50。ConfirmPostModal等の重ねモーダルは 60 にする） */
-  zIndex?: number;
+  /**
+   * 重なりの高さ。既定は共通トークン `--magi-z-modal`（800）。
+   * 数字を直接渡せるが、**生の数値は原則書かない**——旧実装の既定値 50 が
+   * ヘッダのメニュー（`--magi-z-header-popover` = 500）に負け、モーダルが
+   * 背面に回る事故を起こした（2026-08-05 実機・職員指導記録アプリ）。
+   * モーダルの上に更に重ねる時だけ `var(--magi-z-fullscreen)` 等の
+   * トークンを渡すこと。
+   */
+  zIndex?: number | string;
   /** タイトルの色クラス（デフォルト 'text-[var(--color-primary)]'） */
   titleColorClass?: string;
 };
@@ -72,7 +80,7 @@ export function DraggableModal({
   extraClass = '',
   children,
   footer,
-  zIndex = 50,
+  zIndex = 'var(--magi-z-modal, 800)',
   titleColorClass = 'text-[var(--color-primary)]',
 }: Props) {
   // findDOMNode 回避用 ref（React 19 / StrictMode 対応）
@@ -134,7 +142,16 @@ export function DraggableModal({
     };
   }, []);
 
-  return (
+  /*
+   * 画面の一番上（body直下）へ出す。
+   *
+   * なぜ必要か: z-index は「同じ土俵の中」でしか比べられない。`backdrop-filter` や
+   * `transform` の付いた祖先はそこに独立した土俵を作るので、その内側で 800 を付けても
+   * 土俵ごと後ろに置かれれば負ける。ポータルで body 直下へ出すと、この負け方が
+   * 原理的に起きない。ManualEntry は既にこの作法（同 40/105 行）。
+   * SSR や document の無い環境では素で描く（テスト環境の保険）。
+   */
+  const overlay = (
     <div
       className="magi-modal-overlay fixed inset-0 flex items-center justify-center bg-black/50 p-4 no-print"
       style={{ zIndex }}
@@ -203,4 +220,6 @@ export function DraggableModal({
       </Draggable>
     </div>
   );
+
+  return typeof document === 'undefined' ? overlay : createPortal(overlay, document.body);
 }
