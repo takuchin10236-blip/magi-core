@@ -1,5 +1,46 @@
 # Changelog
 
+## v0.13.7 (2026-08-05)
+
+### 二系統レビュー（バトー×笑い男）の致命2件を反映——v0.13.6 の「根治」の射程を実際に埋める
+
+**まず言葉の訂正**: v0.13.6 の「根治」は **Core の中に限れば真、MAGI 全体では偽**だった。
+Core のモーダルは直ったが、アプリ側が自前で `body.style.overflow` を退避・復元していると
+二重所有になり、**同じ膠着が「Core のカウントは0なのに hidden」という検知しにくい形で再発する**
+（両レビューが独立に、複製リポでの実測で再現させた）。以下はその射程を埋めるための版。
+
+**致命1: 錠を公開していなかった**（アプリは参加したくても参加できなかった）
+- `lockBodyScroll` / `forceReleaseBodyScroll` / `getBodyScrollLockDepth` を `@magi/core/ui` から公開。
+- 配布される検査 `ci/check-ui-guardrails.mjs` に「アプリ src で `body.style.overflow` を直接触っていないか」を追加（**警告から開始**・12_本番保全標準 §2 の段階導入。block 昇格は社長GO後）。
+  **Core の `scripts/` は配布物に入らない**＝新しい番人を Core の中だけに置いても28本では一度も走らない、という指摘への手当て。
+
+**致命2: 直した2箇所のうち ManualViewer に番人が無かった**
+- `test/manualViewerScrollLock.test.tsx` を新設（単独開閉／確認モーダルとの入れ子同時閉じ）。
+  jsdom に `IntersectionObserver` が無く描画できなかったのが「試験が無い」理由だったため、
+  `test/setup.ts` にスタブを置いた（**「試験しにくい」を「試験が無い」の理由にしない**）。
+- `verify:modal` を綴り依存の文字列一致から正規表現へ（`b.style.overflow =` の別名経由・
+  `setProperty('overflow')` も拾う）。検査対象を「背景スクロールを止める部品すべて」の表に変更し、
+  ManualViewer を含めた。錠の公開と非常口の存在も検査項目に追加。
+- **変異試験で実証**: ManualViewer を修正前の形へ戻すと `verify:modal` が2項目FAIL、
+  新試験が2本赤。v0.13.6 時点では **251試験・verify:modal・型検査のすべてが素通り**していた。
+
+**その他（レビュー指摘の反映）**
+- `npm run check` の連鎖に `npm test` を追加（試験がどの自動ゲートにも入っていなかった）。
+  `verify:matrix` より前に置く——マトリクスの鮮度で試験が走らなくなるのを避けるため。
+- **非常口 `forceReleaseBodyScroll()` を新設**。参照カウントは漏れると自力で戻れず、旧実装にあった
+  偶発的な自己修復が消えている。介護現場の共用端末で固着した時にリロードを強いない逃げ道。
+- 解放時に「現在値が 'hidden' でなければ書き戻さない」防御を追加（他者の書き込みを踏み潰さない）。
+- `lockBodyScroll(doc)` の `doc` 引数を廃止（状態は body 1つに対して1組。複数 document を
+  扱えるように見えて壊れる形を消した）。SSR では no-op を返す。
+- `ManualViewer` の effect を暗黙 return から明示形へ（波括弧1組で後片付けが消える形を避ける）。
+
+**未対応（次版・射程外として明記）**
+- iOS/iPadOS Safari では `body{overflow:hidden}` は背景スクロールを止めない（WebKit既知挙動）。
+  iPad を使う画面があるなら実機確認が要る。position:fixed 方式は次版で検討。
+- スクロールバー幅の補正（Windows デスクトップでモーダル開閉のたびに横ずれ）。v0.13.6 以前からの積み残し。
+- アプリ側の自前ロック撤去: `magi-resident-spine`（＋fcal-r05 の同一コピー）・`magi-floor-calendar-v2-r05`・
+  `magi-renraku-note`（対症療法）。**版上げと同時に撤去しないと直らない**。
+
 ## v0.13.6 (2026-08-05)
 
 ### 入れ子モーダルを同時に閉じると画面が固まる事故の根治（社長指示「今のうちに直しておいてほしい」）

@@ -1,6 +1,6 @@
 {
   "name": "@magi/core",
-  "version": "0.13.6",
+  "version": "0.13.7",
   "description": "MAGI 2階老健システム群の共有コア。データ契約（Sheets/書込ゲート/D4署名検証アクセス制御）・CIガード原本・完全なデザインシステム（8テーマ＋テーマ切替UI）・統一マニュアルビューア（v0.3）を1パッケージに集約する。",
   "type": "module",
   "license": "UNLICENSED",
@@ -53,7 +53,7 @@
     "verify:tokens": "node scripts/verify-token-consumers.mjs",
     "test": "vitest run",
     "version-matrix": "node scripts/collect-version-matrix.mts",
-    "check": "npm run build && npm run verify:brand && npm run verify:modal && npm run verify:shell && npm run verify:tokens && npm run verify:types && npm run verify:matrix",
+    "check": "npm run build && npm run verify:brand && npm run verify:modal && npm run verify:shell && npm run verify:tokens && npm run verify:types && npm test && npm run verify:matrix",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {

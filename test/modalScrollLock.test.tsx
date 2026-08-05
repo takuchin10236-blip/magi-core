@@ -1,24 +1,25 @@
 /**
- * 入れ子モーダルの背景スクロール停止の回帰試験（v0.13.6）。
+ * 入れ子モーダルの背景スクロール停止の回帰試験（v0.13.6・v0.13.7でAPI更新）。
  *
  * 事故（2026-08-05 連絡ノート実機・社長が再現）:
  *   投稿フォーム（DraggableModal）の上に投稿前の確認モーダル（ConfirmModal＝DraggableModal）が開く。
  *   投稿が成功すると両方が同じ更新で閉じる。従来は各モーダルが「自分が退避した値」へ戻していたため、
  *   後から開いた側が 'hidden' を書き戻し、モーダルが1枚も無いのにページがスクロールできなくなった。
  */
-import { useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { describe, it, expect, afterEach, beforeEach } from 'vitest';
 import { render, cleanup, fireEvent, screen } from '@testing-library/react';
 import { DraggableModal } from '../src/ui/DraggableModal';
-import { getBodyScrollLockDepth, lockBodyScroll, resetBodyScrollLockForTest } from '../src/ui/scrollLock';
+import { forceReleaseBodyScroll, getBodyScrollLockDepth, lockBodyScroll } from '../src/ui/scrollLock';
 
 beforeEach(() => {
-  resetBodyScrollLockForTest();
+  forceReleaseBodyScroll();
   document.body.style.overflow = '';
 });
 
 afterEach(() => {
   cleanup();
+  forceReleaseBodyScroll();
 });
 
 describe('lockBodyScroll（参照カウント）', () => {
@@ -60,6 +61,23 @@ describe('lockBodyScroll（参照カウント）', () => {
     release();
     expect(document.body.style.overflow).toBe('auto');
   });
+
+  it('ロック中に他者が値を変えていたら踏み潰さない（v0.13.7）', () => {
+    const release = lockBodyScroll();
+    document.body.style.overflow = 'auto'; // 別ライブラリ・アプリ側の後始末が書いた想定
+    release();
+    expect(document.body.style.overflow).toBe('auto');
+  });
+
+  it('非常口は数え漏れの固着を解く（v0.13.7）', () => {
+    lockBodyScroll();
+    lockBodyScroll(); // 解除を呼ばずに捨てる＝数え漏れ
+    expect(document.body.style.overflow).toBe('hidden');
+
+    forceReleaseBodyScroll();
+    expect(document.body.style.overflow).toBe('');
+    expect(getBodyScrollLockDepth()).toBe(0);
+  });
 });
 
 /** 投稿フォームの上に確認モーダルを重ね、成功時に両方を同時に閉じる画面。 */
@@ -91,6 +109,14 @@ describe('入れ子モーダルを同時に閉じても画面が固まらない'
     fireEvent.click(screen.getByText('投稿する'));
     expect(screen.getByText('閉じました')).toBeTruthy();
     // 社長が見た症状そのもの: モーダルが1枚も無いのにスクロールできない、を先に検査する。
+    expect(document.body.style.overflow).toBe('');
+    expect(getBodyScrollLockDepth()).toBe(0);
+  });
+
+  it('StrictMode（効果の二重実行）でも戻る（v0.13.7）', () => {
+    render(<StrictMode><NestedModals /></StrictMode>);
+    fireEvent.click(screen.getByText('内容を確認'));
+    fireEvent.click(screen.getByText('投稿する'));
     expect(document.body.style.overflow).toBe('');
     expect(getBodyScrollLockDepth()).toBe(0);
   });

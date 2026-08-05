@@ -29,6 +29,7 @@
 export { ConfirmModal } from './ConfirmModal';
 export type { ConfirmTone } from './ConfirmModal';
 export { DraggableModal } from './DraggableModal';
+export { lockBodyScroll, forceReleaseBodyScroll, getBodyScrollLockDepth } from './scrollLock';
 export { ToastProvider, useToast } from './Toast';
 export type { ToastType } from './Toast';
 export { DisplaySwitch } from './DisplaySwitch';

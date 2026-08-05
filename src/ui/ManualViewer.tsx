@@ -167,8 +167,12 @@ export function ManualViewer({ content, onClose }: Props) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
-  // 全画面表示中は背後のページをスクロールさせない（入れ子で開いた時は最後の1枚が閉じるまで戻さない）
-  useEffect(() => lockBodyScroll(), []);
+  // 全画面表示中は背後のページをスクロールさせない（入れ子で開いた時は最後の1枚が閉じるまで戻さない）。
+  // 暗黙 return にしない: 波括弧を1組足すだけで後片付けが消え、永久固着になるため（v0.13.7）。
+  useEffect(() => {
+    const release = lockBodyScroll();
+    return release;
+  }, []);
 
   // 初期フォーカスを検索欄へ
   useEffect(() => {

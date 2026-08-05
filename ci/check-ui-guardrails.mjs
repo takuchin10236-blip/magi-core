@@ -157,6 +157,16 @@ const FORBIDDEN = [
   },
 ];
 
+// ── 背景スクロールの自前ロック（v0.13.7・警告から開始） ──
+//   2026-08-05 連絡ノート実機の事故: モーダルが入れ子で開き、同時に閉じると
+//   body の overflow が 'hidden' のまま残り、画面がスクロールできなくなる。
+//   Core は v0.13.6 で参照カウント（lockBodyScroll）へ移したが、**アプリ側が自前で
+//   body.style.overflow を退避・復元していると二重所有になり、同じ膠着が
+//   「Coreのカウントは0なのに hidden」という検知しにくい形で再発する**（実測で再現）。
+//   → アプリは `import { lockBodyScroll } from '@magi/core/ui'` を使う。
+//   段階導入: まず警告（12_本番保全標準 §2 の作法）。block 昇格は社長GO後。
+const SCROLL_LOCK_PATTERN = /\.style\.overflow\s*=|setProperty\(\s*['"]overflow['"]/;
+
 // 検査項目 → TYPE_DEVIATIONS の逸脱ID（承認されていれば欠落を許す）
 const CHECK_TO_DEVIATION = {
   'standard-lumen セレクタ': 'UI-TOKENS',
@@ -312,6 +322,13 @@ for (const file of srcFiles) {
         const hint = rule.hint ?? '（専用モーダル/Toastに置換）';
         failures.push(`(c) 禁止パターン: ${rule.name} を使用 — ${rel(file)}:${i + 1}${hint}`);
       }
+    }
+    if (SCROLL_LOCK_PATTERN.test(code) && /\bbody\b/.test(code)) {
+      warnings.push(
+        `(c) 背景スクロールを自前で止めています — ${rel(file)}:${i + 1}` +
+          '（@magi/core/ui の lockBodyScroll() を使ってください。自前の退避・復元はCoreの数え上げと' +
+          '二重所有になり、入れ子モーダルを同時に閉じた時に画面が固まります。v0.13.7 から警告）',
+      );
     }
   });
 }

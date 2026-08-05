@@ -28,6 +28,9 @@
  */
 export { ConfirmModal } from './ConfirmModal';
 export { DraggableModal } from './DraggableModal';
+// 背景スクロールの錠（v0.13.7 で公開）。アプリ側が独自モーダルを持つ場合も、
+// 自前で body.style.overflow を触らず必ずこの錠を使う（二重所有＝膠着の再来を防ぐ）。
+export { lockBodyScroll, forceReleaseBodyScroll, getBodyScrollLockDepth } from './scrollLock';
 export { ToastProvider, useToast } from './Toast';
 // テーマシステム（v0.2）
 export { DisplaySwitch } from './DisplaySwitch';
