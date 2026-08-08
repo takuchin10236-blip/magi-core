@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-08T08:49:57.518Z",
+  "generated_at": "2026-08-08T08:50:31.524Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
     "version": "0.14.0",
@@ -110,7 +110,7 @@
   },
   "freshness_targets": {
     "core:version-tag-commit": "af4b9469d829c8fe9f003e92cd89adfabdf79b82",
-    "core:origin-main-head": "022c653cd161bd28b5a4dc35fcc3abfd5d30b4fb",
+    "core:origin-main-head": "586f92c78371e4f0d524460513ce417cf895371a",
     "magi-webapp-template:origin-main-head": "102b996477cfb1443863205bc978d9cd99ff69b0",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158",
     "magi-resident-master:origin-main-head": "0a7e4015d6d7f65fbf6698d385fc442db429a5e0",

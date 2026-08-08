@@ -3,7 +3,7 @@
 > `scripts/collect-version-matrix.mts` の自動生成物。手で版番号を書かない。
 > 固定版は origin/main 確定commitから収集（dirty ローカルは使わない）。
 
-- 生成時刻: 2026-08-08T08:49:57.518Z
+- 生成時刻: 2026-08-08T08:50:31.524Z
 - Core: **v0.14.0**（tag数: 48）
 - template_commit（雛形 origin/main）: 102b996477cfb1443863205bc978d9cd99ff69b0
 
