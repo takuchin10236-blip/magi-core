@@ -21,14 +21,17 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  * peerDependencies: react / lucide-react（採用側アプリが持つ）。
  */
 import { Moon, Palette, Sun } from 'lucide-react';
-import { UI_MODES, firstPresetForMode, getUiPreset, presetsForMode, } from './uiPresets';
+import { UI_MODES, firstPresetForMode, getThemeMode, getUiPreset, presetsForMode, } from './uiPresets';
 const themeModes = [
     { value: 'white', label: 'White', icon: Sun, description: '明るい背景で表示します' },
     { value: 'dark', label: 'Dark', icon: Moon, description: '暗い背景で表示します' },
 ];
 export function DisplaySwitch({ onThemeMode, onUiPreset, themeMode, uiMode, uiPreset, }) {
     const activePreset = getUiPreset(uiPreset);
-    const activeTheme = themeModes.find((item) => item.value === themeMode) ?? themeModes[0];
+    // v0.14.0: このUIは開発者検証用で White/Dark の2値だけを出す（01_UI標準 §3-1）。
+    //   職員が ColorModeSwitch で残照にしていると、ここは「いま何色か」を言えないまま
+    //   White と表示してしまう（嘘になる）。2値に無いモードは表示名だけ日本語で見せる。
+    const activeTheme = themeModes.find((item) => item.value === themeMode) ?? { label: getThemeMode(themeMode).label };
     const modePresets = presetsForMode(uiMode);
     return (_jsxs("section", { className: "ui-switch-panel", "aria-label": "UI\u5F62\u5F0F\u3068\u8272\u30C6\u30FC\u30DE", children: [_jsxs("div", { className: "ui-switch-head", children: [_jsxs("span", { children: [_jsx(Palette, { size: 14, "aria-hidden": "true" }), "\u8868\u793A"] }), _jsxs("strong", { children: [activePreset.shortLabel, " / ", activeTheme.label] })] }), _jsx("div", { className: "ui-mode-tabs", role: "group", "aria-label": "UI\u5F62\u5F0F", children: UI_MODES.map((item) => (_jsx("button", { "aria-pressed": uiMode === item.value, className: uiMode === item.value ? 'active' : '', onClick: () => onUiPreset(firstPresetForMode(item.value)), title: item.description, type: "button", children: item.shortLabel }, item.value))) }), _jsx("div", { className: "preset-tabs", role: "group", "aria-label": "UI\u30D7\u30EA\u30BB\u30C3\u30C8", children: modePresets.map((item) => (_jsx("button", { "aria-pressed": uiPreset === item.value, className: uiPreset === item.value ? 'active' : '', onClick: () => onUiPreset(item.value), title: item.description, type: "button", children: item.shortLabel }, item.value))) }), _jsx("div", { className: "theme-mode-tabs", role: "group", "aria-label": "\u8272\u30C6\u30FC\u30DE", children: themeModes.map((item) => {
                     const Icon = item.icon;
