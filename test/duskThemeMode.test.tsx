@@ -310,13 +310,22 @@ describe('(3) ColorModeSwitch — 陽光/残照/月光＋自動（仕様§1・§
 
 // ═══════════════════════════════════════════════════════════════════
 describe('(4) 残照のトークン（仕様§2）', () => {
-  it('確定値が逐語で入っている', () => {
+  it('確定値が逐語で入っている（★印は仕様値からの意図的な逸脱）', () => {
     expect(token(DUSK, '--bg-app')).toBe('#f9f0e4');
     expect(token(DUSK, '--bg-surface')).toBe('#fffaf0');
     expect(token(DUSK, '--bg-surface-alt')).toBe('#f9f2e2');
     expect(token(DUSK, '--text-on-header')).toBe('#fdf0e6');
     expect(token(DUSK, '--text-primary')).toBe('#33241c');
     expect(token(DUSK, '--text-secondary')).toBe('#574434');
+    // ★仕様値からの唯一の逸脱（v0.14.0・意図的）。
+    //   §2表の --text-muted は #836a57 だが、--bg-app(#f9f0e4) 上で 4.47:1 と 4.5:1 を割る。
+    //   同じ§2の「全組み合わせでコントラスト4.5:1以上を機械検証」に従い、色相を保ったまま
+    //   #7f6754 まで暗くした（app 4.69 / surface 5.08 / surface-alt 4.74）。
+    //   ここを仕様値へ戻すと、下の「全組み合わせ 4.5:1」試験が赤になる（変異試験①で実測済み）。
+    expect(token(DUSK, '--text-muted')).toBe('#7f6754');
+    expect(token(DUSK, '--text-muted')).not.toBe('#836a57');
+    expect(ratio('#836a57', token(DUSK, '--bg-app'))).toBeLessThan(4.5);
+    expect(ratio(token(DUSK, '--text-muted'), token(DUSK, '--bg-app'))).toBeGreaterThanOrEqual(4.5);
     expect(token(DUSK, '--border-default')).toBe('#e6d4b8');
     expect(token(DUSK, '--border-strong')).toBe('#d3ba90');
     expect(token(DUSK, '--badge-bg-green')).toBe('#e2eede');

@@ -24,6 +24,13 @@
   `resolveThemeMode` / `normalizeThemeModeSetting` / `getThemeMode` / `DEFAULT_THEME_MODE_SETTING` /
   `DEFAULT_AUTO_THEME_SCHEDULE` / `AUTO_THEME_REEVALUATE_MS`。
 
+**⚠ 型の拡大（semver上は minor だが TypeScript 消費者には breaking）**
+`ThemeMode` が `'white' | 'dark'` → **`'white' | 'dusk' | 'dark'`** へ拡大した。値を narrow に受けている
+TS 消費者——`Record<ThemeMode, X>` を保持しているアプリ、`ThemeMode` を網羅する `switch`、
+`(v: 'white' | 'dark') => void` のハンドラを `ColorModeSwitch` へ渡しているアプリ——は
+**コンパイルエラーになりうる**（実行時の互換は保っている＝既存の white/dark の値も挙動も不変）。
+採用時は `Record` に `dusk` を足すか、`getThemeMode(mode)` 等の網羅安全なAPIへ寄せること。
+
 **実測で1つ設計を変えた（帯の塗り方）**
 
 仕様§2 の帯は高さ104pxの器を前提にした**比率**（0/55/88/100%）で書かれている。比率のまま
@@ -56,6 +63,34 @@ Chrome 実測（`--text-on-header #fdf0e6`・字面の実ピクセル）:
 **陽光・月光が1文字も動いていないこと**。**変異試験9件すべてで赤を実測**（muted を仕様表の値へ戻す・
 主色を橙へ・空を下端まで明るく・16:00 の境界をずらす・15分タイマーを外す・手動優先を壊す・
 残照ロゴを昼版へ・「自動」を落とす・陽光の値を動かす）。
+
+**版SoT（docs/verified-combos/version-matrix.json）の再生成について**
+
+v0.13.5 以降 `verify:matrix` が赤のままだった（記録が v0.13.4 時点で止まっていた）ため、v0.14.0 の
+タグ作成後に `npm run version-matrix` で再生成した（**先に再生成するとタグ deref が null で記録され、
+タグを打った瞬間にまた赤になる**）。
+
+`verified` は **@magi/core v0.14.0 の1件**（evidence＝`GOAL-20260808-CORE-V0140/verify-v0.14.0.log`）。
+2026-07-31 の記録（magi-resident-master × v0.12.0）は**引き継げなかった**。道具の設計上、verified
+エントリは「記録した組合せが**いまも現役か**」を機械束縛で検査する（`app_commit` = 採用repo の現在の
+origin/main HEAD、`template_commit` = 雛形の現在の HEAD と一致必須）。2026-07-31 以降に
+magi-resident-master（82f88e9→0a7e401）と magi-webapp-template（f480b3e→102b996）が前進しており、
+当時の値のままでは `collect FAIL: 束縛違反`（実測）、現在値へ書き換えれば「当時やっていない検証を
+今やったことにする」偽記録になる。**記録そのものは失わせない**ため、当時のエントリを以下に丸ごと
+写して残す（機械の版SoTは鮮度、ここは履歴という役割分担。原本は git 履歴 62400a5 時点の同ファイルにもある）:
+
+```json
+{
+  "app": "magi-resident-master",
+  "core_tag": "v0.12.0",
+  "template_commit": "f480b3ebe4d493be5b89bbc01cf4a780f8b929c5",
+  "app_commit": "82f88e97f25dab6d21173d1c22cff7018d46509f",
+  "verified_at": "2026-07-31",
+  "verified_by": "タチコマ（実装座席・サブエージェント）",
+  "evidence": "GOAL-20260731-CORE-V0120/verify-v0.12.0.log",
+  "evidence_sha256": "693014ab42907559ce9792aaa34e60520399d83d01c645c196d7da5a2e69b875"
+}
+```
 
 **既知の残り**
 - `DisplaySwitch`（8テーマの開発者検証用UI）は White/Dark の2値のまま＝残照は `ColorModeSwitch` から選ぶ
