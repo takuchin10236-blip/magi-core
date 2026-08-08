@@ -16,6 +16,14 @@
  *   node node_modules/@magi/core/ci/check-contrast.mjs --url http://127.0.0.1:5273
  *   任意: --modes white,dark  --paths /,/settings  --chrome <path>  --json <out>
  *
+ * v0.14.0（残照の追加）:
+ *   既定の --modes は **white,dark のまま**（既存アプリのCIの意味を勝手に変えないため）。
+ *   残照まで見るときは明示する: `--modes white,dusk,dark`。
+ *   注意: この検査は**背景色（backgroundColor）しか読まない**＝背景画像（グラデーション）は
+ *   地として計算されない。残照のヘッダーはそれを見越して単色 #a53a32 を background-color に
+ *   置いてあるので、ここで測る値は「帯の主色の上での読みやすさ」になる（design-system.css の
+ *   「残照の帯」節を参照）。
+ *
  * 前提: 採用側アプリが playwright-core を持っていること（devDependency）。
  *       検査は「すでに動いているURL」に対して行う（サーバの起動はアプリ側の責務）。
  */

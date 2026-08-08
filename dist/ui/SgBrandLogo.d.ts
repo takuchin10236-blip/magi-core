@@ -1,6 +1,6 @@
 import { type ThemeMode } from './uiPresets';
-/** 同梱している絵柄。sunset は同梱しない（Drive 正本に残置）。 */
-export type SgBrandLogoVariant = 'day' | 'night';
+/** 同梱している絵柄（standard 480×240 の3枚）。@2x・master は同梱しない（Drive 正本に残置）。 */
+export type SgBrandLogoVariant = 'day' | 'night' | 'sunset';
 export interface SgBrandLogoSource {
     /** 標準版（480×240）のURL。 */
     src: string;

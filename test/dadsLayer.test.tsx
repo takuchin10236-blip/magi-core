@@ -105,7 +105,11 @@ describe('useBusyGuard（連打・二重送信の物理防止）', () => {
   function Harness({ onRun }: { onRun: () => Promise<unknown> }) {
     const { busy, run } = useBusyGuard();
     return (
-      <Button busy={busy} onClick={() => void run(onRun)}>
+      // run() は失敗を握りつぶさず投げ直す（呼び手が知るべきだから）。`void run(...)` だけだと
+      // 未処理の rejection になり、vitest は試験全体を赤にする（v0.13.7 で実際に赤だった）。
+      // 実アプリと同じく、呼び手側で受けてから捨てる形にする＝この試験が見たいのは
+      // 「失敗しても押せないまま固まらない」ことなので、握り潰す先はここで良い。
+      <Button busy={busy} onClick={() => void run(onRun).catch(() => {})}>
         保存
       </Button>
     );

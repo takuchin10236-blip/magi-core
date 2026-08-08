@@ -1,15 +1,33 @@
 /**
- * @magi/core/ui — テーマプリセット定義（v0.2）
+ * @magi/core/ui — テーマプリセット定義（v0.2 / v0.14.0 で第3モード「残照」）
  *
- * 「4プリセット × White/Dark = 8テーマ」のメタデータ。
+ * 「4プリセット × 陽光/残照/月光 = 12テーマ」のメタデータ。
  *   UiMode    … 大分類2つ（standard / nova）
  *   UiPreset  … 4プリセット（standard-lumen / standard-aura / nova-carbon / nova-ember）
- *   ThemeMode … white / dark
+ *   ThemeMode … white（陽光）/ dusk（残照）/ dark（月光）
  *
  * 原本: magi-resident-spine/src/lib/uiPresets.ts（挙動・正規化規則を完全踏襲）。
  * design-system.css の :root[data-ui-preset="..."][data-color-mode="..."] と対になる。
- * DisplaySwitch / useThemeState が参照する。
+ * DisplaySwitch / ColorModeSwitch / useThemeState が参照する。
+ *
+ * v0.14.0（2026-08-08 社長採用「テーマ第3モード残照 仕様 v1.0」）:
+ *   - 内部値は後方互換を壊さない＝ white / dark は既存のまま、`dusk` を**新設のみ**。
+ *   - 表示名は光の名で三対（陽光・残照・月光）。読めない職員のためにアイコンを添える。
+ *   - 手動選択に加えて「自動」（時刻帯で切り替え）を持つ＝ ThemeModeSetting。
+ *     **手動が常に優先**で、「自動」を選び直したときだけ帯運転へ戻る。
  */
+/**
+ * 陽光 / 残照 / 月光（仕様 v1.0 §1 の命名表そのまま）。
+ * 並び順＝明るい順。切替UIはこの順で出す。
+ */
+export const THEME_MODES = [
+    { value: 'white', label: '陽光', reading: 'ようこう', description: '明るい背景で表示します（昼向け）' },
+    { value: 'dusk', label: '残照', reading: 'ざんしょう', description: '夕焼けの背景で表示します（夕方向け）' },
+    { value: 'dark', label: '月光', reading: 'げっこう', description: '暗い背景で表示します（夜向け）' },
+];
+export function getThemeMode(value) {
+    return THEME_MODES.find((mode) => mode.value === value) ?? THEME_MODES[0];
+}
 export const UI_MODES = [
     {
         value: 'standard',
@@ -56,6 +74,50 @@ export const UI_PRESETS = [
 ];
 export const DEFAULT_UI_PRESET = 'standard-lumen';
 export const DEFAULT_THEME_MODE = 'white';
+/**
+ * 既定の「選択値」。既存アプリの初期表示を変えないため **'auto' にしない**
+ * （保存値が無いアプリは今までどおり陽光で始まる。自動運転は職員が選んで初めて動く）。
+ */
+export const DEFAULT_THEME_MODE_SETTING = DEFAULT_THEME_MODE;
+/** 陽光 6:00–16:00 → 残照 16:00–19:00 → 月光 19:00–6:00（仕様 v1.0 §4）。 */
+export const DEFAULT_AUTO_THEME_SCHEDULE = {
+    dayStartHour: 6,
+    duskStartHour: 16,
+    nightStartHour: 19,
+};
+/** 自動モードの再評価間隔（15分・仕様 v1.0 §4）。 */
+export const AUTO_THEME_REEVALUATE_MS = 15 * 60 * 1000;
+/** 時（0–24・小数可）を「その日の分」へ。異常値は既定値へ落とす（設定ミスで画面が壊れないように）。 */
+function hourToMinutes(hour, fallback) {
+    if (!Number.isFinite(hour) || hour < 0 || hour >= 24)
+        return Math.round(fallback * 60);
+    return Math.round(hour * 60);
+}
+/** 円環時間の区間判定（start<=end はそのまま、跨ぎ（19:00–6:00）は2区間として見る）。 */
+function inArc(minutes, start, end) {
+    if (start === end)
+        return false;
+    return start < end ? minutes >= start && minutes < end : minutes >= start || minutes < end;
+}
+/**
+ * 端末時計から「今どの帯か」を決める純関数（試験可能にするため Date を受け取る）。
+ * 境界は**開始時刻を含み、次の帯の開始時刻を含まない**（16:00 ちょうどは残照）。
+ */
+export function resolveAutoThemeMode(now = new Date(), schedule = DEFAULT_AUTO_THEME_SCHEDULE) {
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    const day = hourToMinutes(schedule.dayStartHour, DEFAULT_AUTO_THEME_SCHEDULE.dayStartHour);
+    const dusk = hourToMinutes(schedule.duskStartHour, DEFAULT_AUTO_THEME_SCHEDULE.duskStartHour);
+    const night = hourToMinutes(schedule.nightStartHour, DEFAULT_AUTO_THEME_SCHEDULE.nightStartHour);
+    if (inArc(minutes, dusk, night))
+        return 'dusk';
+    if (inArc(minutes, night, day))
+        return 'dark';
+    return 'white';
+}
+/** 選択値 → 実際に適用する ThemeMode。手動選択はそのまま通す（手動優先の実体）。 */
+export function resolveThemeMode(setting, now = new Date(), schedule = DEFAULT_AUTO_THEME_SCHEDULE) {
+    return setting === 'auto' ? resolveAutoThemeMode(now, schedule) : setting;
+}
 export function getUiPreset(value) {
     return UI_PRESETS.find((preset) => preset.value === value) ?? UI_PRESETS[0];
 }
@@ -87,6 +149,15 @@ export function normalizeThemeMode(value) {
         return 'white';
     if (value === 'dark')
         return 'dark';
+    // v0.14.0 新設。'sunset' は絵柄名（SgBrandLogo の variant）と揃えた別名として受ける。
+    if (value === 'dusk' || value === 'sunset')
+        return 'dusk';
     return null;
+}
+/** 保存値・属性値から「選択値」を復元する（'auto' を含む）。読めない値は null。 */
+export function normalizeThemeModeSetting(value) {
+    if (value === 'auto')
+        return 'auto';
+    return normalizeThemeMode(value);
 }
 //# sourceMappingURL=uiPresets.js.map

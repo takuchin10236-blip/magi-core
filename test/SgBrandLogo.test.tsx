@@ -68,15 +68,40 @@ describe('SgBrandLogo', () => {
     expect(container.querySelector('img')?.getAttribute('src')).toContain('sg-logo-day');
   });
 
-  it('同梱は day/night の標準版だけ（@2x・sunset は同梱しない）', () => {
-    expect(Object.keys(SG_BRAND_LOGO_SOURCES).sort()).toEqual(['day', 'night']);
-    for (const variant of ['day', 'night'] as const) {
+  // v0.14.0: 残照（dusk）のヘッダーに夕日版が要るので sunset を同梱範囲へ入れた。
+  //   増やしたのは standard 1枚だけ＝@2x・master は引き続き入れない（パッケージ肥大の防止）。
+  it('同梱は day/night/sunset の標準版だけ（@2x・master は同梱しない）', () => {
+    expect(Object.keys(SG_BRAND_LOGO_SOURCES).sort()).toEqual(['day', 'night', 'sunset']);
+    for (const variant of ['day', 'night', 'sunset'] as const) {
       const source = SG_BRAND_LOGO_SOURCES[variant];
       expect(source.width).toBe(480);
       expect(source.height).toBe(240);
       expect(source.src).not.toContain('@2x');
-      expect(source.src).not.toContain('sunset');
+      expect(source.src).not.toContain('master');
     }
+  });
+
+  it('data-color-mode=dusk のとき sunset になる（残照のヘッダーは夕焼けロゴ）', () => {
+    setColorMode('dusk');
+    const { container } = render(<SgBrandLogo />);
+    const img = container.querySelector('img') as HTMLImageElement;
+    expect(img.getAttribute('src')).toContain('sg-logo-sunset');
+    expect(container.querySelector('.magi-brand-logo')?.getAttribute('data-variant')).toBe('sunset');
+  });
+
+  it('陽光→残照→月光と切り替えると絵柄が3枚とも入れ替わる', async () => {
+    const { container } = render(<SgBrandLogo />);
+    expect(container.querySelector('img')?.getAttribute('src')).toContain('sg-logo-day');
+
+    setColorMode('dusk');
+    await waitFor(() => {
+      expect(container.querySelector('img')?.getAttribute('src')).toContain('sg-logo-sunset');
+    });
+
+    setColorMode('dark');
+    await waitFor(() => {
+      expect(container.querySelector('img')?.getAttribute('src')).toContain('sg-logo-night');
+    });
   });
 
   it('単一 src で出す（srcSet は使わない）', () => {

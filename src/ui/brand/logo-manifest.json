@@ -1,8 +1,9 @@
 {
   "_magi_core_note": "Drive正本（施設運営/職員マスタアプリ/assets/brand-final-20260730/logo-manifest.json）の写しに、@magi/core での同梱範囲を注記したもの。原本の記載（variants の file/width/height/sha256 等）は一切変えていない。",
   "_magi_core_bundled": {
-    "files": ["sg-logo-day.png", "sg-logo-night.png"],
-    "policy": "同梱は day/night の standard（480×240）のみ。retina（@2x）・sunset・master は同梱せず Drive 正本に残置する（パッケージ肥大の防止）。同梱物の SHA-256 突合は scripts/verify-brand-assets.mjs が毎回の check で行う。"
+    "files": ["sg-logo-day.png", "sg-logo-night.png", "sg-logo-sunset.png"],
+    "policy": "同梱は day/night/sunset の standard（480×240）のみ。retina（@2x）・master は同梱せず Drive 正本に残置する（パッケージ肥大の防止）。同梱物の SHA-256 突合は scripts/verify-brand-assets.mjs が毎回の check で行う。",
+    "_sunset_added": "v0.14.0（2026-08-08）。第3モード『残照』のヘッダーで使うため sunset の standard 1枚（194KB）だけ同梱範囲へ入れた（仕様 v1.0 §3）。@2x・master は従来どおり非同梱。"
   },
   "brand": "Shonan Green",
   "mark": "SG intertwined monogram",

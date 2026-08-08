@@ -6,10 +6,13 @@
  *     - ConfirmModal（汎用確認モーダル・ネイティブ confirm 撲滅用）
  *     - DraggableModal（ドラッグ可能モーダルの土台）
  *     - Toast: ToastProvider / useToast
- *   テーマシステム（v0.2 追加・8テーマ）:
- *     - DisplaySwitch（Standard/Nova・Lumen/Aura/Carbon/Ember・White/Dark を選ぶUI）
- *     - useThemeState（uiPreset/themeMode の状態・localStorage永続化・root data属性付与）
- *     - uiPresets の型・定義（UiMode/ThemeMode/UiPreset, UI_MODES/UI_PRESETS 等）
+ *   テーマシステム（v0.2 追加・8テーマ → v0.14.0 で第3モード「残照」＝12テーマ）:
+ *     - DisplaySwitch（Standard/Nova・Lumen/Aura/Carbon/Ember・White/Dark を選ぶ開発者用UI）
+ *     - ColorModeSwitch（職員向け 陽光/残照/月光/自動 の4択・v0.14.0）
+ *     - useThemeState（uiPreset/themeMode/themeModeSetting の状態・localStorage永続化・
+ *       root data属性付与・自動モードの時刻帯運転）
+ *     - uiPresets の型・定義（UiMode/ThemeMode/ThemeModeSetting/UiPreset,
+ *       UI_MODES/UI_PRESETS/THEME_MODES, resolveAutoThemeMode 等）
  *   統一マニュアルビューア（v0.3 追加）:
  *     - ManualViewer（全画面ページ型ビューア本体・左目次/右本文2カラム・検索/目次/ハイライト）
  *     - ManualEntry（サイドパネル用ボタン＋開閉。DisplaySwitch の直前に固定配置する規約）
@@ -36,6 +39,8 @@ export { ToastProvider, useToast } from './Toast';
 export { DisplaySwitch } from './DisplaySwitch';
 export { useThemeState } from './useThemeState';
 export { UI_MODES, UI_PRESETS, DEFAULT_UI_PRESET, DEFAULT_THEME_MODE, getUiPreset, presetsForMode, firstPresetForMode, normalizeUiPreset, normalizeThemeMode, } from './uiPresets';
+// 第3モード「残照」＋自動切替（v0.14.0・仕様 2026-08-08_テーマ第3モード残照_v1.0）
+export { THEME_MODES, DEFAULT_THEME_MODE_SETTING, DEFAULT_AUTO_THEME_SCHEDULE, AUTO_THEME_REEVALUATE_MS, getThemeMode, normalizeThemeModeSetting, resolveAutoThemeMode, resolveThemeMode, } from './uiPresets';
 // 統一マニュアルビューア（v0.3）
 export { ManualViewer } from './ManualViewer';
 export { ManualEntry } from './ManualEntry';

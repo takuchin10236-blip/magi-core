@@ -23,6 +23,7 @@ import { Moon, Palette, Sun, type LucideIcon } from 'lucide-react';
 import {
   UI_MODES,
   firstPresetForMode,
+  getThemeMode,
   getUiPreset,
   presetsForMode,
   type ThemeMode,
@@ -51,7 +52,11 @@ export function DisplaySwitch({
   uiPreset,
 }: DisplaySwitchProps) {
   const activePreset = getUiPreset(uiPreset);
-  const activeTheme = themeModes.find((item) => item.value === themeMode) ?? themeModes[0];
+  // v0.14.0: このUIは開発者検証用で White/Dark の2値だけを出す（01_UI標準 §3-1）。
+  //   職員が ColorModeSwitch で残照にしていると、ここは「いま何色か」を言えないまま
+  //   White と表示してしまう（嘘になる）。2値に無いモードは表示名だけ日本語で見せる。
+  const activeTheme =
+    themeModes.find((item) => item.value === themeMode) ?? { label: getThemeMode(themeMode).label };
   const modePresets = presetsForMode(uiMode);
   return (
     <section className="ui-switch-panel" aria-label="UI形式と色テーマ">

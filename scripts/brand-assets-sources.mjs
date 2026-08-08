@@ -6,8 +6,11 @@
  *   （version-matrix-sources.mjs と同じ「純関数を切り出し、CLI から呼ぶ」作法に揃えた）
  *
  * 同梱範囲（不変条件）:
- *   - 同梱するのは day / night の standard（480×240）の2枚だけ。
- *   - retina（@2x・各770KB）・sunset・master（1774×887・各2.4MB）は同梱しない。
+ *   - 同梱するのは day / night / sunset の standard（480×240）の3枚だけ。
+ *     sunset は v0.14.0（2026-08-08）で追加＝第3モード「残照」のヘッダーに要るため
+ *     （仕様「テーマ第3モード残照 v1.0」§3）。増やしたのは standard 1枚（194KB）だけで、
+ *     @2x・master は入れない＝減量の判断はやり直した上でこの1枚に限っている。
+ *   - retina（@2x・各770KB）・master（1774×887・各2.4MB）は同梱しない。
  *     正本は Drive（施設運営/職員マスタアプリ/assets/brand-final-20260730）に残置する。
  *     manifest には3絵柄×3寸法すべてが載っているので、「載っているのに同梱しない」
  *     ファイルが紛れ込んでいないかもここで検査する。
@@ -26,7 +29,7 @@ export const distBrandDir = join(coreRoot, 'dist', 'ui', 'brand');
 export const MANIFEST_NAME = 'logo-manifest.json';
 
 /** 同梱する絵柄と寸法（ここを増やすときは減量の判断をやり直すこと）。 */
-export const BUNDLED_VARIANTS = ['day', 'night'];
+export const BUNDLED_VARIANTS = ['day', 'night', 'sunset'];
 export const BUNDLED_SIZES = ['standard'];
 
 export function readManifest(dir = srcBrandDir) {
