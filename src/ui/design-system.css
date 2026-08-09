@@ -1050,7 +1050,7 @@
   --text-on-header: var(--foreground);
   --primary-button-text: var(--primary-foreground);
   /* danger の面に載せる文字（2026-08-09）。既定は白＝陽光・残照の #c62828 の上で 5.62:1 出る（実測）。
-     月光だけは面（--danger）が明るいので下で言い直す（--primary-button-text と同じ作り）。 */
+     面が明るいテーマ（月光・nova-carbon 陽光）は下の「状態色の面に載せる文字インク」節で言い直す。 */
   --danger-button-text: #ffffff;
   --border-default: var(--border);
   --border-strong: color-mix(in srgb, var(--border) 70%, var(--foreground));
@@ -1060,15 +1060,6 @@
    bridge は --bg-header を var(--card) へ倒すので、data-ui-preset がまだ付いていない
    一瞬（初期描画・属性を手で置いた検査）でもヘッダーが白面にならないようにする。
    値はプリセット別ブロックと同一＝ここが勝っても負けても同じ色になる。 */
-/* 月光だけは danger の面が明るい（#f87171）。白文字だと 2.77:1 しか出ないので、
-   面はそのままに文字を暗いインクへ倒す（2026-08-09 A-375 計測義務・実測 #401d1d on #f87171 ＝ 5.38:1）。
-   月光の primary ボタンが「明るい緑の面＋暗い緑の文字」なのと同じ作りで、色相は面から
-   導く（color-mix）＝nova-ember のように danger が橙のプリセットでも色相がずれない。
-   --color-danger 自体は動かさない（暗い面の上のエラー文字がそれを使っている）。 */
-:root[data-color-mode="dark"] {
-  --danger-button-text: color-mix(in srgb, var(--color-danger) 26%, #000);
-}
-
 :root[data-color-mode="dusk"] {
   --bg-header: #a53a32;
   --bg-header-gradient: linear-gradient(180deg, #8e3040 0%, #a53a32 55%, #cd6b38 88%, #f0b269 100%);
@@ -1077,22 +1068,32 @@
   --text-on-header: #fdf0e6;
 }
 
-/* ─── トーストの面に載せる文字（2026-08-09 塞ぎ便・A-375 計測義務） ───────────────
-   --danger-button-text と対の命名で、面（--color-success / --color-danger / --color-info）は
-   動かさず**文字だけ**を倒す。既定は白＝面が暗いテーマ。明るい面のところだけ、面から色相を
-   借りた暗いインクへ倒す（danger ボタンで作った型と同じ color-mix の作り）。
+/* ═══ 状態色の面に載せる文字インク（2026-08-09 塞ぎ便・A-375 計測義務） ═════════════
+   面（--color-success / --color-warning / --color-danger / --color-info）は**動かさず**、
+   その上に置く文字だけをテーマごとに倒す。明るい面では面から色相を借りた暗いインク
+   （color-mix）、暗い面では白。月光の primary ボタンが「明るい面＋暗い文字」なのと同じ作り。
 
-   なぜ「モードで一律」に書けないか: プリセットが --ok / --brand / --danger を自分の思想で
-   置き換えるため、面の明暗はモードだけでは決まらない（nova-carbon は info/success を墨と白に、
-   danger を #ef4444 にする。standard-aura は info を濃紺 #0071e3 にする）。下の言い直しは
-   12テーマ × 3種を機械実測して確定した一覧＝勘で足さず、計測し直してから足す。
+   danger だけ名前が2つある（--danger-button-text ＝ボタン用 / --danger-toast-text ＝トースト用）。
+   **面が同じなので値も常に同じ**＝必ず同じブロックに並べて書き、片方だけ動かさない
+   （2026-08-09 の1便目でトーストだけ直してボタンが取り残された＝この節に統合した理由）。
 
-   混色が 20%（danger ボタンの 26% より濃い）理由: 26% だと nova-carbon の danger 面 #ef4444 の
-   上で 4.29:1 しか出ない（実測）。3種すべてを1つの割合で通すため濃い側へ寄せた。 */
+   なぜ「モードで一律」に書けないか: プリセットが --ok / --brand / --danger / --warn を
+   自分の思想で置き換えるため、面の明暗はモードだけで決まらない（nova-carbon は info/success を
+   墨と白に・danger/warning を #ef4444 に、standard-aura は info を濃紺 #0071e3 にする）。
+   下の言い直しは 12テーマ × 4種を機械実測して確定した一覧＝勘で足さず、計測し直してから足す。
+
+   混色が 20% の理由: 26% だと nova-carbon の danger 面 #ef4444 の上で 4.29:1 しか出ない（実測）。
+   1つの割合で全部通すため濃い側へ寄せた。
+
+   warning だけ純黒（色相を借りない）理由: 面 --warn(#d84315) は中輝度で、**どんな文字色でも
+   上限 4.73:1**（白 4.44 / 黒 4.73 / 混色 8% で 4.52 ＝実測）。色相を借りる余裕が数値として
+   無いので、唯一 4.5:1 を余裕込みで超える純黒に倒す。面の見直しは別便（余裕 0.23 しかない）。 */
 :root {
   /* 属性が付く前の一瞬・data 属性を持たない採用アプリ＝ standard-lumen 陽光相当。 */
   --success-toast-text: #ffffff;
+  --warning-toast-text: #000000;
   --danger-toast-text: #ffffff;
+  --danger-button-text: #ffffff;
   --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
@@ -1100,21 +1101,28 @@
   /* 陽光: success(#2e7d32) 5.13:1・danger(#c62828) 5.62:1 は白で足りる。
      info の面だけプリセット依存で明るい（既定 #6bbf95 は白文字 2.21:1）。 */
   --success-toast-text: #ffffff;
+  --warning-toast-text: #000000;
   --danger-toast-text: #ffffff;
+  --danger-button-text: #ffffff;
   --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
 :root[data-color-mode="dusk"] {
-  /* 残照: 3種とも面が暗い（#2e7d32 / #c62828 / #2f6f5f）＝全プリセットで白のまま 5.13:1 以上。 */
+  /* 残照: warning 以外は面が暗い（#2e7d32 / #c62828 / #2f6f5f）＝白のまま 5.13:1 以上。 */
   --success-toast-text: #ffffff;
+  --warning-toast-text: #000000;
   --danger-toast-text: #ffffff;
+  --danger-button-text: #ffffff;
   --info-toast-text: #ffffff;
 }
 
 :root[data-color-mode="dark"] {
-  /* 月光: --ok(#4ade80) / --danger(#f87171) / --brand(#87d4ad) がどれも明るい面。 */
+  /* 月光: --ok(#4ade80) / --danger(#f87171) / --brand(#87d4ad) がどれも明るい面。
+     warning の面 --warn(#f59e0b) は元から暗い文字（#1c1206 で 8.59:1）＝既存値を据え置く。 */
   --success-toast-text: color-mix(in srgb, var(--color-success) 20%, #000);
+  --warning-toast-text: #1c1206;
   --danger-toast-text: color-mix(in srgb, var(--color-danger) 20%, #000);
+  --danger-button-text: color-mix(in srgb, var(--color-danger) 20%, #000);
   --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
@@ -1126,10 +1134,11 @@
 }
 
 /* nova-carbon 陽光: info/success の面は墨(#000)＝白のまま。danger だけ #ef4444 で明るく、
-   白文字は 3.76:1（実測）＝ここは陽光でも暗いインクへ倒す。 */
+   白文字は 3.76:1（実測）＝ここは陽光でも暗いインクへ倒す（ボタンとトーストを対で）。 */
 :root[data-ui-preset="nova-carbon"][data-color-mode="white"] {
   --info-toast-text: #ffffff;
   --danger-toast-text: color-mix(in srgb, var(--color-danger) 20%, #000);
+  --danger-button-text: color-mix(in srgb, var(--color-danger) 20%, #000);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -2723,7 +2732,7 @@ button.magi-status-badge {
 }
 
 /* 文字は面ごとのインク（--*-toast-text）から取る。テーマ別の値は
-   §(1) 「トーストの面に載せる文字」の節にまとめてある（fallback の白は属性なしの保険）。 */
+   §(1) 「状態色の面に載せる文字インク」の節にまとめてある（fallback は属性なしの保険）。 */
 .toast-success {
   --toast-bg: var(--color-success);
   --toast-text: var(--success-toast-text, #ffffff);
@@ -2741,11 +2750,7 @@ button.magi-status-badge {
 
 .toast-warning {
   --toast-bg: var(--color-warning);
-  --toast-text: #2f1d06;
-}
-
-:root[data-color-mode="dark"] .toast-warning {
-  --toast-text: #1c1206;
+  --toast-text: var(--warning-toast-text, #000000);
 }
 
 .toast-close {

@@ -80,10 +80,15 @@
   --border-default: var(--border);
   --border-strong: #bcc0c7;
 
-  /* トーストの面に載せる文字（2026-08-09 塞ぎ便・design-system.css と同型）。
-     面は動かさず文字だけ倒す。info の面 --brand(#6bbf95) は明るく、白文字だと 2.21:1（実測）。 */
+  /* 状態色の面に載せる文字インク（2026-08-09 塞ぎ便・design-system.css と同型）。
+     面は動かさず文字だけ倒す。info の面 --brand(#6bbf95) は明るく、白文字だと 2.21:1（実測）。
+     warning は面 --warn(#d84315) が中輝度で、どんな文字色でも上限 4.73:1（純黒）＝黒に倒す。
+     --danger-button-text は .themed-btn-danger が読む（core.css は同クラスを持たないが、
+     自前で danger ボタンを書く採用アプリが core のトークンを読めるよう対で配る）。 */
   --success-toast-text: #ffffff;
+  --warning-toast-text: #000000;
   --danger-toast-text: #ffffff;
+  --danger-button-text: #ffffff;
   --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
@@ -140,9 +145,13 @@
   --border-default: var(--border);
   --border-strong: rgba(255, 255, 255, 0.12);
 
-  /* 月光は3種とも面が明るい（#4ade80 / #f87171 / #87d4ad）＝白文字だと 1.74〜2.77:1（実測）。 */
+  /* 月光は success/danger/info の面が明るい（#4ade80 / #f87171 / #87d4ad）＝白文字だと
+     1.74〜2.77:1（実測）。warning の面 #f59e0b は元から暗い文字（8.59:1）＝既存値を据え置く。
+     danger はボタンとトーストで面が同じ＝値も同じ（片方だけ動かさない）。 */
   --success-toast-text: color-mix(in srgb, var(--color-success) 20%, #000);
+  --warning-toast-text: #1c1206;
   --danger-toast-text: color-mix(in srgb, var(--color-danger) 20%, #000);
+  --danger-button-text: color-mix(in srgb, var(--color-danger) 20%, #000);
   --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
@@ -431,11 +440,7 @@
 
 .toast-warning {
   --toast-bg: var(--color-warning);
-  --toast-text: #2f1d06;
-}
-
-:root[data-color-mode="dark"] .toast-warning {
-  --toast-text: #1c1206;
+  --toast-text: var(--warning-toast-text, #000000);
 }
 
 .toast-close {
