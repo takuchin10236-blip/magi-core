@@ -1077,6 +1077,61 @@
   --text-on-header: #fdf0e6;
 }
 
+/* ─── トーストの面に載せる文字（2026-08-09 塞ぎ便・A-375 計測義務） ───────────────
+   --danger-button-text と対の命名で、面（--color-success / --color-danger / --color-info）は
+   動かさず**文字だけ**を倒す。既定は白＝面が暗いテーマ。明るい面のところだけ、面から色相を
+   借りた暗いインクへ倒す（danger ボタンで作った型と同じ color-mix の作り）。
+
+   なぜ「モードで一律」に書けないか: プリセットが --ok / --brand / --danger を自分の思想で
+   置き換えるため、面の明暗はモードだけでは決まらない（nova-carbon は info/success を墨と白に、
+   danger を #ef4444 にする。standard-aura は info を濃紺 #0071e3 にする）。下の言い直しは
+   12テーマ × 3種を機械実測して確定した一覧＝勘で足さず、計測し直してから足す。
+
+   混色が 20%（danger ボタンの 26% より濃い）理由: 26% だと nova-carbon の danger 面 #ef4444 の
+   上で 4.29:1 しか出ない（実測）。3種すべてを1つの割合で通すため濃い側へ寄せた。 */
+:root {
+  /* 属性が付く前の一瞬・data 属性を持たない採用アプリ＝ standard-lumen 陽光相当。 */
+  --success-toast-text: #ffffff;
+  --danger-toast-text: #ffffff;
+  --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
+}
+
+:root[data-color-mode="white"] {
+  /* 陽光: success(#2e7d32) 5.13:1・danger(#c62828) 5.62:1 は白で足りる。
+     info の面だけプリセット依存で明るい（既定 #6bbf95 は白文字 2.21:1）。 */
+  --success-toast-text: #ffffff;
+  --danger-toast-text: #ffffff;
+  --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
+}
+
+:root[data-color-mode="dusk"] {
+  /* 残照: 3種とも面が暗い（#2e7d32 / #c62828 / #2f6f5f）＝全プリセットで白のまま 5.13:1 以上。 */
+  --success-toast-text: #ffffff;
+  --danger-toast-text: #ffffff;
+  --info-toast-text: #ffffff;
+}
+
+:root[data-color-mode="dark"] {
+  /* 月光: --ok(#4ade80) / --danger(#f87171) / --brand(#87d4ad) がどれも明るい面。 */
+  --success-toast-text: color-mix(in srgb, var(--color-success) 20%, #000);
+  --danger-toast-text: color-mix(in srgb, var(--color-danger) 20%, #000);
+  --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
+}
+
+/* standard-aura の info 面は濃紺 #0071e3。白なら 4.70:1 出るが、暗いインクは真っ黒にしても
+   4.46:1 が上限（面自体が暗いため）＝ここは白のままが唯一の正解。 */
+:root[data-ui-preset="standard-aura"][data-color-mode="white"],
+:root[data-ui-preset="standard-aura"][data-color-mode="dark"] {
+  --info-toast-text: #ffffff;
+}
+
+/* nova-carbon 陽光: info/success の面は墨(#000)＝白のまま。danger だけ #ef4444 で明るく、
+   白文字は 3.76:1（実測）＝ここは陽光でも暗いインクへ倒す。 */
+:root[data-ui-preset="nova-carbon"][data-color-mode="white"] {
+  --info-toast-text: #ffffff;
+  --danger-toast-text: color-mix(in srgb, var(--color-danger) 20%, #000);
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
  * (2) ベース（html/body・button reset・.msr アイコン演出）
  * ═══════════════════════════════════════════════════════════════════════ */
@@ -2667,19 +2722,21 @@ button.magi-status-badge {
   background: var(--toast-bg, var(--color-info));
 }
 
+/* 文字は面ごとのインク（--*-toast-text）から取る。テーマ別の値は
+   §(1) 「トーストの面に載せる文字」の節にまとめてある（fallback の白は属性なしの保険）。 */
 .toast-success {
   --toast-bg: var(--color-success);
-  --toast-text: #ffffff;
+  --toast-text: var(--success-toast-text, #ffffff);
 }
 
 .toast-error {
   --toast-bg: var(--color-danger);
-  --toast-text: #ffffff;
+  --toast-text: var(--danger-toast-text, #ffffff);
 }
 
 .toast-info {
   --toast-bg: var(--color-info);
-  --toast-text: #ffffff;
+  --toast-text: var(--info-toast-text, #ffffff);
 }
 
 .toast-warning {

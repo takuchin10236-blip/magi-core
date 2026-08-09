@@ -79,6 +79,12 @@
   --primary-button-text: #0c3520;
   --border-default: var(--border);
   --border-strong: #bcc0c7;
+
+  /* トーストの面に載せる文字（2026-08-09 塞ぎ便・design-system.css と同型）。
+     面は動かさず文字だけ倒す。info の面 --brand(#6bbf95) は明るく、白文字だと 2.21:1（実測）。 */
+  --success-toast-text: #ffffff;
+  --danger-toast-text: #ffffff;
+  --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
 :root[data-color-mode="dark"],
@@ -133,6 +139,11 @@
   --primary-button-text: var(--primary-foreground);
   --border-default: var(--border);
   --border-strong: rgba(255, 255, 255, 0.12);
+
+  /* 月光は3種とも面が明るい（#4ade80 / #f87171 / #87d4ad）＝白文字だと 1.74〜2.77:1（実測）。 */
+  --success-toast-text: color-mix(in srgb, var(--color-success) 20%, #000);
+  --danger-toast-text: color-mix(in srgb, var(--color-danger) 20%, #000);
+  --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
 /* ───────────────────────────────────────────────────────────
@@ -402,19 +413,20 @@
   background: var(--toast-bg, var(--color-info));
 }
 
+/* 文字は面ごとのインク（--*-toast-text）から取る。値は上の (1) 状態色トークンの節にある。 */
 .toast-success {
   --toast-bg: var(--color-success);
-  --toast-text: #ffffff;
+  --toast-text: var(--success-toast-text, #ffffff);
 }
 
 .toast-error {
   --toast-bg: var(--color-danger);
-  --toast-text: #ffffff;
+  --toast-text: var(--danger-toast-text, #ffffff);
 }
 
 .toast-info {
   --toast-bg: var(--color-info);
-  --toast-text: #ffffff;
+  --toast-text: var(--info-toast-text, #ffffff);
 }
 
 .toast-warning {
