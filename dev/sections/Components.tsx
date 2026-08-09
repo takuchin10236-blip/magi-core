@@ -481,6 +481,12 @@ export function ComponentsSection(props: Props) {
         シェルは <code className="ds-mono">min-height: 100vh</code> を持つ（実装どおり）。そのためページの中では縦に長く出る——
         これは崩れではなく、アプリ1枚を丸ごと収める器だから。
       </p>
+      <p className="ds-note">
+        この実演は <strong><code className="ds-mono">logo</code> を渡していない（既定のまま）</strong>。
+        左上に出ている絵画調のロゴが <code className="ds-mono">MagiAppShell</code> の
+        <strong>現行の既定＝<code className="ds-mono">SgBrandLogo</code></strong> で、
+        採用アプリが何も指定しなければこの姿になる（言葉ではなく画で示すため、あえて明示指定を外してある）。
+      </p>
       <div className="ds-card">
         <MagiAppShell
           appName="デザインシステム ショーケース"
@@ -493,7 +499,7 @@ export function ComponentsSection(props: Props) {
             />
           }
           headerVersion={<MagiVersionChip buildTime="2026-08-09T13:00:00+09:00" version="v0.14.0" />}
-          logo={<SgBrandLogo alt="" />}
+          /* logo は**あえて渡さない**＝未指定のときに何が出るかを画で証明する（2026-08-09）。 */
           nav={
             <BusinessNav
               activeTab={navTab}
@@ -531,7 +537,9 @@ export function ComponentsSection(props: Props) {
       <p className="ds-note">
         左が <code className="ds-mono">SgLumenLogo</code>（<strong>旧既定・2026-08-09 廃止裁定済み</strong>。
         import しているアプリのために export だけ残す）、右が <code className="ds-mono">SgBrandLogo</code>
-        （<strong>現行の既定</strong>＝<code>MagiAppShell</code> にロゴを渡さなければこちらが出る）。
+        （<strong>現行の既定</strong>）。この2つの違いは上の <code className="ds-mono">MagiAppShell</code> 実演で
+        確かめられる——あちらは <code className="ds-mono">logo</code> を<strong>未指定</strong>にしてあり、
+        出ているのは右の絵画調ロゴ（＝既定のまま何もしなければこうなる）。
       </p>
     </Section>
   );
