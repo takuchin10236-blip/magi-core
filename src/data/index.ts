@@ -6,6 +6,8 @@
  *         MagiDataSource / SheetsSourceConfig / BatchUpdateEntry / AppEnv / AccessSource
  *   - Sheets: createSheetsSource(cfg)
  *   - 書込ゲート: assertWriteAllowed / assertAllowedUser / writeState
+ *   - 同時編集の保存時チェック（楽観ロック・opt-in）: snapshotHash / assertFreshSnapshot /
+ *         STALE_SNAPSHOT_MESSAGE / STALE_SNAPSHOT_STATUS / ConcurrencyReason
  *   - アクセス制御（D4・署名検証版）: resolveVerifiedAccessContext / resolveAccessContext /
  *         requireAllowed / requireAdmin / requireSuperAdmin / isLocalDevRequest /
  *         publicDenyReason / AccessDeniedError
@@ -32,6 +34,14 @@ export { createSheetsSource, alignBatchGet } from './sheets.js';
 
 export { writeState, assertAllowedUser, assertWriteAllowed } from './writeGuard.js';
 export type { WriteState } from './writeGuard.js';
+
+export {
+  snapshotHash,
+  assertFreshSnapshot,
+  STALE_SNAPSHOT_MESSAGE,
+  STALE_SNAPSHOT_STATUS,
+} from './concurrency.js';
+export type { ConcurrencyReason } from './concurrency.js';
 
 export {
   resolveVerifiedAccessContext,
