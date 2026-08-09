@@ -16,6 +16,12 @@ npx vite --config dev/vite.config.ts
 
 → http://127.0.0.1:5273/
 
+どこの作業ディレクトリからでも起動したい時（1行で完結する形）:
+
+```bash
+npm exec --prefix ~/Documents/magi-core -- vite --config ~/Documents/magi-core/dev/vite.config.ts
+```
+
 初期テーマは URL で固定できる（スクショ・検査の再現性のため）。
 
 ```
