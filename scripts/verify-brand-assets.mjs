@@ -8,14 +8,20 @@
  *   Drive正本との突合は、素材を取り込む人が取り込み時に行う（そのための SHA-256 記録）。
  *
  * 検査:
- *   (1) src/ui/brand の同梱2枚が logo-manifest.json の SHA-256 と一致（自己整合）
- *   (2) dist/ui/brand へ同じ2枚＋manifest が運ばれている（build の運び忘れ検出）
- *   (3) 非同梱（@2x・sunset・master）が混入していない（パッケージ肥大の防止）
- *   (4) SgBrandLogo が同梱2枚を import し、既定マップが white→day / dark→night のまま
+ *   (1) src/ui/brand の同梱物が logo-manifest.json の SHA-256 と一致（自己整合）
+ *   (2) dist/ui/brand へ同じ同梱物＋manifest が運ばれている（build の運び忘れ検出）
+ *   (3) 非同梱（@2x・master）が混入していない（パッケージ肥大の防止）
+ *   (4) SgBrandLogo が同梱物を import し、既定マップが white→day / dusk→sunset / dark→night のまま
  *   (5) design-system.css に表示範囲の切り抜き（.magi-brand-logo）がある
- *       ＝暗い画面で白い額縁が浮く問題の対処が消えていない
+ *       ＝暗い画面・夕焼けの帯で白い額縁が浮く問題の対処が消えていない（night / sunset の両方）
  *   (6) index.ts から SgBrandLogo が公開されている
  * 実行系は他の verify:* と同じ（node scripts/*.mjs・ファイルをテキスト読み）。
+ *
+ * 同梱枚数を本文に書かない理由（2026-08-09）:
+ *   v0.14.0 で sunset を足したとき、この冒頭コメントだけが「同梱2枚」「非同梱＝sunset」の
+ *   ままで残った（実体は3枚・sunset は同梱側）。**枚数と対象は manifest ＋
+ *   brand-assets-sources.mjs の BUNDLED_VARIANTS が唯一の出どころ**で、この検査もそこから
+ *   数える。だからコメントでも枚数を言い切らない（言い切ると次の増減でまた嘘になる）。
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -58,7 +64,9 @@ const themeMapBlock = componentSrc.slice(
   componentSrc.indexOf('const VARIANT_BY_THEME'),
   componentSrc.indexOf('const DEFAULT_ALT'),
 );
-for (const pair of ["white: 'day'", "dark: 'night'"]) {
+// 3モード（陽光/残照/月光）ぶんを固定する。dusk は v0.14.0 で増えたのに検査が white/dark の
+// 2本しか見ておらず、sunset へのマップが消えても気づけなかった（2026-08-09 レビュー指摘）。
+for (const pair of ["white: 'day'", "dusk: 'sunset'", "dark: 'night'"]) {
   if (!themeMapBlock.includes(pair)) errors.push(`既定マップに ${pair} が無い`);
 }
 
@@ -69,6 +77,9 @@ const css = read('src/ui/design-system.css');
 for (const needle of [
   '.magi-brand-logo',
   "[data-trim='on'][data-variant='night']",
+  // 夕日版も同じ理由（茜の帯に白い額縁が浮く）で切り抜いている。night だけ固定していると
+  // sunset 側のセレクタが消えても検査が通ってしまうため、両方を機械で押さえる。
+  "[data-trim='on'][data-variant='sunset']",
   'clip-path: inset(9% 5% round 6px)',
   'var(--magi-brand-logo-width, 148px)',
   'var(--magi-brand-logo-width-md, 112px)',
