@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-09T06:55:30.662Z",
+  "generated_at": "2026-08-09T06:55:55.118Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
     "version": "0.16.0",
@@ -111,6 +111,16 @@
       "verified_by": "バトー（開発部・検収統合座席）",
       "evidence": "GOAL-20260809-CORE-V0150/verify-v0.15.0.log",
       "evidence_sha256": "505f9e15030134918ac6635c94a135f9e99457dfb92b74278d8223d6207dae6b"
+    },
+    {
+      "app": "@magi/core",
+      "core_tag": "v0.16.0",
+      "template_commit": "102b996477cfb1443863205bc978d9cd99ff69b0",
+      "app_commit": "5a5eaf5467d978eb63a07f44dc859068e6e6f49c",
+      "verified_at": "2026-08-09",
+      "verified_by": "バトー（開発部・検収統合座席）",
+      "evidence": "GOAL-20260809-CORE-V0160/verify-v0.16.0.log",
+      "evidence_sha256": "21545ddfabbadc440d6d7ee9ae393cd688ef0ab2104466698377d7f3f4504981"
     }
   ],
   "source_hashes": {
@@ -122,7 +132,7 @@
   },
   "freshness_targets": {
     "core:version-tag-commit": "5a5eaf5467d978eb63a07f44dc859068e6e6f49c",
-    "core:origin-main-head": "5a5eaf5467d978eb63a07f44dc859068e6e6f49c",
+    "core:origin-main-head": "de041d48f7f566032ffbb78be3a1ce04156a8842",
     "magi-webapp-template:origin-main-head": "102b996477cfb1443863205bc978d9cd99ff69b0",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158",
     "magi-resident-master:origin-main-head": "0a7e4015d6d7f65fbf6698d385fc442db429a5e0",
