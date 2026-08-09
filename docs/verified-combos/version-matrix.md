@@ -3,8 +3,8 @@
 > `scripts/collect-version-matrix.mts` の自動生成物。手で版番号を書かない。
 > 固定版は origin/main 確定commitから収集（dirty ローカルは使わない）。
 
-- 生成時刻: 2026-08-08T08:50:31.524Z
-- Core: **v0.14.0**（tag数: 48）
+- 生成時刻: 2026-08-09T06:30:12.270Z
+- Core: **v0.15.0**（tag数: 49）
 - template_commit（雛形 origin/main）: 102b996477cfb1443863205bc978d9cd99ff69b0
 
 ## 採用repo（origin/main 確定commit）
@@ -20,11 +20,12 @@
 
 | app | core_tag | template_commit | app_commit | verified_at | verified_by | evidence |
 |---|---|---|---|---|---|---|
-| @magi/core | v0.14.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | af4b9469d829c8fe9f003e92cd89adfabdf79b82 | 2026-08-08 | タチコマ（実装座席・サブエージェント） | GOAL-20260808-CORE-V0140/verify-v0.14.0.log |
+| @magi/core | v0.14.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | 8c1def0fb0af479455068a813839e83c5110ffd5 | 2026-08-08 | タチコマ（実装座席・サブエージェント） | GOAL-20260808-CORE-V0140/verify-v0.14.0.log |
+| @magi/core | v0.15.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | 8c1def0fb0af479455068a813839e83c5110ffd5 | 2026-08-09 | バトー（開発部・検収統合座席） | GOAL-20260809-CORE-V0150/verify-v0.15.0.log |
 
 ## source_hashes（版pin実体の SHA-256・`npm run verify:matrix` が鮮度検査）
 
-- `core:package.json`: 2c71f424312c944397ccc74853a2f62137402c245e1ac49f8ec1646974070675
+- `core:package.json`: 7b6fe9627a9685b4fff54b148a6dbccc9603c82c5cf21e59a7d4504681e1ec77
 - `magi-webapp-template:origin-main:package.json`: 0117b807690f534d93de3a941410eaa041f5a3b4f5f8175d0313d69b62d8a023
 - `magi-resident-spine:origin-main:package.json`: 82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550
 - `magi-resident-master:origin-main:package.json`: cbb16fe1aed54593795548aab02577a606db55f61d38a6bdab97bb02a32396b7
