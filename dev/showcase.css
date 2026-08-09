@@ -1,0 +1,399 @@
+/**
+ * ショーケース自身の骨組み（開発者検証用・dist へは出ない）。
+ *
+ * 掟: **ここで新しいデザインを作らない**。
+ *   色・影・角丸・書体は必ず core のトークン var(--…) を参照する（直値の色を書かない）。
+ *   ここに書いてよいのは「見本を並べるための器」＝段組・スクロール・区切りの構造だけ。
+ *   数値の余白は、見本同士がぶつからないための版面であって、デザインシステムの値ではない
+ *   （デザインシステムの値は §3 スペーシングで core の実物を表示している）。
+ */
+
+.ds-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--magi-shell-padding, 18px) 96px;
+}
+
+/* ── ページヘッダー（モード切替を常に手元に置く） ───────────────── */
+.ds-topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--magi-z-app-sticky-max, 100);
+  margin: 0 calc(-1 * var(--magi-shell-padding, 18px));
+  padding: 12px var(--magi-shell-padding, 18px);
+  background: var(--bg-app);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.ds-topbar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.ds-topbar-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ds-topbar-sub {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.ds-topbar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.ds-topbar-controls > * {
+  min-width: 0;
+}
+
+/* ── 目次 ──────────────────────────────────────────────────────── */
+.ds-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0 0;
+}
+
+.ds-toc a {
+  font-size: 0.8rem;
+  color: var(--brand-ink);
+  text-decoration: none;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.ds-toc a:hover {
+  background: var(--bg-surface-alt);
+}
+
+/* ── 節 ────────────────────────────────────────────────────────── */
+.ds-section {
+  margin: 40px 0 0;
+  scroll-margin-top: 96px;
+}
+
+.ds-section-head {
+  border-bottom: 2px solid var(--border-default);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.ds-section-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ds-section-title span {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.ds-section-note {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.ds-subhead {
+  margin: 24px 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ds-note {
+  margin: 8px 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.ds-note code,
+.ds-mono {
+  font-family: var(--mono-font);
+  font-size: 0.78rem;
+}
+
+/* ── 器（面） ──────────────────────────────────────────────────── */
+.ds-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, 12px);
+  box-shadow: var(--surface-shadow);
+  padding: 16px;
+}
+
+.ds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.ds-grid-wide {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.ds-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── 部品見本の1枚 ─────────────────────────────────────────────── */
+.ds-specimen {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, 12px);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ds-specimen-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px dashed var(--border-default);
+  padding-bottom: 6px;
+}
+
+.ds-specimen-name {
+  font-family: var(--mono-font);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ds-specimen-tag {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.ds-specimen-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ds-specimen-note {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ── 色見本 ────────────────────────────────────────────────────── */
+.ds-swatch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--input-radius, 8px);
+  padding: 8px 10px;
+  background: var(--bg-surface);
+  min-width: 0;
+}
+
+.ds-swatch-chip {
+  inline-size: 40px;
+  block-size: 40px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  /* 半透明トークンの実体が見えるように市松を敷く（値の改変ではなく背景の可視化）。 */
+  background-image:
+    linear-gradient(45deg, var(--bg-surface-alt) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-surface-alt) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-surface-alt) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-surface-alt) 75%);
+  background-size: 10px 10px;
+  background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+}
+
+.ds-swatch-chip-fill {
+  /* span は既定 inline＝100% の寸法が効かない（市松だけ見えて色が出ない）。block にする。 */
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: 7px;
+}
+
+.ds-swatch-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ds-swatch-name {
+  font-family: var(--mono-font);
+  font-size: 0.76rem;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.ds-swatch-value {
+  font-family: var(--mono-font);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+/* ── 表 ────────────────────────────────────────────────────────── */
+.ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.ds-table th,
+.ds-table td {
+  border-bottom: 1px solid var(--border-default);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+  color: var(--text-primary);
+}
+
+.ds-table th {
+  color: var(--text-secondary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ds-table td.ds-mono,
+.ds-table th.ds-mono {
+  font-family: var(--mono-font);
+  white-space: nowrap;
+}
+
+/* ── スペーシングの視覚化バー ─────────────────────────────────── */
+.ds-bar {
+  block-size: 12px;
+  border-radius: 3px;
+  background: var(--color-primary);
+  max-inline-size: 100%;
+}
+
+/* ── モーション ────────────────────────────────────────────────── */
+.ds-motion-box {
+  inline-size: 56px;
+  block-size: 56px;
+  border-radius: var(--card-radius, 12px);
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.ds-motion-track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-block-size: 64px;
+}
+
+.ds-motion-box.is-moved {
+  transform: translateX(120px);
+}
+
+.ds-keyframe-stage {
+  display: grid;
+  place-items: center;
+  min-block-size: 96px;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--card-radius, 12px);
+  overflow: hidden;
+}
+
+/* ── アイコン ──────────────────────────────────────────────────── */
+.ds-icon-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--input-radius, 8px);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.ds-icon-name {
+  font-family: var(--mono-font);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* ── ロゴのクリアスペース可視化 ───────────────────────────────── */
+.ds-logo-frame {
+  display: inline-flex;
+  padding: 18px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--card-radius, 12px);
+  background: var(--bg-header);
+  background-image: var(--bg-header-gradient, none);
+}
+
+/* ── 監査リスト ────────────────────────────────────────────────── */
+.ds-audit {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.ds-audit li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+.ds-audit-mark {
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.ds-audit-mark[data-kind='manual'] {
+  color: var(--status-warn-ink);
+}
+
+/* ── 印刷では検証ページを出さない（誤って配布資料にしないため） ── */
+@media print {
+  .ds-page::before {
+    content: 'これは開発者検証用のショーケースです（配布物ではありません）';
+  }
+}

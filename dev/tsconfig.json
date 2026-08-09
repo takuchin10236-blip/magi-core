@@ -1,0 +1,20 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "..",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "types": [],
+    "resolveJsonModule": true,
+    "paths": {
+      "@magi/core/ui": ["../src/ui/index.ts"]
+    }
+  },
+  "include": [".", "../src/ui/assets.d.ts"],
+  // vite.config.ts は node 組込み（node:path 等）を使うが、core は @types/node を持たない
+  //   （型のためだけに devDependency を足すと package.json が動き verify:matrix が失効する）。
+  //   設定ファイルの型は vite 自身が実行時に解決するので、ここの検査対象からは外す。
+  "exclude": ["../dist", "../node_modules", "vite.config.ts"]
+}
