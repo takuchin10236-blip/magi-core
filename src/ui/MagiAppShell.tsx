@@ -22,24 +22,33 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { FocusToggle } from './FocusToggle';
 import { hasOpenModal } from './modalGuards';
-import { SgLumenLogo } from './SgLumenLogo';
+import { SgBrandLogo } from './SgBrandLogo';
 
 export interface MagiAppShellProps {
   facilityName: string;
   floorName?: string;
   appName: string;
   /**
-   * ロゴスロット。未指定なら従来どおり SgLumenLogo（SVG）を出す＝既存アプリは無改修のまま。
-   * 正式ブランドロゴ（絵）へ差し替えるアプリは <SgBrandLogo /> を渡す。
+   * ロゴスロット。未指定なら **SgBrandLogo（正式ブランドロゴ・絵画調PNG・3モード連動）** を出す
+   * （2026-08-09 社長裁定でロゴを1本に統一。旧既定の SgLumenLogo〈SVG〉は廃止＝新規に選ばない）。
+   * 別の絵を出すアプリだけがこのスロットへノードを渡す。
    *
    * 注意2点:
    *   - logo を指定すると logoLabel / logoDark は**効かない**（渡したノード側の責務になる）。
-   *   - シェルの中で使うときは <SgBrandLogo alt="" /> を推奨。すぐ隣の kicker が施設名を
-   *     読み上げるため、ロゴにも施設名を入れると読み上げが二重になる。
+   *   - 既定では alt="" で出す。すぐ隣の kicker が施設名を読み上げるため、
+   *     ロゴにも施設名を入れると読み上げが二重になる。
    */
   logo?: ReactNode;
-  /** ロゴの aria-label（施設名）。既定は SgLumenLogo の既定値。logo 指定時は無効。 */
+  /**
+   * ロゴの読み上げ名（施設名）。既定は空＝装飾扱い（施設名は kicker が読む）。
+   * logo 指定時は無効。
+   */
   logoLabel?: string;
+  /**
+   * @deprecated 2026-08-09 の既定ロゴ統一で無効になった。既定の SgBrandLogo は
+   *   `<html data-color-mode>` を購読して陽光/残照/月光の絵柄を自分で選ぶ（明暗を外から渡さない）。
+   *   受け口だけ残してあるのは、渡している既存アプリの型を壊さないため。
+   */
   logoDark?: boolean;
   /** ヘッダー右の状態要約スロット（<MagiStatusSummary/> を想定）。視覚順は右から1番目と3番目。 */
   headerStatus?: ReactNode;
@@ -67,7 +76,7 @@ export function MagiAppShell({
   appName,
   logo,
   logoLabel,
-  logoDark,
+  // logoDark は受け口だけ残して読まない（既定ロゴが自分でモードを見る＝上の @deprecated 参照）。
   headerStatus,
   headerVersion,
   nav,
@@ -109,7 +118,7 @@ export function MagiAppShell({
     >
       <header className="magi-appshell-header">
         <div className="magi-appshell-brand">
-          {logo ?? <SgLumenLogo className="magi-appshell-logo" dark={logoDark} label={logoLabel} />}
+          {logo ?? <SgBrandLogo alt={logoLabel ?? ''} />}
           <div className="magi-appshell-titles">
             <p className="magi-appshell-kicker">
               {facilityName}

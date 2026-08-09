@@ -132,14 +132,37 @@ describe('SgBrandLogo', () => {
 });
 
 describe('MagiAppShell の logo スロット', () => {
-  it('未指定なら従来どおり SgLumenLogo（SVG）を出す＝既存アプリ無影響', () => {
+  // 2026-08-09 社長裁定でロゴを1本に統一（旧既定 SgLumenLogo は廃止）。
+  //   期待値を「未指定なら SVG」→「未指定なら SgBrandLogo」へ更新した。
+  it('未指定なら SgBrandLogo（正式ブランドロゴ）を出す＝既定の統一', () => {
     const { container } = render(
       <MagiAppShell appName="テストアプリ" facilityName="第二湘南グリーン">
         <p>本文</p>
       </MagiAppShell>,
     );
-    expect(container.querySelector('svg.magi-appshell-logo')).toBeTruthy();
-    expect(container.querySelector('.magi-brand-logo')).toBeNull();
+    expect(container.querySelector('.magi-brand-logo')).toBeTruthy();
+    expect(container.querySelector('svg.magi-appshell-logo')).toBeNull();
+    // シェルの中では装飾扱い（施設名は隣の kicker が読む＝読み上げの二重を避ける）。
+    expect(container.querySelector('.magi-brand-logo img')?.getAttribute('alt')).toBe('');
+  });
+
+  it('既定ロゴもテーマに連動する（月光なら night の絵柄）', () => {
+    setColorMode('dark');
+    const { container } = render(
+      <MagiAppShell appName="テストアプリ" facilityName="第二湘南グリーン">
+        <p>本文</p>
+      </MagiAppShell>,
+    );
+    expect(container.querySelector('.magi-brand-logo')?.getAttribute('data-variant')).toBe('night');
+  });
+
+  it('logoLabel を渡すと既定ロゴの読み上げ名になる', () => {
+    const { container } = render(
+      <MagiAppShell appName="テストアプリ" facilityName="第二湘南グリーン" logoLabel="別施設ロゴ">
+        <p>本文</p>
+      </MagiAppShell>,
+    );
+    expect(container.querySelector('.magi-brand-logo img')?.getAttribute('alt')).toBe('別施設ロゴ');
   });
 
   it('logo を渡すとロゴ位置に差し込まれ、施設名・アプリ名の並びは変わらない', () => {

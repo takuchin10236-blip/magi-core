@@ -1,5 +1,9 @@
 /**
- * SgLumenLogo — MAGI 共通の正式ロゴ「SG・窓と富士」。
+ * SgLumenLogo — 旧ロゴ「SG・窓と富士」（SVG）。**廃止裁定済み・新規に選ばない。**
+ *
+ * @deprecated 2026-08-09 社長裁定でロゴは SgBrandLogo（絵画調PNG・3モード連動）に一本化した。
+ *   MagiAppShell の既定もそちらへ移してある。export を残しているのは、この部品を直接 import して
+ *   いるアプリのビルドを壊さないため——**削除は次のメジャーの仕事**。新規の画面で使わない。
  *
  * 原本: magi-resident-spine origin/main src/components/SgLumenLogo.tsx をそのまま移植。
  *   文字崩れを避けるため画像生成でなく、同じ入力から同じ形になる SVG で描く。

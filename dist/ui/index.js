@@ -47,9 +47,11 @@ export { ManualEntry } from './ManualEntry';
 // 状態表示（v0.4）
 export { StatusBadge } from './StatusBadge';
 // AppShell 部品群（v0.5）
+// 旧ロゴ（SVG）。2026-08-09 の裁定で廃止＝新規に選ばない。既存アプリのビルドを壊さないため
+//   export だけ残す（削除は次のメジャー）。実体側に @deprecated を付けてある。
 export { SgLumenLogo } from './SgLumenLogo';
 // 正式ブランドロゴ（絵画調SG・PNG・テーマ連動／v0.8 追加）。
-//   SgLumenLogo（SVG）は据え置き＝MagiAppShell の既定は従来のまま。
+//   2026-08-09 社長裁定で **MagiAppShell の既定ロゴ**になった（ロゴを1本に統一）。
 export { SgBrandLogo, SG_BRAND_LOGO_SOURCES } from './SgBrandLogo';
 export { ColorModeSwitch } from './ColorModeSwitch';
 export { MagiStatusSummary } from './MagiStatusSummary';

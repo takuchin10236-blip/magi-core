@@ -23,8 +23,10 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useCallback, useEffect, useState } from 'react';
 import { FocusToggle } from './FocusToggle';
 import { hasOpenModal } from './modalGuards';
-import { SgLumenLogo } from './SgLumenLogo';
-export function MagiAppShell({ facilityName, floorName, appName, logo, logoLabel, logoDark, headerStatus, headerVersion, nav, focusMode, onFocusModeChange, children, className, }) {
+import { SgBrandLogo } from './SgBrandLogo';
+export function MagiAppShell({ facilityName, floorName, appName, logo, logoLabel, 
+// logoDark は受け口だけ残して読まない（既定ロゴが自分でモードを見る＝上の @deprecated 参照）。
+headerStatus, headerVersion, nav, focusMode, onFocusModeChange, children, className, }) {
     // props を初期値として持ちつつ、内部でも状態を持つ（Esc を確実に効かせるため）。
     const [focusActive, setFocusActive] = useState(focusMode ?? false);
     useEffect(() => {
@@ -48,6 +50,6 @@ export function MagiAppShell({ facilityName, floorName, appName, logo, logoLabel
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
     }, [focusActive, changeFocus]);
-    return (_jsxs("div", { className: `magi-appshell${focusActive ? ' magi-appshell-focus-mode' : ''}${className ? ` ${className}` : ''}`, "data-focus-mode": focusActive ? 'on' : 'off', children: [_jsxs("header", { className: "magi-appshell-header", children: [_jsxs("div", { className: "magi-appshell-brand", children: [logo ?? _jsx(SgLumenLogo, { className: "magi-appshell-logo", dark: logoDark, label: logoLabel }), _jsxs("div", { className: "magi-appshell-titles", children: [_jsxs("p", { className: "magi-appshell-kicker", children: [facilityName, floorName ? _jsx("span", { className: "magi-appshell-floor", children: ` ${floorName}` }) : null] }), _jsx("h1", { className: "magi-appshell-title", children: appName })] })] }), (headerStatus || headerVersion) ? (_jsxs("div", { className: "magi-appshell-header-right", children: [headerStatus, headerVersion] })) : null] }), nav, _jsx("main", { className: "magi-appshell-main", children: children }), focusActive ? (_jsx(FocusToggle, { className: "magi-appshell-focus-exit", focusMode: true, onFocusModeChange: changeFocus })) : null] }));
+    return (_jsxs("div", { className: `magi-appshell${focusActive ? ' magi-appshell-focus-mode' : ''}${className ? ` ${className}` : ''}`, "data-focus-mode": focusActive ? 'on' : 'off', children: [_jsxs("header", { className: "magi-appshell-header", children: [_jsxs("div", { className: "magi-appshell-brand", children: [logo ?? _jsx(SgBrandLogo, { alt: logoLabel ?? '' }), _jsxs("div", { className: "magi-appshell-titles", children: [_jsxs("p", { className: "magi-appshell-kicker", children: [facilityName, floorName ? _jsx("span", { className: "magi-appshell-floor", children: ` ${floorName}` }) : null] }), _jsx("h1", { className: "magi-appshell-title", children: appName })] })] }), (headerStatus || headerVersion) ? (_jsxs("div", { className: "magi-appshell-header-right", children: [headerStatus, headerVersion] })) : null] }), nav, _jsx("main", { className: "magi-appshell-main", children: children }), focusActive ? (_jsx(FocusToggle, { className: "magi-appshell-focus-exit", focusMode: true, onFocusModeChange: changeFocus })) : null] }));
 }
 //# sourceMappingURL=MagiAppShell.js.map
