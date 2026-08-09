@@ -53,6 +53,8 @@ export { SgLumenLogo } from './SgLumenLogo';
 export type { SgLumenLogoProps } from './SgLumenLogo';
 export { SgBrandLogo, SG_BRAND_LOGO_SOURCES } from './SgBrandLogo';
 export type { SgBrandLogoProps, SgBrandLogoVariant, SgBrandLogoSource } from './SgBrandLogo';
+export { SG_BRAND_ICON_SOURCES, useBrandFavicon } from './brandIcon';
+export type { SgBrandIconVariant, SgBrandIconSource, UseBrandFaviconOptions } from './brandIcon';
 export { ColorModeSwitch } from './ColorModeSwitch';
 export type { ColorModeSwitchProps } from './ColorModeSwitch';
 export { MagiStatusSummary } from './MagiStatusSummary';

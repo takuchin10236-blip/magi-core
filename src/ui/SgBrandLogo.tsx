@@ -14,7 +14,8 @@
  *
  * テーマ連動:
  *   陽光（white）→ day ／ 残照（dusk）→ sunset ／ 月光（dark）→ night。
- *   themeMode を渡さない場合は documentElement の data-color-mode を読む。これは
+ *   themeMode を渡さない場合は documentElement の data-color-mode を読む（購読の実体は
+ *   colorMode.ts＝v0.16.0 で useBrandFavicon と共用にするため切り出した。挙動は不変）。これは
  *   useThemeState が書き込んでいる属性そのもの（core 既存の作法）で、prefers-color-scheme の
  *   独自検知はしない＝職員が ColorModeSwitch で選んだ結果とロゴが必ず一致する。
  *
@@ -28,8 +29,8 @@
  *   夕日版は茜のグラデーション帯に載るので、夜版と同じ理由で切り抜く）。
  *   trim={false} で切り抜きをやめられる。
  */
-import { useSyncExternalStore } from 'react';
-import { DEFAULT_THEME_MODE, normalizeThemeMode, type ThemeMode } from './uiPresets';
+import { useColorMode } from './colorMode';
+import { type ThemeMode } from './uiPresets';
 import dayLogo from './brand/sg-logo-day.png';
 import nightLogo from './brand/sg-logo-night.png';
 import sunsetLogo from './brand/sg-logo-sunset.png';
@@ -62,23 +63,6 @@ const VARIANT_BY_THEME: Record<ThemeMode, SgBrandLogoVariant> = {
 /** 既定の代替テキスト（＝この画像の読み上げ名）。 */
 const DEFAULT_ALT = '第二湘南グリーン';
 
-function subscribeColorMode(onStoreChange: () => void): () => void {
-  if (typeof document === 'undefined' || typeof MutationObserver === 'undefined') return () => {};
-  // useThemeState は data-color-mode を書き換えるだけなので、属性変化を購読すれば足りる。
-  const observer = new MutationObserver(onStoreChange);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-color-mode'] });
-  return () => observer.disconnect();
-}
-
-function readColorMode(): ThemeMode {
-  if (typeof document === 'undefined') return DEFAULT_THEME_MODE;
-  return normalizeThemeMode(document.documentElement.getAttribute('data-color-mode')) ?? DEFAULT_THEME_MODE;
-}
-
-function readServerColorMode(): ThemeMode {
-  return DEFAULT_THEME_MODE;
-}
-
 export interface SgBrandLogoProps {
   /** 絵柄の明示指定。指定するとテーマ連動より優先される。 */
   variant?: SgBrandLogoVariant;
@@ -103,7 +87,7 @@ export function SgBrandLogo({
   className,
 }: SgBrandLogoProps) {
   // hooks は条件分岐の外で呼ぶ。themeMode が渡っていれば購読結果は使わない。
-  const observedMode = useSyncExternalStore(subscribeColorMode, readColorMode, readServerColorMode);
+  const observedMode = useColorMode();
   const resolvedVariant = variant ?? VARIANT_BY_THEME[themeMode ?? observedMode];
   const source = SG_BRAND_LOGO_SOURCES[resolvedVariant];
 

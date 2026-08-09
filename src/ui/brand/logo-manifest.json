@@ -3,7 +3,37 @@
   "_magi_core_bundled": {
     "files": ["sg-logo-day.png", "sg-logo-night.png", "sg-logo-sunset.png"],
     "policy": "同梱は day/night/sunset の standard（480×240）のみ。retina（@2x）・master は同梱せず Drive 正本に残置する（パッケージ肥大の防止）。同梱物の SHA-256 突合は scripts/verify-brand-assets.mjs が毎回の check で行う。",
-    "_sunset_added": "v0.14.0（2026-08-08）。第3モード『残照』のヘッダーで使うため sunset の standard 1枚（194KB）だけ同梱範囲へ入れた（仕様 v1.0 §3）。@2x・master は従来どおり非同梱。"
+    "_sunset_added": "v0.14.0（2026-08-08）。第3モード『残照』のヘッダーで使うため sunset の standard 1枚（194KB）だけ同梱範囲へ入れた（仕様 v1.0 §3）。@2x・master は従来どおり非同梱。",
+    "_icons_added": "v0.16.0（2026-08-09）。アイコン型（正方形）3枚の standard（512×512）を同梱範囲へ入れた。詳細は下の icons 節。"
+  },
+  "icons": {
+    "_note": "アイコン型（正方形）ロゴ。横長ロゴ（variants 節）とは別素材で、favicon・アプリアイコン・幅104px 未満の場面に使う。この節は @magi/core 側で新設したもので、variants 節（Drive 正本 logo-manifest.json の写し）には手を触れていない。",
+    "shape": "square",
+    "aspect_ratio": "1:1",
+    "status": "adopted",
+    "adopted_at": "2026-08-09",
+    "adopted_by": "社長裁定 2026-08-09 15:35「ロゴは採用します。つぎのアプリ開発から実装できるように」",
+    "delivery": "SGLOGO-20260809-01便",
+    "master_location": "Drive: 個人/2026-08-08_Eclipse_デザインシステム/素材/SGアイコン型第1便_20260809/（1024×1024 原本＝非同梱・正本）",
+    "bundled": {
+      "files": ["sg-icon-day.png", "sg-icon-sunset.png", "sg-icon-night.png"],
+      "policy": "同梱は standard（512×512）の3枚のみ。master（1024×1024）は同梱せず Drive 正本に残置する（横長ロゴと同じ減量方針）。",
+      "derivation": "master を Pillow で 512×512 へ LANCZOS 縮小（Image.resize((512,512), Image.LANCZOS)・save(format='PNG', optimize=True)）。原本は無改変。"
+    },
+    "variants": {
+      "day": {
+        "master": { "file": "01_アイコン型_陽光.png", "width": 1024, "height": 1024, "sha256": "abc72f2317b58993591610866c2d4c577a69143a74d07b4817f15c5f3be1c3c6" },
+        "standard": { "file": "sg-icon-day.png", "width": 512, "height": 512, "sha256": "8b2b94489237ebb448ea955acd818dee6c6b2da416080ba14f76d55ef9a886a6" }
+      },
+      "sunset": {
+        "master": { "file": "02_アイコン型_残照.png", "width": 1024, "height": 1024, "sha256": "eab00a5f332ac96441a173c237b67ac6c03f4fba9c640b3eb2db010d65cc9f74" },
+        "standard": { "file": "sg-icon-sunset.png", "width": 512, "height": 512, "sha256": "2ee3796d8d2b0d5bd5c553849d7e3194bf0ee188aa87c058ea0004c18d03f139" }
+      },
+      "night": {
+        "master": { "file": "03_アイコン型_月光.png", "width": 1024, "height": 1024, "sha256": "2b8a2fb97eb3004a2949a8489f3fd2a2b2194d78908b54fad67ff96d9230fca5" },
+        "standard": { "file": "sg-icon-night.png", "width": 512, "height": 512, "sha256": "007088bcdc14e0bed755404b566c833feb319ca81e4a81224e241b78e207c4fc" }
+      }
+    }
   },
   "brand": "Shonan Green",
   "mark": "SG intertwined monogram",

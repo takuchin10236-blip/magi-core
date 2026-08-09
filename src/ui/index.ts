@@ -93,6 +93,11 @@ export type { SgLumenLogoProps } from './SgLumenLogo';
 //   2026-08-09 社長裁定で **MagiAppShell の既定ロゴ**になった（ロゴを1本に統一）。
 export { SgBrandLogo, SG_BRAND_LOGO_SOURCES } from './SgBrandLogo';
 export type { SgBrandLogoProps, SgBrandLogoVariant, SgBrandLogoSource } from './SgBrandLogo';
+// アイコン型ロゴ（正方形512×512・3モード分／v0.16.0 追加・社長採用 2026-08-09）。
+//   favicon・アプリアイコン・幅104px 未満の場面は横長ロゴを縮めずこちらを使う。
+//   useBrandFavicon() を1行呼ぶと <link rel="icon"> が色モードへ自動追従する。
+export { SG_BRAND_ICON_SOURCES, useBrandFavicon } from './brandIcon';
+export type { SgBrandIconVariant, SgBrandIconSource, UseBrandFaviconOptions } from './brandIcon';
 export { ColorModeSwitch } from './ColorModeSwitch';
 export type { ColorModeSwitchProps } from './ColorModeSwitch';
 export { MagiStatusSummary } from './MagiStatusSummary';
