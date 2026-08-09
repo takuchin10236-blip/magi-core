@@ -1049,6 +1049,9 @@
   --text-muted: var(--text-muted-source, var(--text-2, var(--foreground)));
   --text-on-header: var(--foreground);
   --primary-button-text: var(--primary-foreground);
+  /* danger の面に載せる文字（2026-08-09）。既定は白＝陽光・残照の #c62828 の上で 5.62:1 出る（実測）。
+     月光だけは面（--danger）が明るいので下で言い直す（--primary-button-text と同じ作り）。 */
+  --danger-button-text: #ffffff;
   --border-default: var(--border);
   --border-strong: color-mix(in srgb, var(--border) 70%, var(--foreground));
 }
@@ -1057,6 +1060,15 @@
    bridge は --bg-header を var(--card) へ倒すので、data-ui-preset がまだ付いていない
    一瞬（初期描画・属性を手で置いた検査）でもヘッダーが白面にならないようにする。
    値はプリセット別ブロックと同一＝ここが勝っても負けても同じ色になる。 */
+/* 月光だけは danger の面が明るい（#f87171）。白文字だと 2.77:1 しか出ないので、
+   面はそのままに文字を暗いインクへ倒す（2026-08-09 A-375 計測義務・実測 #401d1d on #f87171 ＝ 5.38:1）。
+   月光の primary ボタンが「明るい緑の面＋暗い緑の文字」なのと同じ作りで、色相は面から
+   導く（color-mix）＝nova-ember のように danger が橙のプリセットでも色相がずれない。
+   --color-danger 自体は動かさない（暗い面の上のエラー文字がそれを使っている）。 */
+:root[data-color-mode="dark"] {
+  --danger-button-text: color-mix(in srgb, var(--color-danger) 26%, #000);
+}
+
 :root[data-color-mode="dusk"] {
   --bg-header: #a53a32;
   --bg-header-gradient: linear-gradient(180deg, #8e3040 0%, #a53a32 55%, #cd6b38 88%, #f0b269 100%);
@@ -4469,7 +4481,7 @@ mark.search-hit {
 
 .themed-btn-danger {
   background: var(--color-danger);
-  color: #ffffff;
+  color: var(--danger-button-text, #ffffff);
   border: 1px solid color-mix(in srgb, var(--color-danger) 86%, #000 14%);
   border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
