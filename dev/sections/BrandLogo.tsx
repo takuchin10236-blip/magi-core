@@ -1,11 +1,19 @@
 /**
  * ⑦ブランドロゴ — SgBrandLogo（3モード連動）と SgLumenLogo（既定）の実物 ＋ 使用規定。
+ *   v0.16.0 でアイコン型（正方形・favicon 用）の実物と useBrandFavicon の実演を足した。
  *
  * 規定値（最小幅104px・最大幅240px・クリアスペース12px/18px）は 07 v2.3 §1-4 の M2 新設節。
  * 実際に描かれた幅は getBoundingClientRect で計測して並べる（「規定」と「現物」を突き合わせる）。
  */
-import { useLayoutEffect, useRef, useState } from 'react';
-import { SG_BRAND_LOGO_SOURCES, SgBrandLogo, SgLumenLogo, type ThemeMode } from '@magi/core/ui';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  SG_BRAND_ICON_SOURCES,
+  SG_BRAND_LOGO_SOURCES,
+  SgBrandLogo,
+  SgLumenLogo,
+  useBrandFavicon,
+  type ThemeMode,
+} from '@magi/core/ui';
 import { Section } from '../lib/Section';
 import manifest from '../../src/ui/brand/logo-manifest.json';
 
@@ -22,6 +30,7 @@ const VARIANTS: Array<{ variant: 'day' | 'sunset' | 'night'; mode: ThemeMode; la
 
 const RULES: Array<[string, string]> = [
   ['最小サイズ', '幅 104px 未満で使わない（実装済み --magi-brand-logo-width-sm の追認。幅80pxで装飾ストロークが潰れ始め、64pxで判読不能＝実測）'],
+  ['幅104px 未満・正方形の器', '横長ロゴを縮めるのではなくアイコン型を使う（favicon・アプリアイコン・小さな丸枠）。favicon は useBrandFavicon() の1行、それ以外は SG_BRAND_ICON_SOURCES を読んで自前の <img>（v0.16.0・2026-08-09 社長採用）'],
   ['最大サイズ', '幅 240px を超えて使わない（同梱PNGは480×240のみ・DPR2で240×2=480＝原画の実解像度が上限）'],
   ['クリアスペース', '隣接要素と 12px 以上・パネル端と 18px 以上。計測起点は .magi-brand-logo の外形（trim適用後）で、原画に焼き込まれた白の外周余白は算入しない'],
   ['配色', '3モード連動は部品に任せる（アプリ側でモード別に画像を出し分けない）'],
@@ -29,9 +38,16 @@ const RULES: Array<[string, string]> = [
   ['禁止', '変形（縦横比変更）・色替え・影付け・回転・他要素との重ね'],
 ];
 
+/** favicon 用途の実寸見本（16=タブ / 24=ブックマーク / 32=高DPIのタブ / 64=タスク切替）。 */
+const ICON_PREVIEW_SIZES = [16, 24, 32, 64];
+
 export function BrandLogoSection({ themeMode, revision }: Props) {
   const liveRef = useRef<HTMLSpanElement | null>(null);
   const [measured, setMeasured] = useState<string>('計測中…');
+
+  // ここが「1行で favicon」の実演そのもの。このページのタブアイコンがモードに追従する。
+  const faviconVariant = useBrandFavicon();
+  const [faviconHref, setFaviconHref] = useState<string>('（未取得）');
 
   useLayoutEffect(() => {
     const el = liveRef.current?.querySelector('.magi-brand-logo');
@@ -39,6 +55,13 @@ export function BrandLogoSection({ themeMode, revision }: Props) {
     const rect = el.getBoundingClientRect();
     setMeasured(`${Math.round(rect.width)}×${Math.round(rect.height)}px`);
   }, [revision]);
+
+  // 実物の <link rel="icon"> を DOM から読み直して出す（「フックが返した値」ではなく描画結果を見る）。
+  useEffect(() => {
+    const link = document.head.querySelector<HTMLLinkElement>('link[rel~="icon"]');
+    setFaviconHref(link?.getAttribute('href') ?? '（link が無い）');
+    // eslint 相当の意図: faviconVariant が変わった後に読む＝追従の証拠になる。
+  }, [faviconVariant, revision]);
 
   return (
     <Section
@@ -122,6 +145,93 @@ export function BrandLogoSection({ themeMode, revision }: Props) {
           <SgBrandLogo alt="" />
         </div>
       </div>
+
+      <h3 className="ds-subhead">アイコン型（正方形・favicon／アプリアイコン用・v0.16.0）</h3>
+      <p className="ds-note">
+        <strong>幅104px を切る場面で横長ロゴを縮めない</strong>——タブのアイコン（16〜32px）・アプリアイコン・丸い枠のような
+        小さな正方の器では、正方形で描き起こされた<strong>アイコン型</strong>を使う。同梱は
+        <code className="ds-mono">512×512</code> の3枚（1024原本は Drive 正本に残置）。
+        描く器は core に置いていない＝<code className="ds-mono">SG_BRAND_ICON_SOURCES</code> を読んで自前の
+        <code className="ds-mono">&lt;img&gt;</code> を組む。favicon なら次の1行だけでよい。
+      </p>
+      <pre className="ds-code">{`import { useBrandFavicon } from '@magi/core/ui';
+
+function App() {
+  useBrandFavicon();   // 陽光→day / 残照→sunset / 月光→night に自動追従
+  …
+}`}</pre>
+      <p className="ds-note">
+        <strong>このページ自身がその1行を呼んでいる</strong>。いまのモード{' '}
+        <code className="ds-mono">{themeMode}</code> → variant <code className="ds-mono">{faviconVariant}</code>、
+        実際の <code className="ds-mono">&lt;link rel=&quot;icon&quot;&gt;</code> の href ＝{' '}
+        <strong className="ds-mono">{faviconHref}</strong>
+        （上の帯でモードを変えるとこの値とタブのアイコンが入れ替わる）。既に
+        <code className="ds-mono">link[rel~=&quot;icon&quot;]</code> があるアプリではそれを借りるので link が2枚に増えることはない。
+      </p>
+
+      <div className="ds-grid">
+        {VARIANTS.map(({ variant, label }) => (
+          <div className="ds-specimen" key={`icon-${variant}`}>
+            <div className="ds-specimen-head">
+              <span className="ds-specimen-name">icon variant=&quot;{variant}&quot;</span>
+              <span className="ds-specimen-tag">{label}</span>
+            </div>
+            <img alt="" height={128} src={SG_BRAND_ICON_SOURCES[variant].src} width={128} />
+            <p className="ds-specimen-note">
+              実寸での見え方（{ICON_PREVIEW_SIZES.join(' / ')}px）:
+            </p>
+            <div className="ds-row">
+              {ICON_PREVIEW_SIZES.map((size) => (
+                <img
+                  alt=""
+                  height={size}
+                  key={size}
+                  src={SG_BRAND_ICON_SOURCES[variant].src}
+                  title={`${size}px`}
+                  width={size}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h4 className="ds-subhead">アイコン型の出所追跡（logo-manifest.json の icons 節）</h4>
+      <table className="ds-table">
+        <thead>
+          <tr>
+            <th>variant</th>
+            <th className="ds-mono">同梱 file</th>
+            <th className="ds-mono">寸法</th>
+            <th className="ds-mono">sha256（先頭12桁）</th>
+            <th className="ds-mono">非同梱の原本（Drive 正本）</th>
+          </tr>
+        </thead>
+        <tbody>
+          {VARIANTS.map(({ variant }) => {
+            const icon = manifest.icons.variants[variant];
+            return (
+              <tr key={`icon-row-${variant}`}>
+                <td>{variant}</td>
+                <td className="ds-mono">{icon.standard.file}</td>
+                <td className="ds-mono">
+                  {icon.standard.width}×{icon.standard.height}
+                </td>
+                <td className="ds-mono">{icon.standard.sha256.slice(0, 12)}…</td>
+                <td className="ds-mono">
+                  {icon.master.file}（{icon.master.width}×{icon.master.height}）
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <p className="ds-note">
+        便＝<code className="ds-mono">{manifest.icons.delivery}</code>・採用{' '}
+        <code className="ds-mono">{manifest.icons.adopted_at}</code>。原本の所在は{' '}
+        <code className="ds-mono">{manifest.icons.master_location}</code>。
+        512版は原本からの <code className="ds-mono">LANCZOS</code> 縮小（{manifest.icons.bundled.derivation}）。
+      </p>
 
       <h3 className="ds-subhead">使用規定（07 v2.3 §1-4 M2新設節の要約）</h3>
       <table className="ds-table">

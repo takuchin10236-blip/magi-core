@@ -25,6 +25,10 @@ const PROVEN: Array<{ what: string; how: string }> = [
     what: 'MagiAppShell の既定ロゴ（logo 未指定なら SgBrandLogo）が実際にそう描かれる',
     how: '⑤の AppShell 実演は logo を**渡していない**。あそこに出ている絵画調ロゴが既定の実物＝言葉でなく画で示している（明示指定していた頃はこれを証明できていなかった）',
   },
+  {
+    what: 'アイコン型ロゴの favicon が色モードへ自動追従する（useBrandFavicon の1行）',
+    how: '⑦はこのページ自身がフックを呼び、実際の <link rel="icon"> の href を DOM から読み直して表示している（フックの戻り値ではなく描画結果）。同梱512版の SHA-256 は manifest の現物、突合は npm run verify:brand',
+  },
   { what: '既存の検査を1本も壊していない', how: 'npm run check（build / verify:brand / modal / shell / tokens / types / test / matrix）が緑のまま' },
 ];
 

@@ -130,6 +130,20 @@
   font-size: 0.78rem;
 }
 
+/* 使い方の写し（コード断片）。器だけ＝色・角丸・枠は core のトークンを参照する。 */
+.ds-code {
+  margin: 8px 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--card-radius, 12px);
+  font-family: var(--mono-font);
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
 /* ── 器（面） ──────────────────────────────────────────────────── */
 .ds-card {
   background: var(--bg-surface);
