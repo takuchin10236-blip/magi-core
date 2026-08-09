@@ -82,7 +82,7 @@
   --color-primary-hover: #24584b; /* ホバー時 */
   --color-accent: #1f4c7a;        /* 補助色: 落ち着いたブルー */
   --color-success: #2e7d32;       /* 成功色（プライマリと同系統だが用途違い） */
-  --color-warning: #d84315;
+  --color-warning: #c33d13;
   --color-info: #1565c0;
   --color-danger: #c62828;
   --color-muted: #9e9e9e;
@@ -202,7 +202,7 @@
   --color-primary-hover: #24584b; /* 据置 */
   --color-accent: #2f6f5f;
   --color-success: #2e7d32;       /* 据置（意味の色はモードで変えない＝01§2） */
-  --color-warning: #d84315;
+  --color-warning: #c33d13;
   --color-info: #1565c0;
   --color-danger: #c62828;
   --color-muted: #9e9e9e;
@@ -277,7 +277,7 @@
   --text-muted-source: #59665f;
   --brand: #6bbf95;
   --brand-2: #6bbf95;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --active-surface: #ffffff;
@@ -305,7 +305,9 @@
      白地に文字として置くと 2.21:1 しか出ない（機械実測）。同じ色相150°のまま暗くした
      版を文字専用に持つ。ロゴ・面・枠の --primary は変えない（社長裁定 2026-07-28）。 */
   --brand-ink: #1b7447;
-  /* 警告の文字用。#d84315 は薄黄背景の上で 4.19:1 と僅かに足りない（機械実測）。 */
+  /* 警告の文字用。面 --warn を #c33d13 へ暗くした（2026-08-09 第2便）あとは面の色そのものでも
+     薄黄地 4.96:1 を満たすが、「面・枠の色」と「文字の色」を分ける規約（--brand-ink と同じ作り）は
+     崩さない。#ba3a12 は薄黄地 5.35:1 / 白地 5.67:1（機械実測）。 */
   --status-warn-ink: #ba3a12;
   --bg-app: var(--background);
   --bg-surface: var(--card);
@@ -403,7 +405,7 @@
   --text-muted-source: #7f6754;
   --brand: #2f6f5f;
   --brand-2: #2f6f5f;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --active-surface: #fffaf0;
@@ -431,7 +433,8 @@
      5.12:1 出る（機械実測）ので据置。--primary(#2f6f5f) も文字で 5.23:1 出るが、
      「面・枠・ロゴの色」と「文字の色」を分ける規約は崩さない。 */
   --brand-ink: #1b7447;
-  /* 警告の文字用。#d84315 は暖クリーム地で 3.93:1 と足りない（機械実測）＝陽光と同じ手当て。 */
+  /* 警告の文字用。陽光と同じ手当て（面 #c33d13 でも暖クリーム地 4.66:1 は出るが、面と文字を
+     分ける規約は残照でも崩さない）。#ba3a12 は暖クリーム地 5.03:1 / カード地 5.45:1（機械実測）。 */
   --status-warn-ink: #ba3a12;
   --bg-app: var(--background);
   --bg-surface: var(--card);
@@ -466,7 +469,7 @@
   --text-muted-source: #7f6754;
   --brand: #2f6f5f;
   --brand-2: #2f6f5f;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --active-surface: #fffaf0;
@@ -527,7 +530,7 @@
   --text-strong: #33241c;
   --brand: #2f6f5f;
   --brand-2: #2f6f5f;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --active-surface: #fffaf0;
@@ -595,7 +598,7 @@
   --border-mid: #d3ba90;
   --brand: #2f6f5f;
   --brand-2: #2f6f5f;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --active-surface: #fffaf0;
@@ -653,7 +656,7 @@
   --text-muted-source: #6e6e73;
   --brand: #0071e3;
   --brand-2: #0066cc;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --active-surface: rgba(255, 255, 255, 0.92);
@@ -765,7 +768,7 @@
   --text-strong: #000000;
   --brand: #000000;
   --brand-2: #000000;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --active-surface: #ffffff;
@@ -931,7 +934,7 @@
   --border-mid: #b0aea5;
   --brand: #d97757;
   --brand-2: #d97757;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --active-surface: #f0eee6;
@@ -1085,32 +1088,36 @@
    混色が 20% の理由: 26% だと nova-carbon の danger 面 #ef4444 の上で 4.29:1 しか出ない（実測）。
    1つの割合で全部通すため濃い側へ寄せた。
 
-   warning だけ純黒（色相を借りない）理由: 面 --warn(#d84315) は中輝度で、**どんな文字色でも
-   上限 4.73:1**（白 4.44 / 黒 4.73 / 混色 8% で 4.52 ＝実測）。色相を借りる余裕が数値として
-   無いので、唯一 4.5:1 を余裕込みで超える純黒に倒す。面の見直しは別便（余裕 0.23 しかない）。 */
+   warning の面を暗くした（2026-08-09 第2便・社長承認）: 旧 --warn(#d84315) はどんな文字色でも
+   上限 4.73:1（白 4.44 / 黒 4.73）で、余裕が 0.23 しか無かった。色相14.15°・彩度82.3% を
+   固定したまま HSL の明度だけ 46.5%→42.0% へ下げた **#c33d13** に置き換えている（候補を
+   0.5% 刻みで作って全部計測し、①白文字 4.8:1 以上 ②この色を明るい地に文字として置いても
+   4.5:1 以上 の両方を満たす一番明るい候補を採った＝白 5.25 / 純白地 5.25 / 薄黄地 4.96）。
+   面が暗くなったので **warning のインクは白**（旧・純黒は 4.00:1 まで落ちる＝理由が消えた）。
+   例外は nova-carbon 陽光だけ（面が --accent #ef4444 で明るい＝下の carbon 節で黒に残す）。 */
 :root {
   /* 属性が付く前の一瞬・data 属性を持たない採用アプリ＝ standard-lumen 陽光相当。 */
   --success-toast-text: #ffffff;
-  --warning-toast-text: #000000;
+  --warning-toast-text: #ffffff;
   --danger-toast-text: #ffffff;
   --danger-button-text: #ffffff;
   --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
 :root[data-color-mode="white"] {
-  /* 陽光: success(#2e7d32) 5.13:1・danger(#c62828) 5.62:1 は白で足りる。
+  /* 陽光: success(#2e7d32) 5.13:1・danger(#c62828) 5.62:1・warning(#c33d13) 5.25:1 は白で足りる。
      info の面だけプリセット依存で明るい（既定 #6bbf95 は白文字 2.21:1）。 */
   --success-toast-text: #ffffff;
-  --warning-toast-text: #000000;
+  --warning-toast-text: #ffffff;
   --danger-toast-text: #ffffff;
   --danger-button-text: #ffffff;
   --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
 }
 
 :root[data-color-mode="dusk"] {
-  /* 残照: warning 以外は面が暗い（#2e7d32 / #c62828 / #2f6f5f）＝白のまま 5.13:1 以上。 */
+  /* 残照: 面はどれも暗い（#2e7d32 / #c62828 / #2f6f5f / warning #c33d13）＝白のまま 5.13:1 以上。 */
   --success-toast-text: #ffffff;
-  --warning-toast-text: #000000;
+  --warning-toast-text: #ffffff;
   --danger-toast-text: #ffffff;
   --danger-button-text: #ffffff;
   --info-toast-text: #ffffff;
@@ -1133,10 +1140,13 @@
   --info-toast-text: #ffffff;
 }
 
-/* nova-carbon 陽光: info/success の面は墨(#000)＝白のまま。danger だけ #ef4444 で明るく、
-   白文字は 3.76:1（実測）＝ここは陽光でも暗いインクへ倒す（ボタンとトーストを対で）。 */
+/* nova-carbon 陽光: info/success の面は墨(#000)＝白のまま。danger と warning は面が
+   --accent(#ef4444) で明るく、白文字は 3.76:1（実測）＝ここは陽光でも暗いインクへ倒す。
+   warning が純黒なのはこのテーマだけ（面が #ef4444 のとき黒 5.58:1 / 混色20% 4.67:1 で、
+   最も余裕がある黒を採る）。他のテーマの warning は面が #c33d13 で白（上の節）。 */
 :root[data-ui-preset="nova-carbon"][data-color-mode="white"] {
   --info-toast-text: #ffffff;
+  --warning-toast-text: #000000;
   --danger-toast-text: color-mix(in srgb, var(--color-danger) 20%, #000);
   --danger-button-text: color-mix(in srgb, var(--color-danger) 20%, #000);
 }
@@ -2750,7 +2760,7 @@ button.magi-status-badge {
 
 .toast-warning {
   --toast-bg: var(--color-warning);
-  --toast-text: var(--warning-toast-text, #000000);
+  --toast-text: var(--warning-toast-text, #ffffff);
 }
 
 .toast-close {

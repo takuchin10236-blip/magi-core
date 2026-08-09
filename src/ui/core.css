@@ -40,7 +40,7 @@
   --text-2: #43504a;
   --text-muted-source: #59665f;
   --brand: #6bbf95;
-  --warn: #d84315;
+  --warn: #c33d13;
   --danger: #c62828;
   --ok: #2e7d32;
   --ui-font: "Plus Jakarta Sans Variable", "Noto Sans JP", system-ui, sans-serif;
@@ -82,11 +82,12 @@
 
   /* 状態色の面に載せる文字インク（2026-08-09 塞ぎ便・design-system.css と同型）。
      面は動かさず文字だけ倒す。info の面 --brand(#6bbf95) は明るく、白文字だと 2.21:1（実測）。
-     warning は面 --warn(#d84315) が中輝度で、どんな文字色でも上限 4.73:1（純黒）＝黒に倒す。
+     warning は面 --warn を #d84315 → #c33d13 へ暗くした（2026-08-09 第2便）ため白へ。
+     旧 #d84315 はどんな文字色でも上限 4.73:1（余裕 0.23）だったが、#c33d13 は白で 5.25:1。
      --danger-button-text は .themed-btn-danger が読む（core.css は同クラスを持たないが、
      自前で danger ボタンを書く採用アプリが core のトークンを読めるよう対で配る）。 */
   --success-toast-text: #ffffff;
-  --warning-toast-text: #000000;
+  --warning-toast-text: #ffffff;
   --danger-toast-text: #ffffff;
   --danger-button-text: #ffffff;
   --info-toast-text: color-mix(in srgb, var(--color-info) 20%, #000);
@@ -440,7 +441,7 @@
 
 .toast-warning {
   --toast-bg: var(--color-warning);
-  --toast-text: var(--warning-toast-text, #000000);
+  --toast-text: var(--warning-toast-text, #ffffff);
 }
 
 .toast-close {
