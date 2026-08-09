@@ -4483,7 +4483,10 @@ mark.search-hit {
 
 .themed-btn-ghost {
   background: transparent;
-  color: var(--color-primary);
+  /* 2026-08-09: 面の色（--primary）を文字に使っていたため白地で 2.21:1 だった。
+     2026-07-28 に作った文字用インク --brand-ink へ載せ替える（作った時の載せ替え漏れの解消）。
+     面・枠・ロゴの --color-primary は変えない。 */
+  color: var(--brand-ink, var(--color-primary));
   border: 1px solid transparent;
   border-radius: var(--button-radius, calc(var(--mode-radius) * 0.75));
 }
