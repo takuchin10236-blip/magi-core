@@ -4357,6 +4357,11 @@ mark.search-hit {
 .magi-textarea {
   min-height: 88px;
   resize: vertical;
+  /* 複数行は「ピル」にしない（2026-08-09 社長実機指摘）。.magi-input は 1行の器として
+     --button-radius（9999px＝ピル）を敷いており、高さのある textarea では左右が半円に膨らんで
+     文字が見切れる。入力の角丸トークン --input-radius へ載せ替える＝07 §3-3「入力」行の値を
+     テーマ値として持つ既存トークン（.themed-input と同じ流儀）。1行 input・ボタン・バッジは触らない。 */
+  border-radius: var(--input-radius, calc(var(--mode-radius) * 0.75));
 }
 
 .magi-select {
