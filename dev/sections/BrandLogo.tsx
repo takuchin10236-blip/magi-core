@@ -47,9 +47,11 @@ export function BrandLogoSection({ themeMode, revision }: Props) {
       title="ブランドロゴ"
       note={
         <>
-          正式ブランドロゴは <code>SgBrandLogo</code>（PNG・2:1・standard 480×240）。ただし
-          <strong>MagiAppShell の既定は今も <code>SgLumenLogo</code>（SVG）</strong>で、正式ロゴへ差し替えるアプリが{' '}
-          <code className="ds-mono">logo=&lt;SgBrandLogo/&gt;</code> を渡す <strong>opt-in</strong> 方式（既存アプリは無改修のまま）。
+          正式ブランドロゴは <code>SgBrandLogo</code>（PNG・2:1・standard 480×240）。
+          <strong>2026-08-09 社長裁定でロゴは1本に統一</strong>され、<code>MagiAppShell</code> の
+          <strong>既定がこの <code>SgBrandLogo</code></strong> になった（アプリ側の opt-in は不要）。
+          旧既定の <code>SgLumenLogo</code>（SVG）は<strong>廃止裁定済み</strong>——import しているアプリのために
+          export だけ残してあり、新規には選ばない。
         </>
       }
     >
@@ -88,12 +90,12 @@ export function BrandLogoSection({ themeMode, revision }: Props) {
         ))}
       </div>
 
-      <h3 className="ds-subhead">SgLumenLogo（AppShell の既定・SVG）との並記</h3>
+      <h3 className="ds-subhead">SgLumenLogo（旧既定・廃止裁定済み）との並記</h3>
       <div className="ds-row">
         <div className="ds-specimen">
           <div className="ds-specimen-head">
             <span className="ds-specimen-name">SgLumenLogo</span>
-            <span className="ds-specimen-tag">既定・SVG・単色</span>
+            <span className="ds-specimen-tag">旧既定・廃止裁定済み・SVG</span>
           </div>
           {/* 素の <svg> は寸法を持たない（器が決める）＝シェルの実クラス .magi-appshell-logo で実寸表示。 */}
           <SgLumenLogo className="magi-appshell-logo" />
@@ -115,7 +117,7 @@ export function BrandLogoSection({ themeMode, revision }: Props) {
         <div className="ds-specimen">
           <div className="ds-specimen-head">
             <span className="ds-specimen-name">SgBrandLogo</span>
-            <span className="ds-specimen-tag">opt-in・PNG・絵画調</span>
+            <span className="ds-specimen-tag">現行の既定・PNG・絵画調</span>
           </div>
           <SgBrandLogo alt="" />
         </div>

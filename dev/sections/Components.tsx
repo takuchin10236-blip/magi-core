@@ -528,6 +528,11 @@ export function ComponentsSection(props: Props) {
         <SgLumenLogo className="magi-appshell-logo" />
         <SgBrandLogo alt="" />
       </div>
+      <p className="ds-note">
+        左が <code className="ds-mono">SgLumenLogo</code>（<strong>旧既定・2026-08-09 廃止裁定済み</strong>。
+        import しているアプリのために export だけ残す）、右が <code className="ds-mono">SgBrandLogo</code>
+        （<strong>現行の既定</strong>＝<code>MagiAppShell</code> にロゴを渡さなければこちらが出る）。
+      </p>
     </Section>
   );
 }

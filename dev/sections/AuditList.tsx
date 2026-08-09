@@ -39,24 +39,34 @@ const NOT_PROVEN: Array<{ what: string; why: string }> = [
 ];
 
 /**
- * このページを機械検査に掛けて実際に出た赤（2026-08-09・M1実装時）。
- * 直すのは別便（本便は「塗り替え禁止・既存コード不変更」の発注）。消さずに載せておく。
+ * このページを機械検査に掛けて実際に出た赤。
+ * 2026-08-09（M1実装時）は5件あり、うち ghost / danger の4件は同日の見た目調整便で直した。
+ * 履歴は消さず「直った理由と実測値」に書き換えて載せておく。
  */
 const KNOWN_RED: Array<{ what: string; detail: string }> = [
   {
-    what: 'ghost ボタンの文字が白地で 2.21:1（基準 4.5:1）',
-    detail:
-      'themed-btn-ghost の文字色は --primary(#6bbf95)。core は 2026-07-28 に「白地の文字用」として --brand-ink(#1b7447) を作ったが、ghost はそこへ載せ替えられていない（同じ穴の残り）。core 側の別起案。',
-  },
-  {
-    what: 'danger ボタンの文字が月光で 2.77:1（基準 4.5:1）',
-    detail:
-      '月光の --danger(#f87171) は面の色として明るく、その上の白文字が 2.77:1 になる（陽光の #c62828 では足りている）。状態色は世界共通解の枠なので、直すなら「面と文字の組」を core で裁定する。',
-  },
-  {
     what: 'ロゴ文字（SG / SHONAN GREEN）が残照の枠内で 2.31:1',
     detail:
-      'WCAG 2.2 SC 1.4.3 は「ロゴ・ブランド名の文字」を対象外にしているが、check-contrast は文字要素として測るため赤が出る。加えてこの枠はヘッダー色（--bg-header）で、残照ではヘッダーが茜色になる＝月光向けの dark 版ロゴを置けば当然落ちる（見本の置き方の問題）。',
+      'WCAG 2.2 SC 1.4.3 は「ロゴ・ブランド名の文字」を対象外にしているが、check-contrast は文字要素として測るため赤が出る。加えてこの枠はヘッダー色（--bg-header）で、残照ではヘッダーが茜色になる＝月光向けの dark 版ロゴを置けば当然落ちる（見本の置き方の問題）。旧ロゴ SgLumenLogo は 2026-08-09 に廃止裁定済みで、この見本のためだけに残っている。',
+  },
+];
+
+/** 2026-08-09 の見た目調整便で直した赤（直した事実と実測値を残す）。 */
+const FIXED_RED: Array<{ what: string; detail: string }> = [
+  {
+    what: 'ghost ボタンの文字が白地で 2.21:1 → 5.78:1（実測）',
+    detail:
+      'themed-btn-ghost の文字色が面用の --primary(#6bbf95) のままだった。2026-07-28 に「白地の文字用」として作った --brand-ink(#1b7447) へ載せ替えた（作った時の載せ替え漏れの解消）。面・枠・ロゴの --primary は変えていない。',
+  },
+  {
+    what: 'danger ボタンの文字が月光で 2.77:1 → 5.38:1（実測）',
+    detail:
+      '月光の --danger(#f87171) は面として明るく、その上の白文字が 2.77:1 だった。面は動かさず、文字を --danger-button-text（月光では color-mix(--color-danger 26%, #000)）へ倒した。月光の primary ボタンが「明るい面＋暗い文字」なのと同じ作り。--color-danger 自体は動かしていない（暗い面の上のエラー文字がそれを使っているため）。',
+  },
+  {
+    what: 'TextArea がピル形（社長実機目視・機械検査では出ない形の崩れ）',
+    detail:
+      '.magi-input が --button-radius(9999px) を敷いており、高さのある textarea で左右が半円に膨らんでいた。.magi-textarea だけ --input-radius へ載せ替えた（07 §3-3「入力」行のテーマ値・1行 input とボタンは不変）。',
   },
 ];
 
@@ -84,17 +94,33 @@ export function AuditListSection() {
         ))}
       </ul>
 
-      <h3 className="ds-subhead">いま赤い機械検査（2026-08-09 実測・直すのは別便）</h3>
+      <h3 className="ds-subhead">いま赤い機械検査（2026-08-09 見た目調整便のあと・実測）</h3>
       <p className="ds-note">
         <code className="ds-mono">node ci/check-contrast.mjs --url http://127.0.0.1:5273 --modes white,dusk,dark</code> の実行結果
-        （走査 6,984 要素・NG 5件＝下の3種）。<strong>このページを作った時に見つかった core 側の事実</strong>で、
-        本便は「塗り替え禁止・既存コード不変更」の発注のため直していない。隠さずここに置く。
+        （NG 2件＝下の1種・残照のロゴ文字だけ）。ショーケース実装時は NG 5件で、
+        <strong>ghost / danger の4件は同日の調整便で直した</strong>（下の「直した赤」）。
       </p>
       <ul className="ds-audit">
         {KNOWN_RED.map((p) => (
           <li key={p.what}>
             <span aria-hidden="true" className="ds-audit-mark" data-kind="manual">
               ✗
+            </span>
+            <span>
+              <strong>{p.what}</strong>
+              <br />
+              <span className="ds-specimen-note">{p.detail}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <h3 className="ds-subhead">直した赤（2026-08-09 見た目調整便・社長裁定4件）</h3>
+      <ul className="ds-audit">
+        {FIXED_RED.map((p) => (
+          <li key={p.what}>
+            <span aria-hidden="true" className="ds-audit-mark">
+              ✔
             </span>
             <span>
               <strong>{p.what}</strong>
