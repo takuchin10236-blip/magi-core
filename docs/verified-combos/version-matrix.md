@@ -3,8 +3,8 @@
 > `scripts/collect-version-matrix.mts` の自動生成物。手で版番号を書かない。
 > 固定版は origin/main 確定commitから収集（dirty ローカルは使わない）。
 
-- 生成時刻: 2026-08-09T07:40:52.552Z
-- Core: **v0.17.0**（tag数: 51）
+- 生成時刻: 2026-08-11T03:15:27.427Z
+- Core: **v0.18.1**（tag数: 53）
 - template_commit（雛形 origin/main）: 102b996477cfb1443863205bc978d9cd99ff69b0
 
 ## 採用repo（origin/main 確定commit）
@@ -20,14 +20,15 @@
 
 | app | core_tag | template_commit | app_commit | verified_at | verified_by | evidence |
 |---|---|---|---|---|---|---|
-| @magi/core | v0.14.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | b12a410d6ea59a442e08604573199fc69c37149b | 2026-08-08 | タチコマ（実装座席・サブエージェント） | GOAL-20260808-CORE-V0140/verify-v0.14.0.log |
-| @magi/core | v0.15.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | b12a410d6ea59a442e08604573199fc69c37149b | 2026-08-09 | バトー（開発部・検収統合座席） | GOAL-20260809-CORE-V0150/verify-v0.15.0.log |
-| @magi/core | v0.16.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | b12a410d6ea59a442e08604573199fc69c37149b | 2026-08-09 | バトー（開発部・検収統合座席） | GOAL-20260809-CORE-V0160/verify-v0.16.0.log |
-| @magi/core | v0.17.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | b12a410d6ea59a442e08604573199fc69c37149b | 2026-08-09 | バトー（開発部・検収統合座席） | GOAL-20260809-CORE-V0170/verify-v0.17.0.log |
+| @magi/core | v0.14.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | c78d881da1a0d119c99a38d6edb02f2705a76f33 | 2026-08-08 | タチコマ（実装座席・サブエージェント） | GOAL-20260808-CORE-V0140/verify-v0.14.0.log |
+| @magi/core | v0.15.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | c78d881da1a0d119c99a38d6edb02f2705a76f33 | 2026-08-09 | バトー（開発部・検収統合座席） | GOAL-20260809-CORE-V0150/verify-v0.15.0.log |
+| @magi/core | v0.16.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | c78d881da1a0d119c99a38d6edb02f2705a76f33 | 2026-08-09 | バトー（開発部・検収統合座席） | GOAL-20260809-CORE-V0160/verify-v0.16.0.log |
+| @magi/core | v0.17.0 | 102b996477cfb1443863205bc978d9cd99ff69b0 | c78d881da1a0d119c99a38d6edb02f2705a76f33 | 2026-08-09 | バトー（開発部・検収統合座席） | GOAL-20260809-CORE-V0170/verify-v0.17.0.log |
+| @magi/core | v0.18.1 | 102b996477cfb1443863205bc978d9cd99ff69b0 | c78d881da1a0d119c99a38d6edb02f2705a76f33 | 2026-08-11 | ラヴェンツァ（施設運営・2階マニュアル座席） | GOAL-20260811-CORE-V0181/verify-v0.18.1.log |
 
 ## source_hashes（版pin実体の SHA-256・`npm run verify:matrix` が鮮度検査）
 
-- `core:package.json`: d0f020a9c041aefecb5a8f6beec1e301e5ec156194872de6e8a1376354f9ac7e
+- `core:package.json`: bbf291b9e5cb0252ff6cfbf6b9b5c2c64d52315742cf536bcf363cc249f1e633
 - `magi-webapp-template:origin-main:package.json`: 0117b807690f534d93de3a941410eaa041f5a3b4f5f8175d0313d69b62d8a023
 - `magi-resident-spine:origin-main:package.json`: 82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550
 - `magi-resident-master:origin-main:package.json`: cbb16fe1aed54593795548aab02577a606db55f61d38a6bdab97bb02a32396b7
