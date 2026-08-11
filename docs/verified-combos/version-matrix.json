@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-11T03:33:20.592Z",
+  "generated_at": "2026-08-11T05:22:19.619Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
     "version": "0.18.1",
@@ -92,6 +92,13 @@
       "app_version": "0.3.0",
       "core_pinned_tag": "v0.13.3",
       "app_commit": "a1770b6d7410ed0a183ed654e4b2c193a18fa26b"
+    },
+    {
+      "name": "magi-resident-adl",
+      "available": true,
+      "app_version": "0.1.0",
+      "core_pinned_tag": "v0.17.0",
+      "app_commit": "243365223c8557f20bfb4ee7bbd9d97777d6f50c"
     }
   ],
   "verified": [
@@ -151,14 +158,16 @@
     "magi-webapp-template:origin-main:package.json": "0117b807690f534d93de3a941410eaa041f5a3b4f5f8175d0313d69b62d8a023",
     "magi-resident-spine:origin-main:package.json": "82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550",
     "magi-resident-master:origin-main:package.json": "cbb16fe1aed54593795548aab02577a606db55f61d38a6bdab97bb02a32396b7",
-    "magi-staff-directory:origin-main:package.json": "c7e6c6d171730a6537cec0056eee49a3f67d639ce46bc56c27f4003171a1d798"
+    "magi-staff-directory:origin-main:package.json": "c7e6c6d171730a6537cec0056eee49a3f67d639ce46bc56c27f4003171a1d798",
+    "magi-resident-adl:origin-main:package.json": "ee69d4c5f3f5f424fe81365e3af5fec96cd0929ddb59e1ba5d025c67982d2f98"
   },
   "freshness_targets": {
     "core:version-tag-commit": "c78d881da1a0d119c99a38d6edb02f2705a76f33",
-    "core:origin-main-head": "f607b67b4b64be2163a662af3e61caaeaa551bad",
+    "core:origin-main-head": "d89b60cd3eeaeff62c004bb33b81534a35a568df",
     "magi-webapp-template:origin-main-head": "102b996477cfb1443863205bc978d9cd99ff69b0",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158",
     "magi-resident-master:origin-main-head": "0a7e4015d6d7f65fbf6698d385fc442db429a5e0",
-    "magi-staff-directory:origin-main-head": "a1770b6d7410ed0a183ed654e4b2c193a18fa26b"
+    "magi-staff-directory:origin-main-head": "a1770b6d7410ed0a183ed654e4b2c193a18fa26b",
+    "magi-resident-adl:origin-main-head": "243365223c8557f20bfb4ee7bbd9d97777d6f50c"
   }
 }

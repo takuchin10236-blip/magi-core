@@ -37,6 +37,9 @@ export function defaultAdopters() {
     // 引数なし再生成で採用行と verified が落ちる罠があった＝2026-08-02 実測）。
     { name: 'magi-resident-master', path: join(base, 'magi-resident-master') },
     { name: 'magi-staff-directory', path: join(base, 'magi-staff-directory') },
+    // v0.18.2: 利用者ADLアプリを既定へ追加（2026-08-11 社長GO）。2026-08-09 の建設以来
+    // 版台帳に載っておらず、コアの版遅れが機械で見えない状態だった＝型の鮮度突合の穴。
+    { name: 'magi-resident-adl', path: join(base, 'magi-resident-adl') },
   ];
 }
 

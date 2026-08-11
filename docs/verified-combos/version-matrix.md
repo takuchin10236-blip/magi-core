@@ -3,7 +3,7 @@
 > `scripts/collect-version-matrix.mts` の自動生成物。手で版番号を書かない。
 > 固定版は origin/main 確定commitから収集（dirty ローカルは使わない）。
 
-- 生成時刻: 2026-08-11T03:33:20.592Z
+- 生成時刻: 2026-08-11T05:22:19.619Z
 - Core: **v0.18.1**（tag数: 53）
 - template_commit（雛形 origin/main）: 102b996477cfb1443863205bc978d9cd99ff69b0
 
@@ -15,6 +15,7 @@
 | magi-resident-spine | 0.2.0-f0f1 | v0.4.3 | 329a2f70b92156238ea80ca95d85e51273ecd158 |
 | magi-resident-master | 0.1.0 | v0.12.0 | 0a7e4015d6d7f65fbf6698d385fc442db429a5e0 |
 | magi-staff-directory | 0.3.0 | v0.13.3 | a1770b6d7410ed0a183ed654e4b2c193a18fa26b |
+| magi-resident-adl | 0.1.0 | v0.17.0 | 243365223c8557f20bfb4ee7bbd9d97777d6f50c |
 
 ## verified（検証済み組合せ・11 §0.5）
 
@@ -33,4 +34,5 @@
 - `magi-resident-spine:origin-main:package.json`: 82a98ed6361821524e0874ad73f2c3df8e835f52349ff62e34d1073018690550
 - `magi-resident-master:origin-main:package.json`: cbb16fe1aed54593795548aab02577a606db55f61d38a6bdab97bb02a32396b7
 - `magi-staff-directory:origin-main:package.json`: c7e6c6d171730a6537cec0056eee49a3f67d639ce46bc56c27f4003171a1d798
+- `magi-resident-adl:origin-main:package.json`: ee69d4c5f3f5f424fe81365e3af5fec96cd0929ddb59e1ba5d025c67982d2f98
 
