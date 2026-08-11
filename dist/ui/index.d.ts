@@ -94,4 +94,6 @@ export { NameWithRoom, compactPersonName } from './NameWithRoom';
 export type { NameWithRoomProps } from './NameWithRoom';
 export { OperatorChip, OperatorSelectModal } from './Operator';
 export type { OperatorChipProps, OperatorSelectModalProps, OperatorStaff } from './Operator';
+export { useHistoryRoute, isPlainLeftClick } from './useHistoryRoute';
+export type { UseHistoryRouteOptions, HistoryRouteApi, HistoryRouteState, HistoryRouteCause } from './useHistoryRoute';
 //# sourceMappingURL=index.d.ts.map
