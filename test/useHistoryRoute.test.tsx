@@ -158,6 +158,30 @@ describe('画面遷移と履歴（push）', () => {
     expect(api?.hrefFor({ view: 'mine' })).toBe(format({ view: 'mine' }));
   });
 
+  it('hrefFor は guard を通さない（リンクは「アプリが出すと決めた行き先」を指す）', () => {
+    // 通すと、見えている行き先とURLがずれ、コピーして共有した時に別の場所が開く。
+    // guarded な状況でも hrefFor の値が変わらないことで、この設計判断を固定する。
+    renderAt('#home', { guarded: true });
+    expect(api?.hrefFor({ view: 'mine' })).toBe('#mine');
+  });
+
+  it('同じ断片でも付帯情報が違えば履歴エントリを置き換える（画面と履歴を食い違わせない）', () => {
+    // 素通りさせると「画面は新しい state・エントリは古い state」になり、再読込で帰り先が巻き戻る
+    // （2026-08-11 二系統レビューで実測した取り違え）。積まないが、書きはする。
+    renderAt('#home');
+    act(() => {
+      api?.navigate({ view: 'list', itemId: 'a1' }, { state: { returnView: 'list' } });
+    });
+    const push = vi.spyOn(window.history, 'pushState');
+    act(() => {
+      api?.navigate({ view: 'list', itemId: 'a1' }, { state: { returnView: 'search' } });
+    });
+
+    expect(push).not.toHaveBeenCalled(); // 履歴は増やさない
+    expect(window.history.state).toEqual({ returnView: 'search' }); // でもエントリは最新
+    expect(restored[restored.length - 1].state).toEqual({ returnView: 'search' });
+  });
+
   it('navigate も onRoute を呼ぶ（画面の反映点は1つ・由来は navigate）', () => {
     // このAPIの要点。押した側で画面を組み立てる形に戻すと、経路が増えるたびに
     // 反映の書き足しが要り、必ずどれかが取り残される（＝書きかけ保護の塞ぎ忘れと同じ構図）。
@@ -300,6 +324,19 @@ describe('書きかけ保護（canLeave / onBlocked）', () => {
     expect(restored).toHaveLength(1);
     expect(restored[0].cause).toBe('navigate');
     expect(screen.getByTestId('view').textContent).toBe('list');
+  });
+
+  it('force は canLeave を迂回する（権限が失効した画面からの追い出しを職員に断らせない）', () => {
+    // ここを通常の確認へ流すと、職員が「書きかけを続ける」を押すだけで追い出しを拒否でき、
+    // 多くの実装は再試行しないので見せられない画面に居座られる（2026-08-11 実測の後退）。
+    renderAt('#home', { dirty: true });
+    act(() => {
+      api?.navigate({ view: 'home' }, { replace: true, force: true });
+    });
+
+    expect(blocked).toHaveLength(0);
+    expect(restored).toHaveLength(1);
+    expect(restored[0].route).toEqual(HOME);
   });
 
   it('canLeave は guard を通した後の行き先で判断する（見ていない行き先で尋ねない）', () => {

@@ -66,28 +66,29 @@ export function useHistoryRoute(options) {
     const currentRoute = useRef(initialRoute);
     const currentState = useRef(null);
     /**
-     * URL断片を書く。戻り値は「実際に履歴へ書いたか」。
-     * push で**同じ断片なら何もしない**——同じタブの押し直しで履歴が無限に積み上がり、
-     * 戻るボタンが同じ画面で何回も空回りするのを防ぐ（付帯情報だけが違う場合も積まない）。
+     * URL断片を書く。
+     *
+     * push で**同じ断片なら積まずに置き換える**——同じタブの押し直しで履歴が無限に積み上がり、
+     * 戻るボタンが同じ画面で何回も空回りするのを防ぐ。ただし**書かずに素通りはしない**：
+     * 付帯情報（state）だけが違う場合、素通りさせると「画面は新しい state で組み立てられたのに、
+     * 履歴エントリは古い state のまま」という食い違いが残り、再読込で帰り先が巻き戻る
+     * （2026-08-11 の二系統レビューで実測。同じ本文へ別の一覧から入り直した時に踏む）。
+     * 置き換えなら履歴は増えず、画面とエントリが必ず一致する。
+     *
      * replace は常に書く＝popstate の後始末で「URLを正規形へ揃え直す」役目があり、
-     * ここを飛ばすと guard で落とした時の食い違いが残る。履歴は増えないので副作用も無い。
+     * ここを飛ばすと guard で落とした時の食い違いが残る。
      */
     function writeHash(hash, mode, state) {
-        if (mode === 'push') {
-            if (window.location.hash === hash)
-                return false;
+        if (mode === 'push' && window.location.hash !== hash) {
             window.history.pushState(state, '', hash);
-            return true;
+            return;
         }
         window.history.replaceState(state, '', hash);
-        return true;
     }
     /** フックが覚えている「現在地」を、いま履歴に書いた内容へ合わせる。 */
-    function settle(route, state, wrote) {
+    function settle(route, state) {
         currentRoute.current = route;
-        // 書かなかった時は、履歴エントリの付帯情報も変わっていない（覚えている値を上書きしない）。
-        if (wrote)
-            currentState.current = state;
+        currentState.current = state;
     }
     useEffect(() => {
         // 戻る/進むの画面復元は採用アプリが自分で行う（画面が丸ごと入れ替わるため、
@@ -119,8 +120,8 @@ export function useHistoryRoute(options) {
             const resume = () => {
                 // 常に置き換える＝guard で落とした時・アプリ内専用の断片（送信完了画面等）が
                 // 戻るで届いた時の食い違いを、次の再読込へ持ち越さない。
-                const wrote = writeHash(format(to), 'replace', poppedState);
-                settle(to, poppedState, wrote);
+                writeHash(format(to), 'replace', poppedState);
+                settle(to, poppedState);
                 onRoute(to, poppedState, 'popstate');
             };
             if (canLeave && !canLeave(to)) {
@@ -151,11 +152,12 @@ export function useHistoryRoute(options) {
         const to = applyGuard(route);
         const state = navigateOptions.state ?? null;
         const run = () => {
-            const wrote = writeHash(format(to), navigateOptions.replace ? 'replace' : 'push', state);
-            settle(to, state, wrote);
+            writeHash(format(to), navigateOptions.replace ? 'replace' : 'push', state);
+            settle(to, state);
             onRoute(to, state, 'navigate');
         };
-        if (canLeave && !canLeave(to)) {
+        // force ＝ 権限・記名の失効による追い出し。職員に拒否させない（上の JSDoc 参照）。
+        if (!navigateOptions.force && canLeave && !canLeave(to)) {
             // 履歴は1ミリも動かさない（この経路ではまだ何も起きていない＝取り消す物が無い）。
             // resume はこの run＝「URLを書いて画面も反映する」で、popstate 経路の resume と意味が揃う。
             onBlocked?.(run, to);

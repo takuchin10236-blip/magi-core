@@ -37,10 +37,19 @@ export interface UseHistoryRouteOptions<Route> {
     onBlocked?: (resume: () => void, to: Route) => void;
 }
 export interface HistoryRouteApi<Route> {
-    /** 画面を移る唯一の入口。既定は履歴を積む（push）。canLeave を必ず通る。 */
+    /**
+     * 画面を移る唯一の入口。既定は履歴を積む（push）。既定で `canLeave` を通る。
+     *
+     * `force: true` は `canLeave` を迂回する。**「職員に断らせてはいけない移動」専用**——
+     * 権限や記名が失効して、いま開いている画面をもう見せられない時の追い出しがこれにあたる。
+     * ここを通常の確認へ流すと、職員が「書きかけを続ける」を押すだけで**追い出しを拒否でき**、
+     * しかも多くの実装は再試行しないので、見せられない画面に居座られる（2026-08-11 実測の後退）。
+     * 逆に、職員の意思で移る操作（タブ・カード・リンク）へ force を使ってはいけない。
+     */
     navigate: (route: Route, options?: {
         replace?: boolean;
         state?: HistoryRouteState;
+        force?: boolean;
     }) => void;
     /** リンクの href に使う断片。履歴に積む形と同じ関数から作る（形の二重管理をしない）。 */
     hrefFor: (route: Route) => string;

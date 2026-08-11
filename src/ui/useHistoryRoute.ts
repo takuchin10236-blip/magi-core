@@ -81,8 +81,16 @@ export interface UseHistoryRouteOptions<Route> {
 }
 
 export interface HistoryRouteApi<Route> {
-  /** 画面を移る唯一の入口。既定は履歴を積む（push）。canLeave を必ず通る。 */
-  navigate: (route: Route, options?: { replace?: boolean; state?: HistoryRouteState }) => void;
+  /**
+   * 画面を移る唯一の入口。既定は履歴を積む（push）。既定で `canLeave` を通る。
+   *
+   * `force: true` は `canLeave` を迂回する。**「職員に断らせてはいけない移動」専用**——
+   * 権限や記名が失効して、いま開いている画面をもう見せられない時の追い出しがこれにあたる。
+   * ここを通常の確認へ流すと、職員が「書きかけを続ける」を押すだけで**追い出しを拒否でき**、
+   * しかも多くの実装は再試行しないので、見せられない画面に居座られる（2026-08-11 実測の後退）。
+   * 逆に、職員の意思で移る操作（タブ・カード・リンク）へ force を使ってはいけない。
+   */
+  navigate: (route: Route, options?: { replace?: boolean; state?: HistoryRouteState; force?: boolean }) => void;
   /** リンクの href に使う断片。履歴に積む形と同じ関数から作る（形の二重管理をしない）。 */
   hrefFor: (route: Route) => string;
   /** 初回読込時に guard を通したルート。アプリの useState 初期値に使う。 */
@@ -125,27 +133,30 @@ export function useHistoryRoute<Route>(options: UseHistoryRouteOptions<Route>): 
   const currentState = useRef<HistoryRouteState>(null);
 
   /**
-   * URL断片を書く。戻り値は「実際に履歴へ書いたか」。
-   * push で**同じ断片なら何もしない**——同じタブの押し直しで履歴が無限に積み上がり、
-   * 戻るボタンが同じ画面で何回も空回りするのを防ぐ（付帯情報だけが違う場合も積まない）。
+   * URL断片を書く。
+   *
+   * push で**同じ断片なら積まずに置き換える**——同じタブの押し直しで履歴が無限に積み上がり、
+   * 戻るボタンが同じ画面で何回も空回りするのを防ぐ。ただし**書かずに素通りはしない**：
+   * 付帯情報（state）だけが違う場合、素通りさせると「画面は新しい state で組み立てられたのに、
+   * 履歴エントリは古い state のまま」という食い違いが残り、再読込で帰り先が巻き戻る
+   * （2026-08-11 の二系統レビューで実測。同じ本文へ別の一覧から入り直した時に踏む）。
+   * 置き換えなら履歴は増えず、画面とエントリが必ず一致する。
+   *
    * replace は常に書く＝popstate の後始末で「URLを正規形へ揃え直す」役目があり、
-   * ここを飛ばすと guard で落とした時の食い違いが残る。履歴は増えないので副作用も無い。
+   * ここを飛ばすと guard で落とした時の食い違いが残る。
    */
-  function writeHash(hash: string, mode: 'push' | 'replace', state: HistoryRouteState): boolean {
-    if (mode === 'push') {
-      if (window.location.hash === hash) return false;
+  function writeHash(hash: string, mode: 'push' | 'replace', state: HistoryRouteState): void {
+    if (mode === 'push' && window.location.hash !== hash) {
       window.history.pushState(state, '', hash);
-      return true;
+      return;
     }
     window.history.replaceState(state, '', hash);
-    return true;
   }
 
   /** フックが覚えている「現在地」を、いま履歴に書いた内容へ合わせる。 */
-  function settle(route: Route, state: HistoryRouteState, wrote: boolean): void {
+  function settle(route: Route, state: HistoryRouteState): void {
     currentRoute.current = route;
-    // 書かなかった時は、履歴エントリの付帯情報も変わっていない（覚えている値を上書きしない）。
-    if (wrote) currentState.current = state;
+    currentState.current = state;
   }
 
   useEffect(() => {
@@ -179,8 +190,8 @@ export function useHistoryRoute<Route>(options: UseHistoryRouteOptions<Route>): 
       const resume = () => {
         // 常に置き換える＝guard で落とした時・アプリ内専用の断片（送信完了画面等）が
         // 戻るで届いた時の食い違いを、次の再読込へ持ち越さない。
-        const wrote = writeHash(format(to), 'replace', poppedState);
-        settle(to, poppedState, wrote);
+        writeHash(format(to), 'replace', poppedState);
+        settle(to, poppedState);
         onRoute(to, poppedState, 'popstate');
       };
 
@@ -209,15 +220,16 @@ export function useHistoryRoute<Route>(options: UseHistoryRouteOptions<Route>): 
    * 通った時は、URLを書いてから `onRoute(..., 'navigate')` を呼ぶ＝戻る/進むと同じ反映点。
    * 呼び出し元は「どこへ行くか」だけを言えばよく、画面の組み立てを各所に書かない。
    */
-  function navigate(route: Route, navigateOptions: { replace?: boolean; state?: HistoryRouteState } = {}): void {
+  function navigate(route: Route, navigateOptions: { replace?: boolean; state?: HistoryRouteState; force?: boolean } = {}): void {
     const to = applyGuard(route);
     const state = navigateOptions.state ?? null;
     const run = () => {
-      const wrote = writeHash(format(to), navigateOptions.replace ? 'replace' : 'push', state);
-      settle(to, state, wrote);
+      writeHash(format(to), navigateOptions.replace ? 'replace' : 'push', state);
+      settle(to, state);
       onRoute(to, state, 'navigate');
     };
-    if (canLeave && !canLeave(to)) {
+    // force ＝ 権限・記名の失効による追い出し。職員に拒否させない（上の JSDoc 参照）。
+    if (!navigateOptions.force && canLeave && !canLeave(to)) {
       // 履歴は1ミリも動かさない（この経路ではまだ何も起きていない＝取り消す物が無い）。
       // resume はこの run＝「URLを書いて画面も反映する」で、popstate 経路の resume と意味が揃う。
       onBlocked?.(run, to);
