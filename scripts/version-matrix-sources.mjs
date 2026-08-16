@@ -40,6 +40,10 @@ export function defaultAdopters() {
     // v0.18.2: 利用者ADLアプリを既定へ追加（2026-08-11 社長GO）。2026-08-09 の建設以来
     // 版台帳に載っておらず、コアの版遅れが機械で見えない状態だった＝型の鮮度突合の穴。
     { name: 'magi-resident-adl', path: join(base, 'magi-resident-adl') },
+    // v0.18.3: フロアカレンダーv2を既定へ追加（2026-08-16 社長GO・ラリー FCAL-20260816）。
+    // core v0.13.7 → v0.18.1 の5世代上げを完了して v0.9.0 を本番配備したが、
+    // 版台帳に載っていないため型の鮮度突合が機械で効かない状態だった＝ADLと同型の穴。
+    { name: 'magi-floor-calendar-v2', path: join(base, 'magi-floor-calendar-v2') },
   ];
 }
 
