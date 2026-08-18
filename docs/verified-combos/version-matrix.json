@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T13:02:51.826Z",
+  "generated_at": "2026-08-18T05:53:25.212Z",
   "note": "機械生成。手書き版番号は禁止。固定版は origin/main 確定commitから収集（11_型同期ルール §0.5）。",
   "core": {
     "version": "0.18.1",
@@ -108,58 +108,7 @@
       "app_commit": "4ee47d0c6d6cb00013460fb96cba50f192b55f91"
     }
   ],
-  "verified": [
-    {
-      "app": "@magi/core",
-      "core_tag": "v0.14.0",
-      "template_commit": "102b996477cfb1443863205bc978d9cd99ff69b0",
-      "app_commit": "c78d881da1a0d119c99a38d6edb02f2705a76f33",
-      "verified_at": "2026-08-08",
-      "verified_by": "タチコマ（実装座席・サブエージェント）",
-      "evidence": "GOAL-20260808-CORE-V0140/verify-v0.14.0.log",
-      "evidence_sha256": "89cde8ef77b55d983b722416bb376295fbd25adc7ff3ca83cc34ac8aa146e94e"
-    },
-    {
-      "app": "@magi/core",
-      "core_tag": "v0.15.0",
-      "template_commit": "102b996477cfb1443863205bc978d9cd99ff69b0",
-      "app_commit": "c78d881da1a0d119c99a38d6edb02f2705a76f33",
-      "verified_at": "2026-08-09",
-      "verified_by": "バトー（開発部・検収統合座席）",
-      "evidence": "GOAL-20260809-CORE-V0150/verify-v0.15.0.log",
-      "evidence_sha256": "505f9e15030134918ac6635c94a135f9e99457dfb92b74278d8223d6207dae6b"
-    },
-    {
-      "app": "@magi/core",
-      "core_tag": "v0.16.0",
-      "template_commit": "102b996477cfb1443863205bc978d9cd99ff69b0",
-      "app_commit": "c78d881da1a0d119c99a38d6edb02f2705a76f33",
-      "verified_at": "2026-08-09",
-      "verified_by": "バトー（開発部・検収統合座席）",
-      "evidence": "GOAL-20260809-CORE-V0160/verify-v0.16.0.log",
-      "evidence_sha256": "21545ddfabbadc440d6d7ee9ae393cd688ef0ab2104466698377d7f3f4504981"
-    },
-    {
-      "app": "@magi/core",
-      "core_tag": "v0.17.0",
-      "template_commit": "102b996477cfb1443863205bc978d9cd99ff69b0",
-      "app_commit": "c78d881da1a0d119c99a38d6edb02f2705a76f33",
-      "verified_at": "2026-08-09",
-      "verified_by": "バトー（開発部・検収統合座席）",
-      "evidence": "GOAL-20260809-CORE-V0170/verify-v0.17.0.log",
-      "evidence_sha256": "5234ba35d7becc401856dbb0c95287b012e78c59a6427e0772737a4b0bf14352"
-    },
-    {
-      "app": "@magi/core",
-      "core_tag": "v0.18.1",
-      "template_commit": "102b996477cfb1443863205bc978d9cd99ff69b0",
-      "app_commit": "c78d881da1a0d119c99a38d6edb02f2705a76f33",
-      "verified_at": "2026-08-11",
-      "verified_by": "ラヴェンツァ（施設運営・2階マニュアル座席）",
-      "evidence": "GOAL-20260811-CORE-V0181/verify-v0.18.1.log",
-      "evidence_sha256": "39ae0f51c85f09fd70e9ee56cf6e3007b96a506dcd849831114bb65a262bad86"
-    }
-  ],
+  "verified": [],
   "source_hashes": {
     "core:package.json": "bbf291b9e5cb0252ff6cfbf6b9b5c2c64d52315742cf536bcf363cc249f1e633",
     "magi-webapp-template:origin-main:package.json": "0117b807690f534d93de3a941410eaa041f5a3b4f5f8175d0313d69b62d8a023",
@@ -171,7 +120,7 @@
   },
   "freshness_targets": {
     "core:version-tag-commit": "c78d881da1a0d119c99a38d6edb02f2705a76f33",
-    "core:origin-main-head": "fc1618ea33bec2e421ace25755ceaf3cc8a9e0c6",
+    "core:origin-main-head": "52ac5634c3e16bca6916b11c7e43d8ec464974a2",
     "magi-webapp-template:origin-main-head": "102b996477cfb1443863205bc978d9cd99ff69b0",
     "magi-resident-spine:origin-main-head": "329a2f70b92156238ea80ca95d85e51273ecd158",
     "magi-resident-master:origin-main-head": "4008264820ceb75042474360c735a3bc54ee775d",
