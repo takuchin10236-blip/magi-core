@@ -11,6 +11,8 @@
  *   - アクセス制御（D4・署名検証版）: resolveVerifiedAccessContext / resolveAccessContext /
  *         requireAllowed / requireAdmin / requireSuperAdmin / isLocalDevRequest /
  *         publicDenyReason / AccessDeniedError
+ *   - 2F名簿の読み方（16番§5.2の唯一の正）: parseStaffDirectoryRows / parseResidentDirectoryRows
+ *         ＋ STAFF_ACTIVE_STATUSES / RESIDENT_ACTIVE_STATUSES
  *   - リトライ: withRetry
  *   - env/http ヘルパ: appEnv / isTrue / spreadsheetId / googleConfigPresent /
  *         ApiError / apiError / json / errorJson / apiResponse / readJsonBody
@@ -22,6 +24,10 @@ export type { WriteState } from './writeGuard.js';
 export { snapshotHash, assertFreshSnapshot, STALE_SNAPSHOT_MESSAGE, STALE_SNAPSHOT_STATUS, } from './concurrency.js';
 export type { ConcurrencyReason } from './concurrency.js';
 export { resolveVerifiedAccessContext, resolveAccessContext, requireAllowed, requireAdmin, requireSuperAdmin, isLocalDevRequest, publicDenyReason, AccessDeniedError, } from './access.js';
+export { parseStaffDirectoryRows, STAFF_ACTIVE_STATUSES } from './staffDirectory.js';
+export type { StaffDirectoryEntry, StaffDirectoryOptions } from './staffDirectory.js';
+export { parseResidentDirectoryRows, RESIDENT_ACTIVE_STATUSES } from './residentDirectory.js';
+export type { ResidentDirectoryEntry } from './residentDirectory.js';
 export { withRetry } from './withRetry.js';
 export type { WithRetryOptions } from './withRetry.js';
 export { appEnv, isTrue, spreadsheetId, googleConfigPresent } from './env.js';
