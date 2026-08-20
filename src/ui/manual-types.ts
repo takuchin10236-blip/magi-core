@@ -15,7 +15,7 @@
  *   （このリポジトリは PUBLIC のため）。
  */
 
-/** マニュアル本文を構成する最小ブロック（段落・手順・注意枠・比喩枠の4種） */
+/** マニュアル本文を構成する最小ブロック（段落・手順・注意枠・比喩枠・図の5種） */
 export type ManualBlock =
   // 通常段落
   | { type: 'paragraph'; text: string }
@@ -24,7 +24,22 @@ export type ManualBlock =
   // コールアウト枠（info=情報／tip=ヒント／warning=注意）
   | { type: 'note'; tone: 'info' | 'tip' | 'warning'; text: string }
   // 比喩（「たとえば…」枠）
-  | { type: 'analogy'; text: string };
+  | { type: 'analogy'; text: string }
+  /**
+   * 図（画面の写真・図解）。v0.21.0 で追加。
+   *
+   * 由来: 連絡ノート v0.10.0 で先に実装し、実地で形を確かめてから型へ昇格した
+   *   （2026-08-20 社長指示「まず連絡ノートで作って、型への昇格を検討する」→ 2026-08-21 昇格）。
+   *
+   * 線引き:
+   *   - `src` は**バンドラが解決したURL**を渡す（`import shot from './x.png'` の値、
+   *     または `new URL('./x.png', import.meta.url).href`）。文字列のパス直書きはしない
+   *     ＝画像を消した時にビルドで気づけるようにするため。
+   *   - `alt` は必須。読み上げと、画像が出ない時の代わりの言葉になる。
+   *   - `caption` も必須。図は本文から離れて読まれるので、図だけで意味が通る一言を書く。
+   *   - 検索は `alt` と `caption` を見る（画像の中の文字は機械が読めない）。
+   */
+  | { type: 'image'; src: string; alt: string; caption: string };
 
 /** マニュアルの 1 節（目次タブ1個ぶん） */
 export type ManualSection = {

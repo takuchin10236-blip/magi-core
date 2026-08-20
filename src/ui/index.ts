@@ -79,6 +79,8 @@ export { ManualViewer } from './ManualViewer';
 export { ManualEntry } from './ManualEntry';
 export type { ManualEntryProps } from './ManualEntry';
 export type { ManualBlock, ManualSection, ManualContent } from './manual-types';
+export { SG_LOGO_FIGURES } from './manualFigures';
+export type { SgLogoFigureName } from './manualFigures';
 
 // 状態表示（v0.4）
 export { StatusBadge } from './StatusBadge';

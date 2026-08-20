@@ -3380,6 +3380,30 @@ mark.search-hit {
 }
 
 /* 比喩枠（「たとえば…」・柔らかい背景） */
+/* 図（image ブロック・v0.21.0）。本文幅に収め、暗い画面でも図が沈まないよう面と枠を置く。
+   画像そのものの明るさは変えない（説明の対象＝実物の見た目を変えてはいけない）。 */
+.manual-figure {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin: 0 0 18px;
+}
+.manual-figure-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  background: var(--bg-surface-alt);
+  box-shadow: var(--surface-shadow);
+}
+.manual-figure-caption {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+  text-align: center;
+}
+
 .manual-analogy {
   margin: 0 0 16px;
   border: 1px dashed var(--border-strong);

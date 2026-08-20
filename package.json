@@ -1,6 +1,6 @@
 {
   "name": "@magi/core",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "description": "MAGI 2階老健システム群の共有コア。データ契約（Sheets/書込ゲート/D4署名検証アクセス制御）・CIガード原本・完全なデザインシステム（4プリセット×陽光/残照/月光＝12テーマ＋テーマ切替UI）・統一マニュアルビューア（v0.3）を1パッケージに集約する。",
   "type": "module",
   "license": "UNLICENSED",
@@ -44,7 +44,7 @@
     "ci/check-contrast.mjs"
   ],
   "scripts": {
-    "build": "tsc && node scripts/copy-brand-assets.mjs",
+    "build": "tsc && node scripts/copy-brand-assets.mjs && node scripts/copy-manual-figures.mjs",
     "verify:brand": "node scripts/verify-brand-assets.mjs",
     "verify:modal": "node scripts/verify-modal-standard.mjs",
     "verify:shell": "node scripts/verify-appshell-shell.mjs",

@@ -47,6 +47,8 @@ export { ManualViewer } from './ManualViewer';
 export { ManualEntry } from './ManualEntry';
 export type { ManualEntryProps } from './ManualEntry';
 export type { ManualBlock, ManualSection, ManualContent } from './manual-types';
+export { SG_LOGO_FIGURES } from './manualFigures';
+export type { SgLogoFigureName } from './manualFigures';
 export { StatusBadge } from './StatusBadge';
 export type { StatusBadgeProps, StatusTone } from './StatusBadge';
 export { SgLumenLogo } from './SgLumenLogo';

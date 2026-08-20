@@ -1,5 +1,6 @@
 /**
- * @magi/core/ui — 統一マニュアルビューア本体（全画面ページ型・v0.3.1）
+ * @magi/core/ui — 統一マニュアルビューア本体（全画面ページ型・v0.3.2）
+ *   v0.3.2: 図（image ブロック）に対応。連絡ノート v0.10.0 の実地実装からの昇格（2026-08-21）。
  *
  * 設計意図（2026-06-07 社長レビュー反映・全画面ページ化）:
  *   旧「右半分ドロワー」は背後のアプリが透けてヘッダが見切れる問題があったため、
@@ -71,6 +72,10 @@ function blockMatches(block: ManualBlock, q: string): boolean {
   if (block.type === 'steps') {
     return block.items.some((item) => item.toLowerCase().includes(needle));
   }
+  // 図は中の文字を機械が読めないので、代わりに alt と caption を見る（v0.21.0）。
+  if (block.type === 'image') {
+    return `${block.alt} ${block.caption}`.toLowerCase().includes(needle);
+  }
   return block.text.toLowerCase().includes(needle);
 }
 
@@ -117,6 +122,20 @@ function BlockView({ block, query }: { block: ManualBlock; query: string }) {
           </span>
           <p>{highlight(block.text, query)}</p>
         </div>
+      );
+    case 'image':
+      // 図はハイライトの対象外（画像の中の文字は置換できない）。説明文だけを検索語で光らせる。
+      return (
+        <figure className="manual-figure">
+          <img
+            className="manual-figure-image"
+            src={block.src}
+            alt={block.alt}
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption className="manual-figure-caption">{highlight(block.caption, query)}</figcaption>
+        </figure>
       );
     case 'analogy':
       return (

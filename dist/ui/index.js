@@ -44,6 +44,7 @@ export { THEME_MODES, DEFAULT_THEME_MODE_SETTING, DEFAULT_AUTO_THEME_SCHEDULE, A
 // 統一マニュアルビューア（v0.3）
 export { ManualViewer } from './ManualViewer';
 export { ManualEntry } from './ManualEntry';
+export { SG_LOGO_FIGURES } from './manualFigures';
 // 状態表示（v0.4）
 export { StatusBadge } from './StatusBadge';
 // AppShell 部品群（v0.5）

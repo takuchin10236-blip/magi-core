@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.21.0 (2026-08-21)
+
+**マニュアルに「図（画面の写真）」を追加**（社長指示 2026-08-20「まずは連絡ノートで作って、型への昇格を検討する」→ 2026-08-21「これは、型に昇格すべきだね」）。**追加のみ・既存の輸出と挙動は不変**。
+
+### 契機
+
+Cloudflare Access のログイン画面のように、**文だけでは伝わらない手順**が出てきた。
+連絡ノート v0.10.0 で画像ブロックを先に実装し（`ManualViewer` の写し＋`image`）、実地で
+①alt と caption を必須にする ②検索は alt と caption を見る ③図は手順のすぐ下に置く
+という形が固まったので、型へ上げた。連絡ノート側の写しは本版で廃止する。
+
+### 変更
+
+- `ManualBlock` に **`{ type: 'image'; src; alt; caption }`** を追加（5種類目）。
+  - `src` は**バンドラが解決したURL**を渡す（`import` の値／`new URL(..., import.meta.url).href`）。
+    文字列のパス直書きはしない＝画像を消した時にビルドで気づけるようにするため。
+  - `alt` と `caption` は**必須**。alt は読み上げと代替表示、caption は図単独で意味が通る一言。
+- `ManualViewer` は `<figure> / <img loading="lazy" decoding="async"> / <figcaption>` で描く。
+  **検索は alt と caption を対象にする**（画像の中の文字は機械が読めないため）。caption はハイライトする。
+- `design-system.css` に `.manual-figure` / `.manual-figure-image` / `.manual-figure-caption` を追加。
+  枠と面はトークン経由＝12テーマ自動追従。**画像そのものの明るさは変えない**（説明対象の見た目を変えない）。
+- **`SG_LOGO_FIGURES`**（新）: ロゴ節で使うロゴの切り出し図6枚（全体・SG組み文字・富士・波・唐草・3つの空）。
+  Drive正本の master（1774×887）から切り出し、表示幅へ縮小して **WebP（品質82・合計約190KB）** で同梱。
+  PNG のままだと約2MBあったため WebP を選んだ（`assets.d.ts` に `*.webp` 宣言を追加）。
+  絵は core、施設固有の**文言**は非公開の `@magi/manual-content`（2026-08-20 裁定A-3）を保つ。
+- `scripts/copy-manual-figures.mjs`（新）: 図を dist へ運ぶ。運ぶ前に「import しているのに無い」
+  「在るのに import されていない」を止め、運んだ後にバイト数一致を確かめる。
+
+### 検査
+
+`npm run build` OK（図6枚195KB を dist へ複製）／`verify:brand` OK／`verify:modal` 20 checks／
+`verify:shell` 25 checks／`verify:tokens` 30 checks／`verify:types` OK／**355試験（新規5本）**。
+
+⚠️ **`verify:matrix` はこの機（Mac mini）では通らない**——過去7版の evidence ログ（`GOAL-*/verify-*.log`）が
+この機に存在しないため。**本版の変更が原因ではなく、v0.21.0 の作業前から同じ状態**（実測で確認）。
+版SoTの再生成は**行っていない**。素で再生成すると検証記録7件が消えるため（2026-08-20 に同じ事故が起きている）。
+evidence ログの所在確認は別件で追う。
+
 ## v0.20.0 (2026-08-20)
 
 **マニュアルに「既定で閉じる節」を追加**（社長裁定 2026-08-20 15:11「マニュアルの最後にプルダウンにして収めてください。みたい人だけ」）。**追加のみ・既存の輸出と挙動は不変**。
