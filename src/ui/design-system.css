@@ -3222,6 +3222,61 @@ mark.search-hit {
   color: var(--text-primary);
 }
 
+/* ── 既定で閉じる節（collapsed: true・v0.20.0）──
+   業務に必須でない読み物を最後へ置き、読みたい人だけが開く。
+   見出しは押せることが分かる形にし、開閉の状態を三角で示す。 */
+.manual-section-collapsed > .manual-section-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none; /* 既定のマーカーを消し、自前の三角を置く */
+  padding: 4px 2px;
+  border-radius: var(--radius-md, 8px);
+}
+.manual-section-collapsed > .manual-section-summary::-webkit-details-marker {
+  display: none;
+}
+.manual-section-collapsed > .manual-section-summary::before {
+  content: "▶";
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--color-primary);
+  font-size: 13px;
+  transition: transform 120ms ease;
+}
+.manual-section-collapsed[open] > .manual-section-summary::before {
+  transform: rotate(90deg);
+}
+.manual-section-collapsed > .manual-section-summary:hover,
+.manual-section-collapsed > .manual-section-summary:focus-visible {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+/* 閉じている間は見出しの下線を出さない（節の切れ目に見えてしまうため） */
+.manual-section-collapsed > .manual-section-summary h3 {
+  flex: 1 1 auto;
+  margin: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+/* 見出しの隣の一言（summary）。開く前に「読まなくてよい」ことが分かるように */
+.manual-section-collapsed > .manual-section-summary > span {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+}
+/* 開いた後は本文の始まりが分かるよう、見出しの下に区切りを引く */
+.manual-section-collapsed[open] > .manual-section-summary {
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid color-mix(in srgb, var(--color-primary) 38%, transparent);
+}
+@media (max-width: 640px) {
+  .manual-section-collapsed > .manual-section-summary {
+    flex-wrap: wrap;
+  }
+}
+
 /* 段落（読みやすさ優先：15px・行間 1.8・段落間に余白） */
 .manual-paragraph {
   margin: 0 0 14px;

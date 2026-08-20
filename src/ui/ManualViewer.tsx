@@ -222,7 +222,10 @@ export function ManualViewer({ content, onClose }: Props) {
   const jumpTo = (id: string) => {
     setActiveId(id);
     suppressScrollSync.current = true;
-    sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = sectionRefs.current[id];
+    // 折りたたみ節へ飛ぶ時は開いてから運ぶ（閉じたまま運ぶと「押したのに何も出ない」に見える）
+    if (target instanceof HTMLDetailsElement) target.open = true;
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     // スムーズスクロール完了の正確なイベントが無いため、概算で連動を再開する。
     window.setTimeout(() => {
       suppressScrollSync.current = false;
@@ -328,22 +331,42 @@ export function ManualViewer({ content, onClose }: Props) {
         <div className="manual-body" ref={bodyRef}>
           <div className="manual-body-inner">
             {hasResults ? (
-              content.sections.map((s) => (
-                <section
-                  key={s.id}
-                  id={`manual-section-${s.id}`}
-                  data-section-id={s.id}
-                  ref={(el) => {
+              content.sections.map((s) => {
+                const blocks = s.blocks.map((block, i) => (
+                  <BlockView block={block} query={q} key={i} />
+                ));
+                const common = {
+                  id: `manual-section-${s.id}`,
+                  'data-section-id': s.id,
+                  ref: (el: HTMLElement | null) => {
                     sectionRefs.current[s.id] = el;
-                  }}
-                  className="manual-section"
-                >
-                  <h3>{highlight(s.title, q)}</h3>
-                  {s.blocks.map((block, i) => (
-                    <BlockView block={block} query={q} key={i} />
-                  ))}
-                </section>
-              ))
+                  },
+                };
+                // 既定で閉じる節。検索中はヒットした時だけ開く（ヒットが隠れないため）。
+                // 検索していない時は open を渡さず、開閉を利用者の操作に委ねる。
+                if (s.collapsed) {
+                  return (
+                    <details
+                      key={s.id}
+                      {...common}
+                      className="manual-section manual-section-collapsed"
+                      open={q ? sectionMatches(s, q) : undefined}
+                    >
+                      <summary className="manual-section-summary">
+                        <h3>{highlight(s.title, q)}</h3>
+                        {s.summary ? <span>{highlight(s.summary, q)}</span> : null}
+                      </summary>
+                      {blocks}
+                    </details>
+                  );
+                }
+                return (
+                  <section key={s.id} {...common} className="manual-section">
+                    <h3>{highlight(s.title, q)}</h3>
+                    {blocks}
+                  </section>
+                );
+              })
             ) : (
               <div className="manual-no-results" role="status">
                 <h3>見つかりませんでした</h3>

@@ -179,7 +179,11 @@ export function ManualViewer({ content, onClose }) {
     const jumpTo = (id) => {
         setActiveId(id);
         suppressScrollSync.current = true;
-        sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const target = sectionRefs.current[id];
+        // 折りたたみ節へ飛ぶ時は開いてから運ぶ（閉じたまま運ぶと「押したのに何も出ない」に見える）
+        if (target instanceof HTMLDetailsElement)
+            target.open = true;
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         // スムーズスクロール完了の正確なイベントが無いため、概算で連動を再開する。
         window.setTimeout(() => {
             suppressScrollSync.current = false;
@@ -190,8 +194,21 @@ export function ManualViewer({ content, onClose }) {
                                     searchInputRef.current?.focus();
                                 }, "aria-label": "\u691C\u7D22\u3092\u30AF\u30EA\u30A2", title: "\u691C\u7D22\u3092\u30AF\u30EA\u30A2\u3057\u307E\u3059", children: "\u00D7" }))] }), _jsx("p", { id: "manual-search-summary", className: "manual-search-summary", "aria-live": "polite", children: q
                             ? `「${q}」に当てはまる項目: ${matchedSections.length} 件`
-                            : `全 ${content.sections.length} 項目` })] }), _jsxs("div", { className: "manual-page-body", children: [_jsxs("nav", { className: "manual-toc", "aria-label": "\u76EE\u6B21", children: [_jsx("p", { className: "manual-toc-heading", children: "\u76EE\u6B21" }), _jsx("ul", { className: "manual-toc-list", children: content.sections.map((s) => (_jsx("li", { children: _jsx("button", { type: "button", className: `manual-toc-item${activeId === s.id ? ' active' : ''}`, onClick: () => jumpTo(s.id), title: s.summary || s.title, "aria-current": activeId === s.id ? 'true' : undefined, children: s.title }) }, s.id))) })] }), _jsx("div", { className: "manual-body", ref: bodyRef, children: _jsx("div", { className: "manual-body-inner", children: hasResults ? (content.sections.map((s) => (_jsxs("section", { id: `manual-section-${s.id}`, "data-section-id": s.id, ref: (el) => {
-                                    sectionRefs.current[s.id] = el;
-                                }, className: "manual-section", children: [_jsx("h3", { children: highlight(s.title, q) }), s.blocks.map((block, i) => (_jsx(BlockView, { block: block, query: q }, i)))] }, s.id)))) : (_jsxs("div", { className: "manual-no-results", role: "status", children: [_jsx("h3", { children: "\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3067\u3057\u305F" }), _jsxs("p", { children: ["\u300C", q, "\u300D\u306B\u5F53\u3066\u306F\u307E\u308B\u9805\u76EE\u306F\u3042\u308A\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u5225\u306E\u8A00\u8449\uFF08\u4F8B: \u3072\u3089\u304C\u306A\u3001\u77ED\u3044\u5358\u8A9E\uFF09\u3067 \u63A2\u3057\u3066\u307F\u3066\u304F\u3060\u3055\u3044\u3002"] })] })) }) })] })] }));
+                            : `全 ${content.sections.length} 項目` })] }), _jsxs("div", { className: "manual-page-body", children: [_jsxs("nav", { className: "manual-toc", "aria-label": "\u76EE\u6B21", children: [_jsx("p", { className: "manual-toc-heading", children: "\u76EE\u6B21" }), _jsx("ul", { className: "manual-toc-list", children: content.sections.map((s) => (_jsx("li", { children: _jsx("button", { type: "button", className: `manual-toc-item${activeId === s.id ? ' active' : ''}`, onClick: () => jumpTo(s.id), title: s.summary || s.title, "aria-current": activeId === s.id ? 'true' : undefined, children: s.title }) }, s.id))) })] }), _jsx("div", { className: "manual-body", ref: bodyRef, children: _jsx("div", { className: "manual-body-inner", children: hasResults ? (content.sections.map((s) => {
+                                const blocks = s.blocks.map((block, i) => (_jsx(BlockView, { block: block, query: q }, i)));
+                                const common = {
+                                    id: `manual-section-${s.id}`,
+                                    'data-section-id': s.id,
+                                    ref: (el) => {
+                                        sectionRefs.current[s.id] = el;
+                                    },
+                                };
+                                // 既定で閉じる節。検索中はヒットした時だけ開く（ヒットが隠れないため）。
+                                // 検索していない時は open を渡さず、開閉を利用者の操作に委ねる。
+                                if (s.collapsed) {
+                                    return (_jsxs("details", { ...common, className: "manual-section manual-section-collapsed", open: q ? sectionMatches(s, q) : undefined, children: [_jsxs("summary", { className: "manual-section-summary", children: [_jsx("h3", { children: highlight(s.title, q) }), s.summary ? _jsx("span", { children: highlight(s.summary, q) }) : null] }), blocks] }, s.id));
+                                }
+                                return (_jsxs("section", { ...common, className: "manual-section", children: [_jsx("h3", { children: highlight(s.title, q) }), blocks] }, s.id));
+                            })) : (_jsxs("div", { className: "manual-no-results", role: "status", children: [_jsx("h3", { children: "\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3067\u3057\u305F" }), _jsxs("p", { children: ["\u300C", q, "\u300D\u306B\u5F53\u3066\u306F\u307E\u308B\u9805\u76EE\u306F\u3042\u308A\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u5225\u306E\u8A00\u8449\uFF08\u4F8B: \u3072\u3089\u304C\u306A\u3001\u77ED\u3044\u5358\u8A9E\uFF09\u3067 \u63A2\u3057\u3066\u307F\u3066\u304F\u3060\u3055\u3044\u3002"] })] })) }) })] })] }));
 }
 //# sourceMappingURL=ManualViewer.js.map
