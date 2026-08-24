@@ -133,7 +133,8 @@ export type {
   WriteDetector,
   TrustedWriteDetector,
 } from './statusDetection';
-export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
+export { shortVersion, formatBuildTime, formatReleaseLabel, resolveReleaseTime } from './versionFormat';
+export type { ReleaseTimeSource } from './versionFormat';
 export { MagiBusinessSummary } from './MagiBusinessSummary';
 export type { MagiBusinessSummaryProps, MagiSummaryItem } from './MagiBusinessSummary';
 
