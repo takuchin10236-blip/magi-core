@@ -66,7 +66,7 @@ export { MagiAppShell } from './MagiAppShell';
 // 作業面の全画面表示（v0.9）。MagiAppShell の focusMode と対で使う。
 export { FocusToggle } from './FocusToggle';
 export { detectRuntime, validateDeclaredState, deriveStatusDisplay, isTrustedWriteDetector, createEnvWriteDetector, createHealthWriteDetector, createEndpointWriteDetector, } from './statusDetection';
-export { shortVersion, formatBuildTime, formatReleaseLabel } from './versionFormat';
+export { shortVersion, formatBuildTime, formatReleaseLabel, resolveReleaseTime } from './versionFormat';
 export { MagiBusinessSummary } from './MagiBusinessSummary';
 // ─────────────────────────────────────────────────────────────────────
 // v0.6 — デジタル庁DS整合レイヤ（2026-07-28 社長裁定）

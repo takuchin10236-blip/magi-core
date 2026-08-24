@@ -3,9 +3,11 @@ export interface MagiVersionChipProps {
     version: string;
     /** ビルド時刻 ISO 文字列（任意）。あればラベルへ 'M/D HH:MM' を併記。 */
     buildTime?: string;
+    /** データ台帳の最終更新時刻 ISO（任意）。ビルド時刻より新しければラベルの時刻はこちらを採る。 */
+    dataUpdatedAt?: string;
     /** 開いた時に見せる追加詳細（環境名・コミット等）。 */
     details?: Record<string, string>;
     className?: string;
 }
-export declare function MagiVersionChip({ version, buildTime, details, className }: MagiVersionChipProps): import("react").JSX.Element;
+export declare function MagiVersionChip({ version, buildTime, dataUpdatedAt, details, className }: MagiVersionChipProps): import("react").JSX.Element;
 //# sourceMappingURL=MagiVersionChip.d.ts.map
