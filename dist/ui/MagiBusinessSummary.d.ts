@@ -75,7 +75,14 @@ export interface MagiBusinessSummaryProps {
      *   （完全に消すと出勤時確認への戻り道が無くなるため）。
      */
     collapsible?: boolean;
+    /**
+     * 表示/非表示を外から制御する（2026-08-27 社長差戻し「表示領域が減らなければ隠す意味が無い」対応）。
+     *   これを渡すと帯は controlled になり、**隠し中は行ごと何も描画しない**（復帰導線はアプリが
+     *   自分の行——例: 検索行の左端——へ置く責務を負う）。省略時は従来どおり内蔵の細い復帰ボタンを出す。
+     */
+    hidden?: boolean;
+    onHiddenChange?: (next: boolean) => void;
     className?: string;
 }
-export declare function MagiBusinessSummary({ items, label, detailsLabel, ariaLabel, storageKey, columns, collapsible, className, }: MagiBusinessSummaryProps): import("react").JSX.Element;
+export declare function MagiBusinessSummary({ items, label, detailsLabel, ariaLabel, storageKey, columns, collapsible, hidden, onHiddenChange, className, }: MagiBusinessSummaryProps): import("react").JSX.Element | null;
 //# sourceMappingURL=MagiBusinessSummary.d.ts.map

@@ -37,7 +37,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  */
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-export function MagiBusinessSummary({ items, label = '現在の状況', detailsLabel = 'ダッシュボード', ariaLabel, storageKey, columns, collapsible, className, }) {
+export function MagiBusinessSummary({ items, label = '現在の状況', detailsLabel = 'ダッシュボード', ariaLabel, storageKey, columns, collapsible, hidden, onHiddenChange, className, }) {
     // 列数: 明示指定 > 項目数（最低1）。
     const summaryColumns = Math.max(1, Math.floor(columns ?? items.length));
     // 帯の表示/非表示（collapsible時のみ・既定は表示）。
@@ -52,7 +52,12 @@ export function MagiBusinessSummary({ items, label = '現在の状況', detailsL
             return false;
         }
     });
+    const controlled = hidden !== undefined;
+    const effectiveHidden = controlled ? Boolean(hidden) : bandHidden;
     const setBandHiddenPersist = (next) => {
+        onHiddenChange?.(next);
+        if (controlled)
+            return; // controlled時は状態も記憶もアプリの責務
         setBandHidden(next);
         if (!hiddenKey)
             return;
@@ -104,7 +109,10 @@ export function MagiBusinessSummary({ items, label = '現在の状況', detailsL
         };
     }, []);
     const describedItems = items.filter((item) => item.description !== undefined);
-    if (collapsible && bandHidden) {
+    if (collapsible && effectiveHidden) {
+        // controlled時は行ごと消す（復帰導線はアプリの行に同居させ、1行分を丸ごと返す）。
+        if (controlled)
+            return null;
         return (_jsx("section", { "aria-label": ariaLabel, className: `magi-business-summary is-band-hidden no-print${className ? ` ${className}` : ''}`, children: _jsxs("button", { className: "magi-business-summary-restore", onClick: () => setBandHiddenPersist(false), title: "\u96A0\u3057\u3066\u3044\u308B\u72B6\u6CC1\u306E\u5E2F\u3092\u3082\u3046\u4E00\u5EA6\u8868\u793A\u3057\u307E\u3059", type: "button", children: [_jsx(ChevronDown, { size: 14, "aria-hidden": true }), _jsxs("span", { children: [label, "\u3092\u8868\u793A"] })] }) }));
     }
     return (_jsxs("section", { "aria-label": ariaLabel, className: `magi-business-summary themed-card no-print${className ? ` ${className}` : ''}`, children: [_jsx("span", { className: "magi-business-summary-label", children: label }), _jsx("div", { className: "magi-business-summary-chips", 
