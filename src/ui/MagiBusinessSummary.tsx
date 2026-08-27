@@ -71,6 +71,13 @@ export interface MagiBusinessSummaryProps {
    *   あったため、部品が自分で決めるのを既定にした。明示指定した時だけそれを優先する。
    */
   columns?: number;
+  /**
+   * 帯を隠せるようにする（2026-08-27 社長裁定D-1・opt-in・非遡及）。
+   *   既定は表示（「見えているのが基本」）。隠すのは各利用者の選択で、storageKey があれば
+   *   `${storageKey}.hidden` に覚える。隠している間は細い「現在の状況を表示」ボタンだけ残す
+   *   （完全に消すと出勤時確認への戻り道が無くなるため）。
+   */
+  collapsible?: boolean;
   className?: string;
 }
 
@@ -81,10 +88,31 @@ export function MagiBusinessSummary({
   ariaLabel,
   storageKey,
   columns,
+  collapsible,
   className,
 }: MagiBusinessSummaryProps) {
   // 列数: 明示指定 > 項目数（最低1）。
   const summaryColumns = Math.max(1, Math.floor(columns ?? items.length));
+
+  // 帯の表示/非表示（collapsible時のみ・既定は表示）。
+  const hiddenKey = storageKey ? `${storageKey}.hidden` : null;
+  const [bandHidden, setBandHidden] = useState(() => {
+    if (!collapsible || !hiddenKey) return false;
+    try {
+      return window.localStorage.getItem(hiddenKey) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const setBandHiddenPersist = (next: boolean) => {
+    setBandHidden(next);
+    if (!hiddenKey) return;
+    try {
+      window.localStorage.setItem(hiddenKey, String(next));
+    } catch {
+      // 覚えられないブラウザでも切替そのものは続ける
+    }
+  };
 
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [open, setOpen] = useState(() => {
@@ -123,6 +151,22 @@ export function MagiBusinessSummary({
   }, []);
 
   const describedItems = items.filter((item) => item.description !== undefined);
+
+  if (collapsible && bandHidden) {
+    return (
+      <section aria-label={ariaLabel} className={`magi-business-summary is-band-hidden no-print${className ? ` ${className}` : ''}`}>
+        <button
+          className="magi-business-summary-restore"
+          onClick={() => setBandHiddenPersist(false)}
+          title="隠している状況の帯をもう一度表示します"
+          type="button"
+        >
+          <ChevronDown size={14} aria-hidden />
+          <span>{label}を表示</span>
+        </button>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -188,6 +232,17 @@ export function MagiBusinessSummary({
             ))}
           </div>
         </details>
+      ) : null}
+
+      {collapsible ? (
+        <button
+          className="magi-business-summary-hide"
+          onClick={() => setBandHiddenPersist(true)}
+          title="状況の帯を隠します（いつでも戻せます）"
+          type="button"
+        >
+          隠す
+        </button>
       ) : null}
     </section>
   );

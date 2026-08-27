@@ -24,7 +24,15 @@ export interface MagiStatusSummaryProps {
         label: string;
         value: string;
     }>;
+    /**
+     * 危険側1枚化（2026-08-27 社長裁定A-2・opt-in・非遡及）:
+     *   環境と書込状態が**両方とも機械検出で確定**している時だけ、バッジ群を1枚
+     *   （例「本番・書込ON」）へ畳む。fail-closed——確認中・検出失敗・無検証の申告・
+     *   申告エラーが1つでもあれば畳まず、従来どおり個別バッジへ自動展開する。
+     *   内訳は従来どおり「状態の説明」プルダウンで全部見える。
+     */
+    compact?: boolean;
     className?: string;
 }
-export declare function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStates, unsafeDeclaredStates, detailRows, className, }: MagiStatusSummaryProps): import("react").JSX.Element;
+export declare function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStates, unsafeDeclaredStates, detailRows, compact, className, }: MagiStatusSummaryProps): import("react").JSX.Element;
 //# sourceMappingURL=MagiStatusSummary.d.ts.map

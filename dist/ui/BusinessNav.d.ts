@@ -16,6 +16,11 @@ export type BusinessNavTab = {
     label: string;
     description?: string;
     icon?: ReactNode;
+    /**
+     * 主操作（CTA）として強調表示する（2026-08-27 社長裁定「項目と明らかに違うと分かるように」）。
+     *   例: 連絡ノートの「投稿を書く」。通常タブよりやや大きく・塗りで描く。
+     */
+    emphasis?: boolean;
 };
 export type BusinessNavMenuItem = {
     key: string;

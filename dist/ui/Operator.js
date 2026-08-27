@@ -20,11 +20,32 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  *   3. 未選択でも閲覧・印刷はできる。止めるのは保存・取消だけ
  *   4. チップは未選択が一目で分かる見た目にする（色だけに頼らず文字でも示す）
  */
+import { useLayoutEffect, useRef } from 'react';
 import { UserRound } from 'lucide-react';
 import { DraggableModal } from './DraggableModal';
-export function OperatorChip({ operatorName, onClick, unsetLabel = '未選択', className }) {
+/** 固定幅チップ内でラベルが収まるまで文字を縮小する（最小10px・全文表示が絶対）。 */
+const FIT_MIN_PX = 10;
+const FIT_BASE_PX = 14;
+export function OperatorChip({ operatorName, onClick, unsetLabel = '未選択', fixedWidth, className }) {
     const isSet = Boolean(operatorName);
-    return (_jsxs("button", { className: `operator-chip ${isSet ? 'is-set' : 'is-unset'}${className ? ` ${className}` : ''}`, onClick: onClick, title: "\u4FDD\u5B58\u306E\u8A18\u9332\u306B\u6B8B\u308B\u64CD\u4F5C\u8005\u3067\u3059\u3002\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u672C\u4EBA\u306E\u540D\u524D\u3092\u9078\u3073\u307E\u3059\u3002\u95B2\u89A7\u30FB\u5370\u5237\u3060\u3051\u306A\u3089\u9078\u629E\u4E0D\u8981\u3067\u3059\u3002", type: "button", children: [_jsx(UserRound, { size: 16, "aria-hidden": true }), _jsxs("span", { children: ["\u64CD\u4F5C\u8005: ", operatorName ?? unsetLabel] })] }));
+    const fixed = fixedWidth !== undefined;
+    const labelRef = useRef(null);
+    useLayoutEffect(() => {
+        if (!fixed)
+            return;
+        const span = labelRef.current;
+        if (!span)
+            return;
+        span.style.fontSize = `${FIT_BASE_PX}px`;
+        let size = FIT_BASE_PX;
+        // scrollWidth が親を超えている間、1pxずつ落とす（名前は長くても十数文字＝ループは小さい）。
+        while (size > FIT_MIN_PX && span.scrollWidth > span.clientWidth) {
+            size -= 1;
+            span.style.fontSize = `${size}px`;
+        }
+    }, [fixed, operatorName]);
+    const label = fixed ? (operatorName ?? '操作者') : `操作者: ${operatorName ?? unsetLabel}`;
+    return (_jsxs("button", { className: `operator-chip ${isSet ? 'is-set' : 'is-unset'}${fixed ? ' is-fixed' : ''}${className ? ` ${className}` : ''}`, onClick: onClick, style: fixed && fixedWidth !== true ? { width: `${fixedWidth}px` } : undefined, title: "\u4FDD\u5B58\u306E\u8A18\u9332\u306B\u6B8B\u308B\u64CD\u4F5C\u8005\u3067\u3059\u3002\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u672C\u4EBA\u306E\u540D\u524D\u3092\u9078\u3073\u307E\u3059\u3002\u95B2\u89A7\u30FB\u5370\u5237\u3060\u3051\u306A\u3089\u9078\u629E\u4E0D\u8981\u3067\u3059\u3002", type: "button", children: [_jsx(UserRound, { size: 16, "aria-hidden": true }), _jsx("span", { className: "operator-chip-label", ref: labelRef, children: label })] }));
 }
 export function OperatorSelectModal({ open, onClose, onSelect, staff, selectedOperatorId, emptyMessage = '在籍職員の名簿を確認できません。更新してから管理者へ確認してください。', }) {
     if (!open)

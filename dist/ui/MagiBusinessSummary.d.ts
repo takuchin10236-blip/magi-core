@@ -68,7 +68,14 @@ export interface MagiBusinessSummaryProps {
      *   あったため、部品が自分で決めるのを既定にした。明示指定した時だけそれを優先する。
      */
     columns?: number;
+    /**
+     * 帯を隠せるようにする（2026-08-27 社長裁定D-1・opt-in・非遡及）。
+     *   既定は表示（「見えているのが基本」）。隠すのは各利用者の選択で、storageKey があれば
+     *   `${storageKey}.hidden` に覚える。隠している間は細い「現在の状況を表示」ボタンだけ残す
+     *   （完全に消すと出勤時確認への戻り道が無くなるため）。
+     */
+    collapsible?: boolean;
     className?: string;
 }
-export declare function MagiBusinessSummary({ items, label, detailsLabel, ariaLabel, storageKey, columns, className, }: MagiBusinessSummaryProps): import("react").JSX.Element;
+export declare function MagiBusinessSummary({ items, label, detailsLabel, ariaLabel, storageKey, columns, collapsible, className, }: MagiBusinessSummaryProps): import("react").JSX.Element;
 //# sourceMappingURL=MagiBusinessSummary.d.ts.map

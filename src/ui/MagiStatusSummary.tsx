@@ -56,7 +56,36 @@ export interface MagiStatusSummaryProps {
   unsafeDeclaredStates?: unknown[];
   /** 状態の説明 details に載せる補助情報（データ接続名・本人確認の状態など・任意）。 */
   detailRows?: Array<{ label: string; value: string }>;
+  /**
+   * 危険側1枚化（2026-08-27 社長裁定A-2・opt-in・非遡及）:
+   *   環境と書込状態が**両方とも機械検出で確定**している時だけ、バッジ群を1枚
+   *   （例「本番・書込ON」）へ畳む。fail-closed——確認中・検出失敗・無検証の申告・
+   *   申告エラーが1つでもあれば畳まず、従来どおり個別バッジへ自動展開する。
+   *   内訳は従来どおり「状態の説明」プルダウンで全部見える。
+   */
+  compact?: boolean;
   className?: string;
+}
+
+/** compact 集約が許される条件を満たした時の1枚ラベル。満たさなければ null（＝個別展開）。 */
+function deriveCompactBadge(
+  resolution: StatusResolution,
+): { label: string; tone: 'danger' | 'warn' | 'ok'; detail: string } | null {
+  const { healthReady, runtimeSurface, writable, writeDetectorFailed, writeTrusted, declared, rejected } = resolution;
+  if (!healthReady || writeDetectorFailed) return null;
+  if (typeof writable !== 'boolean' || !writeTrusted) return null;
+  if (runtimeSurface === 'unknown') return null;
+  if (declared.length > 0 || rejected.length > 0) return null;
+  const surfaceLabel = runtimeSurface === 'production' ? '本番' : runtimeSurface === 'preview' ? 'レビュー環境' : 'このPC内';
+  const tone = runtimeSurface === 'production' ? 'danger' : runtimeSurface === 'preview' ? 'warn' : 'ok';
+  return {
+    label: `${surfaceLabel}・書込${writable ? 'ON' : 'OFF'}`,
+    tone,
+    detail:
+      runtimeSurface === 'production'
+        ? `本物のデータに触れる画面です（書込${writable ? 'ON' : 'OFF'}）。内訳は「状態の説明」で確認できます`
+        : `環境=${surfaceLabel}・書込${writable ? 'ON' : 'OFF'}。内訳は「状態の説明」で確認できます`,
+  };
 }
 
 // ── writeDetector の参照が毎レンダー変わる事故を、開発中に気づけるようにする（v0.9.4） ──
@@ -97,6 +126,7 @@ export function MagiStatusSummary({
   declaredStates,
   unsafeDeclaredStates,
   detailRows,
+  compact,
   className,
 }: MagiStatusSummaryProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
@@ -162,6 +192,7 @@ export function MagiStatusSummary({
     rejected,
   };
   const display = deriveStatusDisplay(resolution);
+  const compactBadge = compact ? deriveCompactBadge(resolution) : null;
 
   useEffect(() => {
     const onDocClick = (event: MouseEvent) => {
@@ -190,7 +221,14 @@ export function MagiStatusSummary({
       aria-label="MAGI状態"
     >
       <div className="magi-appshell-status-badges" role="status" aria-live="polite">
-        {display.visible.map((item: StatusDisplayItem) => (
+        {compactBadge ? (
+          <span className="magi-appshell-status-item">
+            <StatusBadge className="magi-appshell-status-badge" tone={compactBadge.tone} tooltip={compactBadge.detail}>
+              {compactBadge.label}
+            </StatusBadge>
+          </span>
+        ) : null}
+        {compactBadge ? null : display.visible.map((item: StatusDisplayItem) => (
           <span className="magi-appshell-status-item" key={item.id}>
             <StatusBadge className="magi-appshell-status-badge" tone={item.tone} tooltip={item.detail}>
               {item.label}

@@ -19,6 +19,7 @@
  *   3. 未選択でも閲覧・印刷はできる。止めるのは保存・取消だけ
  *   4. チップは未選択が一目で分かる見た目にする（色だけに頼らず文字でも示す）
  */
+import { useLayoutEffect, useRef } from 'react';
 import { UserRound } from 'lucide-react';
 
 import { DraggableModal } from './DraggableModal';
@@ -35,20 +36,49 @@ export interface OperatorChipProps {
   onClick: () => void;
   /** 未選択時のラベル。既定「未選択」。 */
   unsetLabel?: string;
+  /**
+   * 2026-08-27 社長裁定の表示形（opt-in・非遡及）:
+   *   未選択＝アイコン＋「操作者」（赤枠）／選択済み＝アイコン＋名前だけ（「操作者:」接頭辞なし）。
+   *   チップ幅は固定し、収まらない名前は文字を縮小して全文表示する（省略記号にしない）。
+   *   従来表示のアプリは prop を渡さなければ何も変わらない。
+   */
+  fixedWidth?: number | true;
   className?: string;
 }
 
-export function OperatorChip({ operatorName, onClick, unsetLabel = '未選択', className }: OperatorChipProps) {
+/** 固定幅チップ内でラベルが収まるまで文字を縮小する（最小10px・全文表示が絶対）。 */
+const FIT_MIN_PX = 10;
+const FIT_BASE_PX = 14;
+
+export function OperatorChip({ operatorName, onClick, unsetLabel = '未選択', fixedWidth, className }: OperatorChipProps) {
   const isSet = Boolean(operatorName);
+  const fixed = fixedWidth !== undefined;
+  const labelRef = useRef<HTMLSpanElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (!fixed) return;
+    const span = labelRef.current;
+    if (!span) return;
+    span.style.fontSize = `${FIT_BASE_PX}px`;
+    let size = FIT_BASE_PX;
+    // scrollWidth が親を超えている間、1pxずつ落とす（名前は長くても十数文字＝ループは小さい）。
+    while (size > FIT_MIN_PX && span.scrollWidth > span.clientWidth) {
+      size -= 1;
+      span.style.fontSize = `${size}px`;
+    }
+  }, [fixed, operatorName]);
+
+  const label = fixed ? (operatorName ?? '操作者') : `操作者: ${operatorName ?? unsetLabel}`;
   return (
     <button
-      className={`operator-chip ${isSet ? 'is-set' : 'is-unset'}${className ? ` ${className}` : ''}`}
+      className={`operator-chip ${isSet ? 'is-set' : 'is-unset'}${fixed ? ' is-fixed' : ''}${className ? ` ${className}` : ''}`}
       onClick={onClick}
+      style={fixed && fixedWidth !== true ? { width: `${fixedWidth}px` } : undefined}
       title="保存の記録に残る操作者です。クリックして本人の名前を選びます。閲覧・印刷だけなら選択不要です。"
       type="button"
     >
       <UserRound size={16} aria-hidden />
-      <span>操作者: {operatorName ?? unsetLabel}</span>
+      <span className="operator-chip-label" ref={labelRef}>{label}</span>
     </button>
   );
 }

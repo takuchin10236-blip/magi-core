@@ -37,9 +37,32 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  */
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-export function MagiBusinessSummary({ items, label = '現在の状況', detailsLabel = 'ダッシュボード', ariaLabel, storageKey, columns, className, }) {
+export function MagiBusinessSummary({ items, label = '現在の状況', detailsLabel = 'ダッシュボード', ariaLabel, storageKey, columns, collapsible, className, }) {
     // 列数: 明示指定 > 項目数（最低1）。
     const summaryColumns = Math.max(1, Math.floor(columns ?? items.length));
+    // 帯の表示/非表示（collapsible時のみ・既定は表示）。
+    const hiddenKey = storageKey ? `${storageKey}.hidden` : null;
+    const [bandHidden, setBandHidden] = useState(() => {
+        if (!collapsible || !hiddenKey)
+            return false;
+        try {
+            return window.localStorage.getItem(hiddenKey) === 'true';
+        }
+        catch {
+            return false;
+        }
+    });
+    const setBandHiddenPersist = (next) => {
+        setBandHidden(next);
+        if (!hiddenKey)
+            return;
+        try {
+            window.localStorage.setItem(hiddenKey, String(next));
+        }
+        catch {
+            // 覚えられないブラウザでも切替そのものは続ける
+        }
+    };
     const detailsRef = useRef(null);
     const [open, setOpen] = useState(() => {
         if (!storageKey)
@@ -81,6 +104,9 @@ export function MagiBusinessSummary({ items, label = '現在の状況', detailsL
         };
     }, []);
     const describedItems = items.filter((item) => item.description !== undefined);
+    if (collapsible && bandHidden) {
+        return (_jsx("section", { "aria-label": ariaLabel, className: `magi-business-summary is-band-hidden no-print${className ? ` ${className}` : ''}`, children: _jsxs("button", { className: "magi-business-summary-restore", onClick: () => setBandHiddenPersist(false), title: "\u96A0\u3057\u3066\u3044\u308B\u72B6\u6CC1\u306E\u5E2F\u3092\u3082\u3046\u4E00\u5EA6\u8868\u793A\u3057\u307E\u3059", type: "button", children: [_jsx(ChevronDown, { size: 14, "aria-hidden": true }), _jsxs("span", { children: [label, "\u3092\u8868\u793A"] })] }) }));
+    }
     return (_jsxs("section", { "aria-label": ariaLabel, className: `magi-business-summary themed-card no-print${className ? ` ${className}` : ''}`, children: [_jsx("span", { className: "magi-business-summary-label", children: label }), _jsx("div", { className: "magi-business-summary-chips", 
                 // 列数は項目数に追随させる（4項目固定にしない＝アプリごとに項目数を変えられる）。
                 // v0.10.0: 既定は「項目数」。columns を明示した時だけそちらを使う
@@ -96,6 +122,6 @@ export function MagiBusinessSummary({ items, label = '現在の状況', detailsL
                     catch {
                         // 保存できないブラウザでも開閉そのものは継続する
                     }
-                }, open: open, ref: detailsRef, children: [_jsxs("summary", { children: [detailsLabel, _jsx(ChevronDown, { size: 14, "aria-hidden": true })] }), _jsx("div", { className: "magi-business-summary-panel", children: describedItems.map((item) => (_jsxs("p", { children: [_jsx("strong", { children: item.label }), _jsx("span", { children: item.description })] }, item.key))) })] })) : null] }));
+                }, open: open, ref: detailsRef, children: [_jsxs("summary", { children: [detailsLabel, _jsx(ChevronDown, { size: 14, "aria-hidden": true })] }), _jsx("div", { className: "magi-business-summary-panel", children: describedItems.map((item) => (_jsxs("p", { children: [_jsx("strong", { children: item.label }), _jsx("span", { children: item.description })] }, item.key))) })] })) : null, collapsible ? (_jsx("button", { className: "magi-business-summary-hide", onClick: () => setBandHiddenPersist(true), title: "\u72B6\u6CC1\u306E\u5E2F\u3092\u96A0\u3057\u307E\u3059\uFF08\u3044\u3064\u3067\u3082\u623B\u305B\u307E\u3059\uFF09", type: "button", children: "\u96A0\u3059" })) : null] }));
 }
 //# sourceMappingURL=MagiBusinessSummary.js.map

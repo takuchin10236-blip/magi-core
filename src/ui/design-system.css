@@ -5443,3 +5443,143 @@ mark.search-hit {
     border-radius: var(--card-radius, 12px);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+ * 2026-08-27 ヘッダー/ナビの寸法統一と最小化（社長裁定・連絡ノート第1弾）
+ *   ①ヘッダー帯のバッジ類は高さ36px・pillで統一（状態バッジ＝版チップ＝状態の説明）
+ *   ②ナビ右群のパネルは操作者チップ基準（高さ44px・角丸10px）で統一
+ *   ③メニューパネルは幅300px固定・収まらない文字は折り返して2段
+ *   ④操作者チップ未選択は赤枠（従来の黄枠から変更）
+ *   ⑤主操作タブ（is-cta）は塗り・やや大きく
+ * 末尾に置く理由: 既存定義への後勝ち上書きを1か所に集め、還流レビューを1ブロックで読めるようにする。
+ * ═══════════════════════════════════════════════════════════════════ */
+
+.magi-appshell-status-badges .magi-status-badge {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+}
+
+.magi-appshell-role-chip {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: var(--button-radius, 10px);
+  background: var(--bg-surface);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.magi-appshell-nav-tab.magi-appshell-menu-toggle {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--button-radius, 10px);
+  background: var(--bg-surface);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.magi-appshell-nav-tab.is-cta {
+  min-height: 46px;
+  padding: 10px 18px;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.magi-appshell-nav-tab.is-cta:hover,
+.magi-appshell-nav-tab.is-cta:focus-visible {
+  background: color-mix(in srgb, var(--color-primary) 86%, #000);
+  color: var(--primary-button-text);
+}
+
+.magi-appshell-menu-panel {
+  /* 幅は300pxで絶対固定（2026-08-27 社長裁定）。超える文字は width では逃がさず、
+     下の menu-item の折り返しで2段にする。 */
+  width: 300px;
+  min-width: 300px;
+  max-width: calc(100vw - 32px);
+}
+
+.magi-appshell-menu-panel > .magi-appshell-menu-item,
+.magi-appshell-menu-panel > a.magi-appshell-menu-item {
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.operator-chip.is-unset {
+  border-color: color-mix(in srgb, var(--color-danger) 62%, var(--border-default));
+  color: color-mix(in srgb, var(--color-danger) 70%, #000);
+}
+
+:root[data-color-mode='dark'] .operator-chip.is-unset {
+  color: var(--color-danger);
+}
+
+.operator-chip.is-fixed {
+  width: 230px;
+}
+
+.operator-chip.is-fixed .operator-chip-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* ── 状況の帯の「隠す/表示」（MagiBusinessSummary collapsible・既定は表示） ── */
+.magi-business-summary-hide {
+  margin-left: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.magi-business-summary-hide:hover,
+.magi-business-summary-hide:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  outline: none;
+}
+
+.magi-business-summary.is-band-hidden {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2px 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.magi-business-summary-restore {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.magi-business-summary-restore:hover,
+.magi-business-summary-restore:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  outline: none;
+}

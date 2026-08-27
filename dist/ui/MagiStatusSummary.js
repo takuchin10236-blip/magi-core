@@ -23,6 +23,27 @@ import { ChevronDown, ShieldCheck } from 'lucide-react';
 import { isDevBuild } from './devWarn';
 import { StatusBadge } from './StatusBadge';
 import { deriveStatusDisplay, detectRuntime, isTrustedWriteDetector, validateDeclaredState, } from './statusDetection';
+/** compact 集約が許される条件を満たした時の1枚ラベル。満たさなければ null（＝個別展開）。 */
+function deriveCompactBadge(resolution) {
+    const { healthReady, runtimeSurface, writable, writeDetectorFailed, writeTrusted, declared, rejected } = resolution;
+    if (!healthReady || writeDetectorFailed)
+        return null;
+    if (typeof writable !== 'boolean' || !writeTrusted)
+        return null;
+    if (runtimeSurface === 'unknown')
+        return null;
+    if (declared.length > 0 || rejected.length > 0)
+        return null;
+    const surfaceLabel = runtimeSurface === 'production' ? '本番' : runtimeSurface === 'preview' ? 'レビュー環境' : 'このPC内';
+    const tone = runtimeSurface === 'production' ? 'danger' : runtimeSurface === 'preview' ? 'warn' : 'ok';
+    return {
+        label: `${surfaceLabel}・書込${writable ? 'ON' : 'OFF'}`,
+        tone,
+        detail: runtimeSurface === 'production'
+            ? `本物のデータに触れる画面です（書込${writable ? 'ON' : 'OFF'}）。内訳は「状態の説明」で確認できます`
+            : `環境=${surfaceLabel}・書込${writable ? 'ON' : 'OFF'}。内訳は「状態の説明」で確認できます`,
+    };
+}
 // ── writeDetector の参照が毎レンダー変わる事故を、開発中に気づけるようにする（v0.9.4） ──
 //   検出 effect の依存は [writeDetector]。JSX の中で検出器を作ると毎レンダー別参照になり、
 //   effect が回り続けて観測要求を出し続ける。同一マウントで短時間に何度も再実行されたら助言する。
@@ -53,7 +74,7 @@ function runtimeSurfaceLabel(surface) {
         return '本番環境';
     return '確認中';
 }
-export function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStates, unsafeDeclaredStates, detailRows, className, }) {
+export function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStates, unsafeDeclaredStates, detailRows, compact, className, }) {
     const detailsRef = useRef(null);
     // 検出 effect が同一マウントで何回走ったか（開発時の助言用・本番では読まれない）。
     const churnRef = useRef({ count: 0, since: 0, warned: false });
@@ -117,6 +138,7 @@ export function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStat
         rejected,
     };
     const display = deriveStatusDisplay(resolution);
+    const compactBadge = compact ? deriveCompactBadge(resolution) : null;
     useEffect(() => {
         const onDocClick = (event) => {
             const element = detailsRef.current;
@@ -139,6 +161,6 @@ export function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStat
             document.removeEventListener('keydown', onKeyDown);
         };
     }, []);
-    return (_jsxs("div", { className: `magi-appshell-status-cluster${className ? ` ${className}` : ''}`, "data-status-mode": display.mode, "aria-label": "MAGI\u72B6\u614B", children: [_jsx("div", { className: "magi-appshell-status-badges", role: "status", "aria-live": "polite", children: display.visible.map((item) => (_jsxs("span", { className: "magi-appshell-status-item", children: [_jsx(StatusBadge, { className: "magi-appshell-status-badge", tone: item.tone, tooltip: item.detail, children: item.label }), item.unverified ? (_jsx(StatusBadge, { className: "magi-appshell-unverified", tone: "warn", tooltip: item.detail ? `無検証（根拠: ${item.detail}）` : '機械検証されていない自己申告です', children: "\u7121\u691C\u8A3C" })) : null] }, item.id))) }), _jsxs("details", { className: "magi-appshell-status-details", ref: detailsRef, children: [_jsxs("summary", { "aria-label": "\u72B6\u614B\u306E\u8A73\u3057\u3044\u8AAC\u660E\u3092\u8868\u793A", children: [_jsx(ShieldCheck, { size: 15, "aria-hidden": true }), _jsx("span", { children: "\u72B6\u614B\u306E\u8AAC\u660E" }), _jsx(ChevronDown, { size: 14, "aria-hidden": true })] }), _jsxs("div", { className: "magi-appshell-status-detail-body", role: "group", "aria-label": "\u72B6\u614B\u306E\u8AAC\u660E\u4E00\u89A7", children: [_jsx("button", { className: "magi-appshell-status-close", onClick: (event) => event.currentTarget.closest('details')?.removeAttribute('open'), type: "button", children: "\u9589\u3058\u308B" }), _jsxs("dl", { children: [_jsxs("div", { children: [_jsx("dt", { children: "\u53CD\u6620\u5148" }), _jsx("dd", { children: runtimeSurfaceLabel(runtimeSurface) })] }), _jsxs("div", { children: [_jsx("dt", { children: "\u672C\u756A\u53CD\u6620" }), _jsx("dd", { children: runtimeSurface === 'production' ? '済' : runtimeSurface === 'unknown' ? '確認中' : '未' })] }), _jsxs("div", { children: [_jsx("dt", { children: "\u66F8\u8FBC" }), _jsx("dd", { children: !writeState.ready ? '確認中' : writeState.failed || writeState.writable === null ? '確認中' : writeState.writable ? 'ON' : 'OFF' })] }), declared.map((state) => (_jsxs("div", { children: [_jsx("dt", { children: "\u696D\u52D9\u672C\u756A\u5316\uFF08\u7121\u691C\u8A3C\uFF09" }), _jsxs("dd", { children: [state.value ? '済（申告）' : '未（申告）', " / \u6839\u62E0: ", state.basis] })] }, `declared-${state.kind}`))), rejected.map((entry, index) => (_jsxs("div", { children: [_jsx("dt", { children: "\u7533\u544A\u30A8\u30E9\u30FC" }), _jsx("dd", { children: entry.reason })] }, `rejected-${index}`))), (detailRows ?? []).map((row) => (_jsxs("div", { children: [_jsx("dt", { children: row.label }), _jsx("dd", { children: row.value })] }, `row-${row.label}`)))] })] })] })] }));
+    return (_jsxs("div", { className: `magi-appshell-status-cluster${className ? ` ${className}` : ''}`, "data-status-mode": display.mode, "aria-label": "MAGI\u72B6\u614B", children: [_jsxs("div", { className: "magi-appshell-status-badges", role: "status", "aria-live": "polite", children: [compactBadge ? (_jsx("span", { className: "magi-appshell-status-item", children: _jsx(StatusBadge, { className: "magi-appshell-status-badge", tone: compactBadge.tone, tooltip: compactBadge.detail, children: compactBadge.label }) })) : null, compactBadge ? null : display.visible.map((item) => (_jsxs("span", { className: "magi-appshell-status-item", children: [_jsx(StatusBadge, { className: "magi-appshell-status-badge", tone: item.tone, tooltip: item.detail, children: item.label }), item.unverified ? (_jsx(StatusBadge, { className: "magi-appshell-unverified", tone: "warn", tooltip: item.detail ? `無検証（根拠: ${item.detail}）` : '機械検証されていない自己申告です', children: "\u7121\u691C\u8A3C" })) : null] }, item.id)))] }), _jsxs("details", { className: "magi-appshell-status-details", ref: detailsRef, children: [_jsxs("summary", { "aria-label": "\u72B6\u614B\u306E\u8A73\u3057\u3044\u8AAC\u660E\u3092\u8868\u793A", children: [_jsx(ShieldCheck, { size: 15, "aria-hidden": true }), _jsx("span", { children: "\u72B6\u614B\u306E\u8AAC\u660E" }), _jsx(ChevronDown, { size: 14, "aria-hidden": true })] }), _jsxs("div", { className: "magi-appshell-status-detail-body", role: "group", "aria-label": "\u72B6\u614B\u306E\u8AAC\u660E\u4E00\u89A7", children: [_jsx("button", { className: "magi-appshell-status-close", onClick: (event) => event.currentTarget.closest('details')?.removeAttribute('open'), type: "button", children: "\u9589\u3058\u308B" }), _jsxs("dl", { children: [_jsxs("div", { children: [_jsx("dt", { children: "\u53CD\u6620\u5148" }), _jsx("dd", { children: runtimeSurfaceLabel(runtimeSurface) })] }), _jsxs("div", { children: [_jsx("dt", { children: "\u672C\u756A\u53CD\u6620" }), _jsx("dd", { children: runtimeSurface === 'production' ? '済' : runtimeSurface === 'unknown' ? '確認中' : '未' })] }), _jsxs("div", { children: [_jsx("dt", { children: "\u66F8\u8FBC" }), _jsx("dd", { children: !writeState.ready ? '確認中' : writeState.failed || writeState.writable === null ? '確認中' : writeState.writable ? 'ON' : 'OFF' })] }), declared.map((state) => (_jsxs("div", { children: [_jsx("dt", { children: "\u696D\u52D9\u672C\u756A\u5316\uFF08\u7121\u691C\u8A3C\uFF09" }), _jsxs("dd", { children: [state.value ? '済（申告）' : '未（申告）', " / \u6839\u62E0: ", state.basis] })] }, `declared-${state.kind}`))), rejected.map((entry, index) => (_jsxs("div", { children: [_jsx("dt", { children: "\u7533\u544A\u30A8\u30E9\u30FC" }), _jsx("dd", { children: entry.reason })] }, `rejected-${index}`))), (detailRows ?? []).map((row) => (_jsxs("div", { children: [_jsx("dt", { children: row.label }), _jsx("dd", { children: row.value })] }, `row-${row.label}`)))] })] })] })] }));
 }
 //# sourceMappingURL=MagiStatusSummary.js.map
