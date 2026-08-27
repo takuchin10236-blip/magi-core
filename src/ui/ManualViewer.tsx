@@ -289,16 +289,8 @@ export function ManualViewer({ content, onClose }: Props) {
         >
           <span aria-hidden="true">🖨</span> 本文を印刷
         </button>
-        <div className="manual-page-title">
-          <span className="manual-page-eyebrow" aria-hidden="true">📖 操作マニュアル</span>
-          <h1>
-            {content.appName}
-            {content.appVersion && (
-              <span className="manual-page-version">{content.appVersion}</span>
-            )}
-          </h1>
-          {content.subtitle && <p className="manual-page-subtitle">{content.subtitle}</p>}
-        </div>
+        {/* 表題は本文側（manual-doc-head）が持つ。列の右端は小さな種別表示だけ（ハブと同じ配分）。 */}
+        <span className="manual-page-eyebrow manual-actions-eyebrow" aria-hidden="true">📖 操作マニュアル</span>
       </header>
 
       {/* ── 検索バー（ヘッダ直下・固定） ── */}
@@ -365,6 +357,16 @@ export function ManualViewer({ content, onClose }: Props) {
         {/* 右: 本文（読みやすい幅・MAGI書式）。検索中も節を消さずハイライト。 */}
         <div className="manual-body" ref={bodyRef}>
           <div className="manual-body-inner">
+            {/* 文書の表題（ハブの文書ビューの形式・2026-08-27 社長裁定「ほぼそのまま引き継ぐ」） */}
+            <div className="manual-doc-head">
+              <p className="manual-doc-badges">
+                <span className="manual-doc-badge">操作マニュアル</span>
+                {content.appVersion && <span className="manual-doc-meta">版 {content.appVersion}</span>}
+              </p>
+              <h2 className="manual-doc-title">{content.appName} 操作マニュアル</h2>
+              {content.subtitle && <p className="manual-doc-lead">{content.subtitle}</p>}
+              <hr className="manual-doc-rule" />
+            </div>
             {hasResults ? (
               content.sections.map((s) => {
                 const blocks = s.blocks.map((block, i) => (

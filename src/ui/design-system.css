@@ -5664,6 +5664,90 @@ mark.search-hit {
   max-width: none;
 }
 
+/* ── 本文をハブの「文書」組みへ（2026-08-27 第2ラウンド: 表題・章見出し・番号・検索を落ち着いたインクに） ── */
+.manual-actions-eyebrow {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.manual-doc-head {
+  margin: 4px 0 26px;
+}
+
+.manual-doc-badges {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.manual-doc-badge {
+  display: inline-flex;
+  padding: 3px 13px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 999px;
+  color: var(--color-primary);
+  font-size: 12.5px;
+  font-weight: 850;
+}
+
+.manual-doc-meta {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.manual-doc-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+.manual-doc-lead {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.manual-doc-rule {
+  margin: 20px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border-default);
+}
+
+.manual-section h3 {
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 900;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.manual-section h3::before {
+  content: none;
+}
+
+.manual-steps li::before {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border-strong, var(--border-default));
+  color: var(--text-primary);
+}
+
+.manual-search-row {
+  border-color: var(--border-default);
+  background: var(--bg-surface);
+}
+
+.manual-search-input {
+  background: var(--bg-surface);
+}
+
 @media print {
   body * {
     visibility: hidden !important;
