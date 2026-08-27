@@ -115,12 +115,13 @@ function BlockView({ block, query }: { block: ManualBlock; query: string }) {
         </ol>
       );
     case 'note':
+      // マニュアルアプリ（2階ハブ）の注意枠と同形: 左の太線＋淡い面＋行頭の太字ラベル（2026-08-27 形式統一）。
       return (
         <div className={`manual-note manual-note-${block.tone}`} role="note">
-          <span className="manual-note-label" aria-hidden="true">
-            {block.tone === 'warning' ? '!' : block.tone === 'tip' ? '+' : 'i'}
-          </span>
-          <p>{highlight(block.text, query)}</p>
+          <p>
+            <strong>{block.tone === 'warning' ? '注意：' : block.tone === 'tip' ? 'ヒント：' : '情報：'}</strong>
+            {highlight(block.text, query)}
+          </p>
         </div>
       );
     case 'image':
@@ -139,9 +140,11 @@ function BlockView({ block, query }: { block: ManualBlock; query: string }) {
       );
     case 'analogy':
       return (
-        <div className="manual-analogy">
-          <span className="manual-analogy-label">たとえば</span>
-          <p>{highlight(block.text, query)}</p>
+        <div className="manual-analogy" role="note">
+          <p>
+            <strong>たとえば：</strong>
+            {highlight(block.text, query)}
+          </p>
         </div>
       );
     default:

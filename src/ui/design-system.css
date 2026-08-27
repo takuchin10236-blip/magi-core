@@ -5775,6 +5775,140 @@ mark.search-hit {
   background: var(--bg-surface);
 }
 
+/* ═══ 2026-08-27 最終形: マニュアルアプリ（2階ハブ）の文書ビューを忠実移植 ═══
+ *   仕様書＝ハブ実装の .manual-article / .manual-media / blockquote / 目次（実CSSから転記）。
+ *   ①本文はカード（角丸18px・枠線・影・広い余白） ②章見出し=「第N章」＋2px下線
+ *   ③手順は素の番号リスト（丸バッジ全廃） ④注意枠=左5px太線＋淡面＋行頭太字ラベル
+ *   ⑤図=枠線・角丸12px・白地・中央キャプション。文字サイズは現行を維持（社長指示）。 */
+
+.manual-body {
+  padding: 16px clamp(12px, 3vw, 28px) 44px;
+}
+
+.manual-body-inner {
+  max-width: 920px;
+  padding: clamp(20px, 4vw, 44px);
+  border: 1px solid var(--border-default);
+  border-radius: 18px;
+  background: var(--bg-surface);
+  box-shadow: var(--surface-shadow);
+}
+
+.manual-doc-head {
+  margin: 0 0 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.manual-doc-title {
+  font-size: clamp(1.85rem, 4vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.manual-doc-lead {
+  font-size: 1.04rem;
+}
+
+.manual-doc-rule {
+  display: none;
+}
+
+.manual-section h3 {
+  margin: 2.2em 0 0.8em;
+  padding-bottom: 0.35em;
+  border-bottom: 2px solid var(--border-default);
+  font-size: clamp(1.3rem, 2vw, 1.5rem);
+  font-weight: 900;
+}
+
+.manual-section:first-of-type h3 {
+  margin-top: 0.3em;
+}
+
+.manual-section:not(.manual-section-collapsed) > h3::before {
+  content: "第" counter(manual-sec) "章\00a0\00a0";
+}
+
+.manual-toc-list > li:not(.is-unnumbered) .manual-toc-item::before {
+  content: "第" counter(manual-toc) "章\00a0";
+}
+
+.manual-steps {
+  margin: 0.7em 0 0.9em;
+  padding-left: 1.7em;
+  list-style: decimal;
+}
+
+.manual-steps li {
+  position: static;
+  margin: 0;
+  padding: 0;
+  line-height: 1.85;
+}
+
+.manual-steps li + li {
+  margin-top: 0.38em;
+}
+
+.manual-steps li::before {
+  content: none;
+}
+
+.manual-note,
+.manual-analogy {
+  display: block;
+  margin: 1.2em 0;
+  padding: 12px 16px;
+  border: 0;
+  border-left: 5px solid var(--color-info);
+  border-radius: 0;
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+}
+
+.manual-note p,
+.manual-analogy p {
+  margin: 0;
+  line-height: 1.85;
+}
+
+.manual-note-warning {
+  border-left-color: var(--color-danger);
+}
+
+.manual-note-tip {
+  border-left-color: var(--color-success);
+}
+
+.manual-figure {
+  display: block;
+  max-width: 100%;
+  margin: 1.4em auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: center;
+}
+
+.manual-figure-image {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.manual-figure-caption {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: 0.88em;
+  line-height: 1.55;
+}
+
 @media print {
   body * {
     visibility: hidden !important;

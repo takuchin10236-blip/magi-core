@@ -91,12 +91,13 @@ function BlockView({ block, query }) {
         case 'steps':
             return (_jsx("ol", { className: "manual-steps", children: block.items.map((item, i) => (_jsx("li", { children: highlight(item, query) }, i))) }));
         case 'note':
-            return (_jsxs("div", { className: `manual-note manual-note-${block.tone}`, role: "note", children: [_jsx("span", { className: "manual-note-label", "aria-hidden": "true", children: block.tone === 'warning' ? '!' : block.tone === 'tip' ? '+' : 'i' }), _jsx("p", { children: highlight(block.text, query) })] }));
+            // マニュアルアプリ（2階ハブ）の注意枠と同形: 左の太線＋淡い面＋行頭の太字ラベル（2026-08-27 形式統一）。
+            return (_jsx("div", { className: `manual-note manual-note-${block.tone}`, role: "note", children: _jsxs("p", { children: [_jsx("strong", { children: block.tone === 'warning' ? '注意：' : block.tone === 'tip' ? 'ヒント：' : '情報：' }), highlight(block.text, query)] }) }));
         case 'image':
             // 図はハイライトの対象外（画像の中の文字は置換できない）。説明文だけを検索語で光らせる。
             return (_jsxs("figure", { className: "manual-figure", children: [_jsx("img", { className: "manual-figure-image", src: block.src, alt: block.alt, loading: "lazy", decoding: "async" }), _jsx("figcaption", { className: "manual-figure-caption", children: highlight(block.caption, query) })] }));
         case 'analogy':
-            return (_jsxs("div", { className: "manual-analogy", children: [_jsx("span", { className: "manual-analogy-label", children: "\u305F\u3068\u3048\u3070" }), _jsx("p", { children: highlight(block.text, query) })] }));
+            return (_jsx("div", { className: "manual-analogy", role: "note", children: _jsxs("p", { children: [_jsx("strong", { children: "\u305F\u3068\u3048\u3070\uFF1A" }), highlight(block.text, query)] }) }));
         default:
             return null;
     }
