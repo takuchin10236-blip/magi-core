@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.23.0-pre.1 (2026-08-27・作業ブランチ feat/ui-kata-20260827・preview検証用)
+## v0.23.0 (2026-08-27)
 
 **ヘッダー/ナビの寸法統一と最小化・第1弾**（2026-08-27 社長裁定・連絡ノートUI調整卓 A〜E）。**すべてopt-in（compact / collapsible / emphasis / fixedWidth）＋末尾CSSの寸法統一**。
 
