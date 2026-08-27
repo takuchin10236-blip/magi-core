@@ -12,6 +12,8 @@
 - `BusinessNavTab` に **`emphasis?: boolean`**: 主操作タブ（例「投稿を書く」）を塗り・やや大きく描く `is-cta`。
 - CSS末尾に寸法統一ブロック: ヘッダー帯のバッジ類=36px pill統一／ナビ右群（ロールチップ・メニューボタン）=操作者基準44px・角丸10px／**メニューパネル幅300px固定**（超過文字は折り返し2段）／**操作者未選択の枠を黄→赤へ**。
 - （8/27夕・社長差戻し対応）`MagiBusinessSummary` に **`hidden` / `onHiddenChange`**（controlled化）: 渡すと隠し中は**行ごと描画しない**（復帰導線はアプリが自分の行へ置く＝隠すと本当に1行広くなる）。省略時は従来の細い復帰ボタン。
+- （8/27夕）`ManualViewer` を**マニュアルアプリ（2階ハブ）の形式へ統一**: 上段アクション列（← 戻る／目次を隠す／本文を印刷）・目次は「この文書の目次」カード（sticky・隠せる）・紙色はテーマの `--bg-page`・印刷CSS同梱。**採用側検査への影響**: 「閉じる×」ボタンが「← 戻る」に変わる（`.manual-page-close` は廃止・`manual-action-*` へ）。閉じるボタンの文字列/クラスを待つ検査は要更新。
+- （8/27夕）`RuntimeDetectorConfig` に **`previewHostSuffixes`**（後方一致）: Cloudflare Pagesのpreview（`<hash>.<project>.pages.dev`）をホスト列挙なしで「レビュー環境」と判定できる。production完全一致の後に評価（apexを誤判定しない）。
 
 ### 採用側の検査への影響（議題F様式）
 

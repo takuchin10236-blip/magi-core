@@ -49,6 +49,8 @@ export function detectRuntime(config = {}, hostname = currentHostname()) {
         return 'production';
     if (config.previewHosts?.includes(hostname))
         return 'preview';
+    if (config.previewHostSuffixes?.some((suffix) => suffix.startsWith('.') && hostname.endsWith(suffix)))
+        return 'preview';
     if (config.localHosts?.includes(hostname) || isLocalHost(hostname))
         return 'local';
     return 'unknown';

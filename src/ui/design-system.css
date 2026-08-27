@@ -5583,3 +5583,113 @@ mark.search-hit {
   color: var(--color-primary);
   outline: none;
 }
+
+/* ── マニュアルビューアをマニュアルアプリの形式へ（2026-08-27 社長裁定・器統一） ──
+ *   左=目次カード（この文書の目次・sticky・隠せる）／右=本文。上段はアクション列
+ *   （← 戻る／目次を隠す／本文を印刷）。紙色はテーマの --bg-page が配る（直書きしない）。 */
+.manual-fullpage {
+  background: var(--bg-page, var(--bg-app));
+}
+
+.manual-page-header.manual-reader-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: var(--bg-page, var(--bg-app));
+  border-bottom: none;
+}
+
+.manual-reader-actions .manual-page-title {
+  margin-left: auto;
+  text-align: right;
+}
+
+.manual-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.manual-action-btn:hover,
+.manual-action-btn:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  outline: none;
+}
+
+.manual-action-primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--primary-button-text);
+}
+
+.manual-action-primary:hover,
+.manual-action-primary:focus-visible {
+  background: color-mix(in srgb, var(--color-primary) 84%, #000);
+  color: var(--primary-button-text);
+}
+
+.manual-toc {
+  border: 1px solid var(--border-default);
+  border-radius: 14px;
+  background: var(--bg-surface);
+  padding: 15px;
+  align-self: start;
+  position: sticky;
+  top: 12px;
+  max-height: calc(100vh - 200px);
+  overflow: auto;
+}
+
+.manual-toc[hidden] {
+  display: none;
+}
+
+.manual-page-body.manual-toc-hidden {
+  display: block;
+}
+
+.manual-page-body.manual-toc-hidden .manual-body {
+  max-width: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .manual-fullpage,
+  .manual-fullpage * {
+    visibility: visible !important;
+  }
+  .manual-fullpage {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  .manual-page-header,
+  .manual-page-search,
+  .manual-toc {
+    display: none !important;
+  }
+  .manual-body,
+  .manual-page-body {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-width: none !important;
+  }
+}

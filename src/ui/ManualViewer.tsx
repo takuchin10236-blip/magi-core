@@ -152,6 +152,8 @@ function BlockView({ block, query }: { block: ManualBlock; query: string }) {
 export function ManualViewer({ content, onClose }: Props) {
   const [query, setQuery] = useState('');
   const [activeId, setActiveId] = useState<string>(content.sections[0]?.id ?? '');
+  // 目次の表示/非表示（マニュアルアプリの「目次を隠す」を踏襲・2026-08-27）。
+  const [tocOpen, setTocOpen] = useState(true);
   const dialogRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -259,12 +261,36 @@ export function ManualViewer({ content, onClose }: Props) {
       aria-modal="true"
       aria-label={`${content.appName} 操作マニュアル`}
     >
-      {/* ── ヘッダバー（上部固定・背後が透けないので見切れない） ── */}
-      <header className="manual-page-header">
+      {/* ── アクション列（2026-08-27 社長裁定＝マニュアルアプリの形式を踏襲: 戻る・目次を隠す・本文を印刷） ── */}
+      <header className="manual-page-header manual-reader-actions">
+        <button
+          type="button"
+          className="manual-action-btn manual-action-primary"
+          onClick={onClose}
+          aria-label="マニュアルを閉じてアプリへ戻る"
+          title="アプリへ戻ります（Esc でも戻れます）"
+        >
+          <span aria-hidden="true">←</span> 戻る
+        </button>
+        <button
+          type="button"
+          className="manual-action-btn"
+          aria-expanded={tocOpen}
+          aria-controls="manual-toc-panel"
+          onClick={() => setTocOpen((value) => !value)}
+        >
+          {tocOpen ? '目次を隠す' : '目次を表示'}
+        </button>
+        <button
+          type="button"
+          className="manual-action-btn"
+          onClick={() => window.print()}
+          aria-label="本文を印刷"
+        >
+          <span aria-hidden="true">🖨</span> 本文を印刷
+        </button>
         <div className="manual-page-title">
-          <span className="manual-page-eyebrow" aria-hidden="true">
-            📖 操作マニュアル
-          </span>
+          <span className="manual-page-eyebrow" aria-hidden="true">📖 操作マニュアル</span>
           <h1>
             {content.appName}
             {content.appVersion && (
@@ -273,16 +299,6 @@ export function ManualViewer({ content, onClose }: Props) {
           </h1>
           {content.subtitle && <p className="manual-page-subtitle">{content.subtitle}</p>}
         </div>
-        <button
-          type="button"
-          className="manual-page-close"
-          onClick={onClose}
-          aria-label="閉じる"
-          title="閉じます（Esc でも閉じられます）"
-        >
-          <span aria-hidden="true">×</span>
-          <span className="manual-page-close-text">閉じる</span>
-        </button>
       </header>
 
       {/* ── 検索バー（ヘッダ直下・固定） ── */}
@@ -324,11 +340,11 @@ export function ManualViewer({ content, onClose }: Props) {
         </p>
       </div>
 
-      {/* ── 2カラム本体（左=目次サイドバー / 右=本文） ── */}
-      <div className="manual-page-body">
+      {/* ── 2カラム本体（左=目次サイドバー / 右=本文）。目次はハブ同様に隠せる ── */}
+      <div className={`manual-page-body${tocOpen ? '' : ' manual-toc-hidden'}`}>
         {/* 左: 目次サイドバー（縦リスト・active ハイライト） */}
-        <nav className="manual-toc" aria-label="目次">
-          <p className="manual-toc-heading">目次</p>
+        <nav className="manual-toc" aria-label="目次" id="manual-toc-panel" hidden={!tocOpen}>
+          <p className="manual-toc-heading">この文書の目次</p>
           <ul className="manual-toc-list">
             {content.sections.map((s) => (
               <li key={s.id}>

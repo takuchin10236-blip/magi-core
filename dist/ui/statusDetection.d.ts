@@ -53,6 +53,13 @@ export type DeclaredStateValidation = {
 export type RuntimeDetectorConfig = {
     productionHosts?: string[];
     previewHosts?: string[];
+    /**
+     * preview の**後方一致**（2026-08-27 追加）。Cloudflare Pages のpreviewは
+     *   `<hash>.<project>.pages.dev`・`<branch>.<project>.pages.dev` とホスト名が毎回変わるため、
+     *   完全一致（previewHosts）では列挙できない。`['.example.pages.dev']` のように先頭ドットで渡す。
+     *   production 完全一致の**後**に評価する（apex本体を preview に誤判定しない）。
+     */
+    previewHostSuffixes?: string[];
     localHosts?: string[];
 };
 /**
