@@ -5733,6 +5733,33 @@ mark.search-hit {
   content: none;
 }
 
+/* ── 節番号は器が自動で振る（2026-08-27 社長裁定「①などの丸数字は見にくい・ハブは使っていない」）。
+ *    文面データは番号を持たない。collapsed（コラム）は本文・目次とも番号なし。 ── */
+.manual-body-inner {
+  counter-reset: manual-sec;
+}
+
+.manual-section:not(.manual-section-collapsed) {
+  counter-increment: manual-sec;
+}
+
+.manual-section:not(.manual-section-collapsed) > h3::before {
+  content: counter(manual-sec) ".\00a0";
+  color: var(--text-primary);
+}
+
+.manual-toc-list {
+  counter-reset: manual-toc;
+}
+
+.manual-toc-list > li:not(.is-unnumbered) {
+  counter-increment: manual-toc;
+}
+
+.manual-toc-list > li:not(.is-unnumbered) .manual-toc-item::before {
+  content: counter(manual-toc) ".\00a0";
+}
+
 .manual-steps li::before {
   background: var(--bg-surface-alt);
   border: 1px solid var(--border-strong, var(--border-default));

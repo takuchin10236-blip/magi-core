@@ -339,7 +339,8 @@ export function ManualViewer({ content, onClose }: Props) {
           <p className="manual-toc-heading">この文書の目次</p>
           <ul className="manual-toc-list">
             {content.sections.map((s) => (
-              <li key={s.id}>
+              // collapsed（コラム等の読み物）は番号を振らない＝本文側の自動番号と揃える
+              <li className={s.collapsed ? 'is-unnumbered' : undefined} key={s.id}>
                 <button
                   type="button"
                   className={`manual-toc-item${activeId === s.id ? ' active' : ''}`}
