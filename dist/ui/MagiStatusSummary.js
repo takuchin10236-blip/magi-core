@@ -34,7 +34,14 @@ function deriveCompactBadge(resolution) {
         return null;
     if (declared.length > 0 || rejected.length > 0)
         return null;
-    const surfaceLabel = runtimeSurface === 'production' ? '本番' : runtimeSurface === 'preview' ? 'レビュー環境' : 'このPC内';
+    // 環境ラベルは「許可表からの引き」にする（unknown を構造的に到達不能にするため）。
+    //   三項の連鎖（production ? '本番' : preview ? 'レビュー環境' : 'このPC内'）だと、
+    //   unknown が最安全ラベル「このPC内」へ落ちる＝上の unknown ガード1枚が消えた瞬間に
+    //   「本番かもしれない画面が安全に見える」へ倒れた。表引きなら未知の面は undefined ＝
+    //   畳まない（安全側）へ倒れる。ガードは早期に意図を示すために残す。
+    const surfaceLabel = { production: '本番', preview: 'レビュー環境', local: 'このPC内' }[runtimeSurface];
+    if (!surfaceLabel)
+        return null;
     const tone = runtimeSurface === 'production' ? 'danger' : runtimeSurface === 'preview' ? 'warn' : 'ok';
     return {
         label: `${surfaceLabel}・書込${writable ? 'ON' : 'OFF'}`,
@@ -74,7 +81,7 @@ function runtimeSurfaceLabel(surface) {
         return '本番環境';
     return '確認中';
 }
-export function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStates, unsafeDeclaredStates, detailRows, compact, className, }) {
+export function MagiStatusSummary({ runtimeDetector, writeDetector, declaredStates, unsafeDeclaredStates, detailRows, compact = true, className, }) {
     const detailsRef = useRef(null);
     // 検出 effect が同一マウントで何回走ったか（開発時の助言用・本番では読まれない）。
     const churnRef = useRef({ count: 0, since: 0, warned: false });

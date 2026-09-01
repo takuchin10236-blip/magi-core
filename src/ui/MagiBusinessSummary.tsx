@@ -72,10 +72,14 @@ export interface MagiBusinessSummaryProps {
    */
   columns?: number;
   /**
-   * 帯を隠せるようにする（2026-08-27 社長裁定D-1・opt-in・非遡及）。
-   *   既定は表示（「見えているのが基本」）。隠すのは各利用者の選択で、storageKey があれば
+   * 帯を隠せるようにする（2026-08-27 社長裁定D-1 → 2026-09-01 裁定で**既定ON**へ昇格）。
+   *   帯そのものは既定で表示（「見えているのが基本」）。隠すのは各利用者の選択で、storageKey があれば
    *   `${storageKey}.hidden` に覚える。隠している間は細い「現在の状況を表示」ボタンだけ残す
    *   （完全に消すと出勤時確認への戻り道が無くなるため）。
+   *
+   *   **既定 `true`**＝「隠す」ボタンが出る。`collapsible={false}` で従来どおり隠せない帯へ戻せる
+   *   （opt-out）。既定にできる理由は、隠すかどうかは各利用者がその場で決める操作であり、
+   *   初期状態は従来と同じ「表示」のままだから——かつ各アプリは core の版をピンで固定している。
    */
   collapsible?: boolean;
   /**
@@ -95,7 +99,7 @@ export function MagiBusinessSummary({
   ariaLabel,
   storageKey,
   columns,
-  collapsible,
+  collapsible = true,
   hidden,
   onHiddenChange,
   className,

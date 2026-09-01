@@ -7,6 +7,10 @@ import { createEndpointWriteDetector, createEnvWriteDetector } from '../src/ui/s
 // v0.5.2・R1-C2（round2）: 安全側集約に入れるのは信頼済みの createEndpointWriteDetector
 //   （同一オリジン health を storage.writable 固定スキーマで観測）だけ。
 //   createEnvWriteDetector・生関数は「無検証」＝集約されない。
+//
+// v0.24.0（2026-09-01 裁定）で compact が**既定ON**になった。以下の (a)(c)(d)・無検証系の
+//   試験は compact を渡していない＝**既定ONのまま**走る。畳まれないことを確かめている＝
+//   fail-closed が既定ONでも効いていることの試験になっている（この意味を弱めないこと）。
 
 // storage.writable を返す health 応答をモックする信頼済み検出器を作るヘルパ。
 function mockHealthDetector(writable: boolean) {
@@ -84,6 +88,72 @@ describe('MagiStatusSummary（P0・状態表示）', () => {
     });
     expect(screen.getByText('無検証')).toBeTruthy();
     expect(screen.queryByText('このPC内・書込OFF')).toBeNull();
+  });
+
+  // ── compact 既定ON（v0.24.0・2026-09-01 裁定「どのアプリでも、反映されるように」） ──
+
+  it('既定ON: 本番URL＋信頼済み書込ON は prop 無指定でも「本番・書込ON」1枚へ畳む', async () => {
+    render(
+      <MagiStatusSummary
+        runtimeDetector={{ productionHosts: ['localhost'] }}
+        writeDetector={mockHealthDetector(true)}
+      />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText('本番・書込ON')).toBeTruthy();
+    });
+    // 畳んだ時は個別バッジを出さない（内訳は「状態の説明」に残る）。
+    expect(screen.queryByText('本番URL')).toBeNull();
+  });
+
+  it('opt-out: compact={false} なら従来どおり個別バッジ（本番URL＋書込ON）', async () => {
+    render(
+      <MagiStatusSummary
+        compact={false}
+        runtimeDetector={{ productionHosts: ['localhost'] }}
+        writeDetector={mockHealthDetector(true)}
+      />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText('本番URL')).toBeTruthy();
+    });
+    expect(screen.getByText('書込ON')).toBeTruthy();
+    expect(screen.queryByText('本番・書込ON')).toBeNull();
+  });
+
+  // 重-2（2026-09-01 レビュー）: 面が unknown の時に最安全ラベル「このPC内」へ落ちないこと。
+  //   本番ホストの設定漏れ・綴り違いで unknown になった画面が「このPC内・書込OFF」に
+  //   見えるのが最悪の壊れ方なので、負例として固定する。
+  it('既定ONでも fail-closed: どのホスト設定にも一致しない面（unknown）では畳まない', async () => {
+    vi.stubGlobal('location', { hostname: 'app.example.com', origin: 'https://app.example.com' });
+    render(
+      <MagiStatusSummary
+        runtimeDetector={{ productionHosts: ['prod.example.com'] }}
+        writeDetector={mockHealthDetector(false)}
+      />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText('反映先確認中')).toBeTruthy();
+    });
+    expect(screen.queryByText('このPC内・書込OFF')).toBeNull();
+    expect(screen.queryByText('本番・書込OFF')).toBeNull();
+    expect(screen.queryByText('レビュー環境・書込OFF')).toBeNull();
+  });
+
+  it('既定ONでも fail-closed: 本番＋書込検出失敗なら畳まず「本番URL」「書込確認中」を展開', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 503, json: async () => ({}) })));
+    render(
+      <MagiStatusSummary
+        runtimeDetector={{ productionHosts: ['localhost'] }}
+        writeDetector={createEndpointWriteDetector('/api/health')}
+      />,
+    );
+    await waitFor(() => {
+      expect(screen.getByText('書込確認中')).toBeTruthy();
+    });
+    expect(screen.getByText('本番URL')).toBeTruthy();
+    expect(screen.queryByText('本番・書込ON')).toBeNull();
+    expect(screen.queryByText('本番・書込OFF')).toBeNull();
   });
 
   // R1-C2-FAILCLOSED-EDGE: 非boolean を返す生関数は検出失敗へ落ちる（書込OFFにしない）

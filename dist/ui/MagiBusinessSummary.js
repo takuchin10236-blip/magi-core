@@ -37,7 +37,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  */
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-export function MagiBusinessSummary({ items, label = '現在の状況', detailsLabel = 'ダッシュボード', ariaLabel, storageKey, columns, collapsible, hidden, onHiddenChange, className, }) {
+export function MagiBusinessSummary({ items, label = '現在の状況', detailsLabel = 'ダッシュボード', ariaLabel, storageKey, columns, collapsible = true, hidden, onHiddenChange, className, }) {
     // 列数: 明示指定 > 項目数（最低1）。
     const summaryColumns = Math.max(1, Math.floor(columns ?? items.length));
     // 帯の表示/非表示（collapsible時のみ・既定は表示）。

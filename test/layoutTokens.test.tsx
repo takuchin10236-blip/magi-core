@@ -3,12 +3,13 @@
  *   (a) 寸法トークンが :root に揃っているか（基準実体＝職員マスタの実測値）
  *   (b) 作業面の横あふれ防止（シェルを押し広げない）
  *   (c) MagiBusinessSummary の列数を部品が自分で決めるか
+ *   (d) MagiBusinessSummary の collapsible が既定ONか（v0.24.0・opt-out が効くか）
  */
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { render, cleanup } from '@testing-library/react';
+import { render, cleanup, fireEvent } from '@testing-library/react';
 import { MagiAppShell } from '../src/ui/MagiAppShell';
 import { MagiBusinessSummary, type MagiSummaryItem } from '../src/ui/MagiBusinessSummary';
 
@@ -241,5 +242,35 @@ describe('(c) MagiBusinessSummary の列数は部品が決める', () => {
   it('0項目でも 1列以上（0除算・0列を作らない）', () => {
     const { container } = render(<MagiBusinessSummary items={[]} />);
     expect(columnsOf(container)).toBe('1');
+  });
+});
+
+describe('(d) MagiBusinessSummary の collapsible は既定ON（v0.24.0・2026-09-01 裁定）', () => {
+  const items: MagiSummaryItem[] = [{ key: 'a', label: '在籍', value: 7 }];
+
+  it('prop 無指定でも「隠す」ボタンが出る（帯そのものは既定で表示のまま）', () => {
+    const { container } = render(<MagiBusinessSummary items={items} />);
+    expect(container.querySelector('.magi-business-summary-hide')).toBeTruthy();
+    expect(container.querySelector('.magi-business-summary-chips')).toBeTruthy();
+  });
+
+  it('隠すと帯が畳まれ、戻り道（◯◯を表示）だけ残る', () => {
+    const { container } = render(<MagiBusinessSummary items={items} />);
+    fireEvent.click(container.querySelector('.magi-business-summary-hide') as HTMLElement);
+    expect(container.querySelector('.magi-business-summary-chips')).toBeNull();
+    expect(container.querySelector('.magi-business-summary-restore')?.textContent).toContain('現在の状況を表示');
+  });
+
+  it('opt-out: collapsible={false} なら「隠す」ボタンを出さない（従来どおり隠せない帯）', () => {
+    const { container } = render(<MagiBusinessSummary collapsible={false} items={items} />);
+    expect(container.querySelector('.magi-business-summary-hide')).toBeNull();
+    expect(container.querySelector('.magi-business-summary-chips')).toBeTruthy();
+  });
+
+  // v0.23.0 では collapsible 未指定だと `hidden` は no-op だった（帯を隠すゲートが
+  //   `collapsible && effectiveHidden` のため）。既定ON化でこの経路が有効になる。
+  it('controlled hidden は既定ON下で行ごと非描画（v0.23.0 は collapsible 未指定だと無効だった）', () => {
+    const { container } = render(<MagiBusinessSummary hidden items={items} onHiddenChange={() => {}} />);
+    expect(container.querySelector('.magi-business-summary')).toBeNull();
   });
 });

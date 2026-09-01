@@ -231,14 +231,51 @@ describe('Operator（型v1.6・8アプリ共通の必須型）', () => {
     { id: 's2', name: '佐藤 花子' },
   ];
 
-  it('未選択のときは「未選択」の文字で示す（色だけに頼らない）', () => {
-    render(<OperatorChip onClick={() => {}} operatorName={null} />);
-    expect(screen.getByRole('button').textContent).toContain('未選択');
+  // 2026-09-01 裁定で新様式（fixedWidth）が既定ONへ昇格。
+  //   既定＝未選択「操作者」／選択済みは名前だけ。従来表示は fixedWidth={false} で戻せる。
+  it('未選択のときは文字（名前が無い＝「操作者」）と is-unset で示す（色だけに頼らない）', () => {
+    const { container } = render(<OperatorChip onClick={() => {}} operatorName={null} />);
+    expect(screen.getByRole('button').textContent).toContain('操作者');
+    expect(container.querySelector('.operator-chip.is-unset.is-fixed')).toBeTruthy();
   });
 
-  it('選択済みのときは名前を出す', () => {
+  it('選択済みのときは名前を出す（既定＝「操作者:」の接頭辞は付けない）', () => {
     render(<OperatorChip onClick={() => {}} operatorName="山田 太郎" />);
-    expect(screen.getByRole('button').textContent).toContain('山田 太郎');
+    const chip = screen.getByRole('button');
+    expect(chip.textContent).toContain('山田 太郎');
+    expect(chip.textContent).not.toContain('操作者:');
+  });
+
+  it('opt-out: fixedWidth={false} なら従来表示（未選択＝「操作者: 未選択」）へ戻る', () => {
+    const { container } = render(<OperatorChip fixedWidth={false} onClick={() => {}} operatorName={null} />);
+    expect(screen.getByRole('button').textContent).toContain('操作者: 未選択');
+    expect(container.querySelector('.is-fixed')).toBeNull();
+  });
+
+  it('opt-out: fixedWidth={false} + 選択済みなら「操作者: 名前」', () => {
+    render(<OperatorChip fixedWidth={false} onClick={() => {}} operatorName="山田 太郎" />);
+    expect(screen.getByRole('button').textContent).toContain('操作者: 山田 太郎');
+  });
+
+  it('幅の明示は数値を渡した時だけ（既定ONでも style.width を書かない）', () => {
+    const fixedPx = render(<OperatorChip fixedWidth={180} onClick={() => {}} operatorName="山田 太郎" />);
+    expect((fixedPx.container.querySelector('.operator-chip') as HTMLElement).style.width).toBe('180px');
+    // 既定（true）で `${undefined}px` のような壊れた幅を書かないこと。
+    const byDefault = render(<OperatorChip onClick={() => {}} operatorName="佐藤 花子" />);
+    expect((byDefault.container.querySelector('.operator-chip') as HTMLElement).style.width).toBe('');
+  });
+
+  // v0.23.0 で採用済みのアプリ（連絡ノート）は `fixedWidth={true}` を渡し続ける。
+  //   型を `number | true` → `number | boolean` へ広げた後も、その呼び方が既定と同じ結果になること。
+  it('旧API fixedWidth={true} は既定（無指定）と同一の見た目になる', () => {
+    const explicit = render(<OperatorChip fixedWidth={true} onClick={() => {}} operatorName="山田 太郎" />);
+    const explicitChip = explicit.container.querySelector('.operator-chip') as HTMLElement;
+    const implicit = render(<OperatorChip onClick={() => {}} operatorName="山田 太郎" />);
+    const implicitChip = implicit.container.querySelector('.operator-chip') as HTMLElement;
+    expect(explicitChip.className).toBe(implicitChip.className);
+    expect(explicitChip.textContent).toBe(implicitChip.textContent);
+    expect(explicitChip.style.width).toBe(implicitChip.style.width);
+    expect(explicitChip.className).toContain('is-fixed');
   });
 
   it('本人認証ではないことを必ず画面に出す（限界を隠さない）', () => {

@@ -57,11 +57,16 @@ export interface MagiStatusSummaryProps {
   /** 状態の説明 details に載せる補助情報（データ接続名・本人確認の状態など・任意）。 */
   detailRows?: Array<{ label: string; value: string }>;
   /**
-   * 危険側1枚化（2026-08-27 社長裁定A-2・opt-in・非遡及）:
+   * 危険側1枚化（2026-08-27 社長裁定A-2 → 2026-09-01 裁定で**既定ON**へ昇格）:
    *   環境と書込状態が**両方とも機械検出で確定**している時だけ、バッジ群を1枚
    *   （例「本番・書込ON」）へ畳む。fail-closed——確認中・検出失敗・無検証の申告・
    *   申告エラーが1つでもあれば畳まず、従来どおり個別バッジへ自動展開する。
    *   内訳は従来どおり「状態の説明」プルダウンで全部見える。
+   *
+   *   **既定 `true`**。`compact={false}` を渡すと従来の個別バッジ表示へ戻せる（opt-out）。
+   *   既定にできる理由は2つ——①不確定なら自動で個別展開する fail-closed が内側にあり、
+   *   1枚化が「見えなくする」方向へ倒れない ②各アプリは core の版をピンで固定しており、
+   *   見た目が変わるのは各アプリが版を上げると決めた時点だけ（勝手に本番へ流れ込まない）。
    */
   compact?: boolean;
   className?: string;
@@ -76,7 +81,13 @@ function deriveCompactBadge(
   if (typeof writable !== 'boolean' || !writeTrusted) return null;
   if (runtimeSurface === 'unknown') return null;
   if (declared.length > 0 || rejected.length > 0) return null;
-  const surfaceLabel = runtimeSurface === 'production' ? '本番' : runtimeSurface === 'preview' ? 'レビュー環境' : 'このPC内';
+  // 環境ラベルは「許可表からの引き」にする（unknown を構造的に到達不能にするため）。
+  //   三項の連鎖（production ? '本番' : preview ? 'レビュー環境' : 'このPC内'）だと、
+  //   unknown が最安全ラベル「このPC内」へ落ちる＝上の unknown ガード1枚が消えた瞬間に
+  //   「本番かもしれない画面が安全に見える」へ倒れた。表引きなら未知の面は undefined ＝
+  //   畳まない（安全側）へ倒れる。ガードは早期に意図を示すために残す。
+  const surfaceLabel = ({ production: '本番', preview: 'レビュー環境', local: 'このPC内' } as const)[runtimeSurface];
+  if (!surfaceLabel) return null;
   const tone = runtimeSurface === 'production' ? 'danger' : runtimeSurface === 'preview' ? 'warn' : 'ok';
   return {
     label: `${surfaceLabel}・書込${writable ? 'ON' : 'OFF'}`,
@@ -126,7 +137,7 @@ export function MagiStatusSummary({
   declaredStates,
   unsafeDeclaredStates,
   detailRows,
-  compact,
+  compact = true,
   className,
 }: MagiStatusSummaryProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
