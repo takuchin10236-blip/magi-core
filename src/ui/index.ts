@@ -17,6 +17,7 @@
  *     - ManualViewer（全画面ページ型ビューア本体・左目次/右本文2カラム・検索/目次/ハイライト）
  *     - ManualEntry（サイドパネル用ボタン＋開閉。DisplaySwitch の直前に固定配置する規約）
  *     - 型: ManualContent / ManualSection / ManualBlock（器と中身の契約）
+ *     - composeAppManual（v0.25.0 追加・標準様式の組み立て。丸数字禁止と末尾共通節3本の固定を throw で守る）
  *   状態表示（v0.4 追加）:
  *     - StatusBadge（状態バッジ原子部品。title属性一本化・data-tooltip非使用）
  *
@@ -79,6 +80,8 @@ export { ManualViewer } from './ManualViewer';
 export { ManualEntry } from './ManualEntry';
 export type { ManualEntryProps } from './ManualEntry';
 export type { ManualBlock, ManualSection, ManualContent } from './manual-types';
+// マニュアルの標準様式（v0.25.0・2026-09-01 裁定「◯数字は廃止／最後の3項目は固定」）
+export { composeAppManual, MANUAL_COMMON_TAIL_IDS } from './manualCompose';
 export { SG_LOGO_FIGURES } from './manualFigures';
 export type { SgLogoFigureName } from './manualFigures';
 
