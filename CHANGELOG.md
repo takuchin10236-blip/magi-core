@@ -1,5 +1,36 @@
 # Changelog
 
+## v0.26.0 (2026-09-05)
+
+**操作者チップの固定幅を 230px → 180px へ**（2026-09-05 社長裁定）。**CSS 1行の変更のみ・API と輸出は不変**。
+
+### 契機
+
+`.operator-chip.is-fixed` の 230px は、v0.23.0 で固定幅を入れた時の初期値のまま誰も選んでいない数字だった。
+2026-08-27 に社長が実物の画面を見て「もう少し狭く」と決めた値が **180px**（連絡ノートが `fixedWidth={180}` で
+実運用している値）。**実運用値のほうが正**なので、型の既定を実運用値へ寄せる。
+
+### 変更
+
+- `src/ui/design-system.css` の `.operator-chip.is-fixed { width: 230px }` を **`180px`** へ。由来を日本語コメントで1行添えた。
+
+### 採用側への影響
+
+- **ピンを上げたアプリだけ**、操作者チップの幅が **230px → 180px** に変わる（`<OperatorChip fixedWidth />` や
+  既定の `fixedWidth` を使っているアプリ）。ピンを上げるまでは何も変わらない。
+- **`fixedWidth={数値}` を渡しているアプリは影響なし**——数値指定はインラインの `style.width` になり、
+  クラスの width より優先されるため（例: 連絡ノートの `fixedWidth={180}`）。
+- `fixedWidth={false}`（従来表示）も影響なし（`is-fixed` が付かない）。
+
+### 検査
+
+`npm run build` OK（exit 0）／`verify:brand` OK／`verify:modal` 20 checks／`verify:shell` 25 checks／
+`verify:tokens` 30 checks／`verify:types` OK／**381試験 33ファイル すべて緑（exit 0・試験の増減なし）**。
+
+⚠️ **`verify:matrix` は赤のまま**（exit 1）——`source_hashes` が現在の読取元と不一致（v0.21.0 以降の既知。
+この機に無い repo が2本ある＝`magi-resident-spine` / `magi-webapp-template`）。**本改訂とは無関係なので直していない**。
+
+
 ## v0.25.0 (2026-09-01)
 
 **アプリ内マニュアルの標準様式を型へ昇格**（2026-09-01 社長裁定「**◯数字は廃止。最後の3項目は固定（アカウント関連、認証関連、ロゴの話）。これをMAGIの型に昇格**」）。**新API追加のみ・既存の輸出と挙動は不変**。
