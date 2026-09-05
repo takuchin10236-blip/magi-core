@@ -12,6 +12,7 @@
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, Settings2, ShieldCheck } from 'lucide-react';
+import { FocusToggle } from './FocusToggle';
 import { hasOpenModal, isInsideOpenModal } from './modalGuards';
 
 export type BusinessNavTab = {
@@ -65,8 +66,26 @@ export interface BusinessNavProps {
    *   という主操作を置くと、視線がタブから画面の反対側へ飛ぶ。主操作はタブの隣、
    *   つまり**見ている場所のすぐ横**にあるべきである。
    * 省略時は何も描画しないため、既存アプリの見た目は変わらない。
+   *
+   * 🔴 **全画面（FocusToggle）をここに置かない**（v0.28.0・2026-09-06 社長裁定）。
+   *   全画面は**右群の先頭**が正（01_UI標準 §3-3-2「全画面 → 操作者 → 職員（ロール） → メニュー」）。
+   *   `focusMode` / `onFocusModeChange` を渡せば **core がその位置に描く**ので、アプリは置き場所を
+   *   決めなくてよい。ここへ置くとタブの隣に出て、他アプリと位置が食い違う
+   *   （ケアプロファイルで実際に食い違い、社長が写真2枚で指摘した）。
    */
   navLeadingActions?: ReactNode;
+  /**
+   * 作業面の全画面表示の現在値。`MagiAppShell` の `focusMode` と同じ値を渡す。
+   */
+  focusMode?: boolean;
+  /**
+   * 全画面の切替（次の状態を受ける）。**これを渡した時だけ** core が右群の先頭へ
+   * `FocusToggle` を描く（v0.28.0）。渡さなければ何も描かない＝既存アプリは無風。
+   *
+   * なぜ core が描くか: 置き場所をアプリ1本ずつの記述に任せると必ずずれる。
+   *   「どのアプリも最初からこの形」を型で担保する（2026-09-06 社長裁定）。
+   */
+  onFocusModeChange?: (next: boolean) => void;
   /** メニュー開閉ボタンのラベル。既定 'メニュー'。 */
   menuLabel?: string;
   className?: string;
@@ -83,6 +102,8 @@ export function BusinessNav({
   menuFooter,
   navActions,
   navLeadingActions,
+  focusMode,
+  onFocusModeChange,
   menuLabel = 'メニュー',
   className,
 }: BusinessNavProps) {
@@ -143,6 +164,12 @@ export function BusinessNav({
       ) : null}
 
       <div className="magi-appshell-nav-right">
+        {/* 右群の並びは 全画面 → navActions（操作者等） → ロール → メニュー が正
+            （01_UI標準 §3-3-2・2026-08-02 裁定）。順序は型が持ち、アプリに書かせない。 */}
+        {onFocusModeChange ? (
+          <FocusToggle focusMode={focusMode ?? false} onFocusModeChange={onFocusModeChange} />
+        ) : null}
+
         {navActions}
 
         {role ? (

@@ -1,5 +1,40 @@
 # Changelog
 
+## v0.28.0 (2026-09-06)
+
+**全画面ボタンの置き場所を型が持つようにした**（2026-09-06 社長裁定「全画面の位置、操作者のパネル？ボタン？の形が違います。連絡ノートを正としてほしい。どのアプリも、最初は、この形を取れるように」）。**API 破壊なし・加算のみ**。
+
+### 契機
+
+社長が写真2枚（ケアプロファイル／連絡ノート）を並べ、全画面ボタンの位置が食い違うことを指摘した。
+原因はアプリ側の記述——ケアプロファイルだけ `navLeadingActions`（＝業務タブの直後・左寄せ側）に
+`FocusToggle` を置いていた。`navLeadingActions` は「その画面の主操作（例:「追加」）」の枠であり、
+**全画面を置く場所ではない**。01_UI標準 §3-3-2 の裁定（2026-08-02）は右群の並びを
+**全画面 → 操作者 → 職員（ロール） → メニュー**と定めており、そこだけ従っていなかった。
+
+置き場所をアプリ1本ずつの記述に任せる限り、また同じずれが起きる。**型が持つ**形へ移した。
+
+### 変更
+
+- `BusinessNav` に **`focusMode?: boolean` / `onFocusModeChange?: (next: boolean) => void`** を追加。
+- **`onFocusModeChange` を渡した時だけ**、`.magi-appshell-nav-right` の**いちばん先頭**に
+  `FocusToggle` を core 自身が描く。並びは **全画面 → `navActions` → ロール → メニュー**。
+- `navLeadingActions` の JSDoc に 🔴 **「全画面をここに置かない」**を明記（条文でなくコードのそばに置く）。
+- 試験 `test/businessNavFocusOrder.test.tsx` を新設——右群の **DOM 順**を `querySelectorAll`（文書順）で見る。
+  「props を受けたか」ではなく「どの順で出たか」を測る。
+
+### 採用側への影響
+
+- **渡さなければ何も描かない**＝既存アプリは無風（`FocusToggle` を自前で置いている今の形のまま動く）。
+- 採用アプリは `navActions` / `navLeadingActions` の中の `<FocusToggle/>` を外し、
+  `focusMode` / `onFocusModeChange` を `BusinessNav` へ渡す形へ移すこと。
+  `MagiAppShell` にも同名の props があるので、**同じ値を両方へ渡す**（AppShell は focus 中の戻り口を担う）。
+
+### 検査
+
+`npm test`（既存＋新設5件）。負例で確かめた変異3種——①右群の順を入替 ②`onFocusModeChange` 無しでも描く
+③`navLeadingActions` の器へ移す——は**すべて赤**になる。
+
 ## v0.27.1 (2026-09-05)
 
 **動きを減らす設定の端末で、操作者チップの名前が縮まないまま切れていた**（v0.27.0 の穴・CSS 1行の追加）。
