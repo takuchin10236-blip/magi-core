@@ -191,6 +191,8 @@ export type { NameWithRoomProps } from './NameWithRoom';
 // 操作者（チップ＋選択モーダル・型v1.6の実体・2026-07-28 core化）
 export { OperatorChip, OperatorSelectModal } from './Operator';
 export type { OperatorChipProps, OperatorSelectModalProps, OperatorStaff } from './Operator';
+export { FIT_BASE_PX, FIT_MIN_PX, domFitTarget, fitOperatorLabel } from './operatorFit';
+export type { OperatorFitResult, OperatorFitTarget } from './operatorFit';
 
 // ブラウザの戻る/進む（v0.18.0・2階マニュアルハブ v0.9.0 からの還流）。
 //   hash ルーティングの単一ページアプリで、画面遷移が履歴を積み（push）、戻る/進むで
