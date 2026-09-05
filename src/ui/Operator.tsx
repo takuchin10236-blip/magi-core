@@ -23,6 +23,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { UserRound } from 'lucide-react';
 
 import { DraggableModal } from './DraggableModal';
+import { domFitTarget, fitOperatorLabel } from './operatorFit';
 
 export type OperatorStaff = {
   id: string;
@@ -50,9 +51,8 @@ export interface OperatorChipProps {
   className?: string;
 }
 
-/** 固定幅チップ内でラベルが収まるまで文字を縮小する（最小10px・全文表示が絶対）。 */
-const FIT_MIN_PX = 10;
-const FIT_BASE_PX = 14;
+/* 固定幅チップ内でラベルを収める算法は `operatorFit.ts`（DOM 無しで試験できるように切り出した）。
+   2026-09-05: 下限10pxで止めていたため17字の名前が枠外へ出て切れていた——下限7px＋字間詰めで入れ切る。 */
 
 export function OperatorChip({ operatorName, onClick, unsetLabel = '未選択', fixedWidth = true, className }: OperatorChipProps) {
   const isSet = Boolean(operatorName);
@@ -64,13 +64,7 @@ export function OperatorChip({ operatorName, onClick, unsetLabel = '未選択', 
     if (!fixed) return;
     const span = labelRef.current;
     if (!span) return;
-    span.style.fontSize = `${FIT_BASE_PX}px`;
-    let size = FIT_BASE_PX;
-    // scrollWidth が親を超えている間、1pxずつ落とす（名前は長くても十数文字＝ループは小さい）。
-    while (size > FIT_MIN_PX && span.scrollWidth > span.clientWidth) {
-      size -= 1;
-      span.style.fontSize = `${size}px`;
-    }
+    fitOperatorLabel(domFitTarget(span));
   }, [fixed, operatorName]);
 
   const label = fixed ? (operatorName ?? '操作者') : `操作者: ${operatorName ?? unsetLabel}`;
