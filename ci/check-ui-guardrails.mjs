@@ -632,8 +632,13 @@ function checkShellClassRedefinition() {
 //   済ませた型合わせで履歴と全画面が丸ごと抜けた。**検査なき条文は守られない**。
 // 判定: BusinessNav を使うアプリで、標準装備の識別可能な3部品
 //   （ManualEntry＝マニュアル／ColorModeSwitch＝テーマ切替／VersionHistoryModal＝更新履歴）と
-//   FocusToggle（ナビ直置き「全画面」＝§3-3-1）の参照が src に在るか。
+//   ナビ直置き「全画面」（§3-3-1）の参照が src に在るか。
 //   「今すぐ更新」は意味的で機械判定できないため対象外。
+// 全画面の数え方（v0.28.1・2026-09-06）: v0.28.0 で置き場所を型が持つようにしたため、
+//   **型どおりのアプリは `FocusToggle` を書かなくなる**（`onFocusModeChange` を BusinessNav へ
+//   渡すだけ）。旧綴りだけを探していると、型に追従したアプリほど「全画面が無い」と警告される
+//   ——検査が新しい正しい形を罰する状態だった（利用者マスタ・職員マスタ・フロアカレンダーの
+//   v0.28.0 追従で実測）。よって**どちらか一方があれば充足**とする。
 // 段階: 警告のみ（07x 在庫表「メニュー標準スロット型…強制ガードは昇格後」に整合。
 //   誤検知の観察後に failures へ昇格を裁定する）。
 function checkNavMenuStandard() {
@@ -641,24 +646,26 @@ function checkNavMenuStandard() {
     passes.push('(j) ナビ・メニュー標準: BusinessNav 未使用（対象外）');
     return;
   }
+  // 1行 = [充足する綴りのどれか1つ, 人向けの名前]。綴りが複数あるのは「型が描く新しい形」と
+  // 「アプリが自分で置いていた旧い形」の両方を認めるため（下の全画面がその実例）。
   const required = [
-    ['ManualEntry', 'アプリ内マニュアル'],
-    ['ColorModeSwitch', 'テーマ切替'],
-    ['VersionHistoryModal', '更新履歴（メニュー最下部）'],
-    ['FocusToggle', '全画面（ナビ直置き）'],
+    [['ManualEntry'], 'アプリ内マニュアル'],
+    [['ColorModeSwitch'], 'テーマ切替'],
+    [['VersionHistoryModal'], '更新履歴（メニュー最下部）'],
+    [['onFocusModeChange', 'FocusToggle'], '全画面（ナビ直置き）'],
     // v0.13.3（2026-08-03 社長指示「ロゴ未反映のようなことが各アプリで絶対起きないように」）:
     // 正式ロゴとサマリー帯も標準装備として検査する。意図的に持たないアプリは TYPE_DEVIATIONS へ。
-    ['SgBrandLogo', '正式ロゴ（ミュシャ風SG・昼夜切替）'],
-    ['MagiBusinessSummary', 'サマリー帯「現在の状況」（01 §3-4）'],
+    [['SgBrandLogo'], '正式ロゴ（ミュシャ風SG・昼夜切替）'],
+    [['MagiBusinessSummary'], 'サマリー帯「現在の状況」（01 §3-4）'],
   ];
-  const missing = required.filter(([ident]) => !srcText.includes(ident));
+  const missing = required.filter(([idents]) => !idents.some((ident) => srcText.includes(ident)));
   if (missing.length === 0) {
     passes.push('(j) ナビ・メニュー標準: 標準装備（マニュアル・テーマ・履歴・全画面・ロゴ・サマリー帯）が揃っている');
     return;
   }
   warnings.push(
     `(j) ナビ・メニュー標準: 標準装備の欠けが ${missing.length} 件 — `
-    + missing.map(([ident, label]) => `${label}（${ident} の参照なし）`).join(' / ')
+    + missing.map(([idents, label]) => `${label}（${idents.join(' / ')} の参照なし）`).join(' / ')
     + '。01_UI標準 §3-3（値の正本＝5層標準 §2-A）。意図的に持たない場合は TYPE_DEVIATIONS.md へ記録してください',
   );
 }
