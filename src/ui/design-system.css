@@ -5532,6 +5532,12 @@ mark.search-hit {
   overflow: hidden;
   white-space: nowrap;
   text-align: center;
+  /* 字の大きさは「動かす」ものではない。動きを減らす設定（prefers-reduced-motion: reduce）では
+     上の `*` 規則が **全プロパティに 1ms の遷移**を掛ける（transition-property の初期値は all）。
+     すると `operatorFit` が font-size を書いても、同じタスクの中では遷移前の値のまま測れてしまい、
+     縮小ループが1段で止まる＝**長い名前が縮まないまま切れて出る**。
+     2026-09-05、実ブラウザで実測して掴んだ（動きを減らす設定の端末だけで起きる、目に見えない事故）。 */
+  transition-property: none !important;
 }
 
 /* ── 状況の帯の「隠す/表示」（MagiBusinessSummary collapsible・既定は表示） ── */
