@@ -5521,8 +5521,9 @@ mark.search-hit {
   color: var(--color-danger);
 }
 
+/* 幅の正は180px（2026-09-05 社長裁定。230pxは誰も選んでいない初期値だった。2026-08-27に社長が実物を見て「もう少し狭く」と決めた値がこれ） */
 .operator-chip.is-fixed {
-  width: 230px;
+  width: 180px;
 }
 
 .operator-chip.is-fixed .operator-chip-label {
