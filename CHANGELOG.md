@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.23.2 (2026-09-05) — v0.23.0 系の保守枝
+
+**v0.27.1 の移植1件のみ**（`patch/v0.23.x` 枝）。
+
+- **動きを減らす設定の端末で、操作者チップの名前が縮まないまま切れていた**。
+  `@media (prefers-reduced-motion: reduce)` の `* { transition-duration: 1ms !important }` が
+  `font-size` にも遷移を掛けるため、縮小ループが1段で止まっていた。
+  `.operator-chip.is-fixed .operator-chip-label` へ `transition-property: none !important` を足して塞ぐ。
+
 ## v0.23.1 (2026-09-05) — v0.23.0 系の保守枝
 
 **v0.23.0 にピンを置いたまま、操作者チップの2件だけを届ける保守版**（`patch/v0.23.x` 枝）。
