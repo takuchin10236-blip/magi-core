@@ -51,6 +51,7 @@
     "verify:types": "tsc -p tsconfig.typecheck.json",
     "verify:matrix": "node scripts/verify-version-matrix.mjs",
     "verify:tokens": "node scripts/verify-token-consumers.mjs",
+    "verify:operator-fit": "node scripts/verify-operator-fit.mjs",
     "test": "vitest run",
     "version-matrix": "node scripts/collect-version-matrix.mts",
     "check": "npm run build && npm run verify:brand && npm run verify:modal && npm run verify:shell && npm run verify:tokens && npm run verify:types && npm test && npm run verify:matrix",
